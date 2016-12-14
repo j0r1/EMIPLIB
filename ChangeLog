@@ -3,6 +3,12 @@
                               EMIPLIB ChangeLog
 
 
+Version 0.14.0, February 2007:
+ * Added MIPWAVWriter and MIPWAVOutput. They allow simple sound recording
+   in case libsndfile isn't available.
+ * Fixed bug in MIPRTPSpeexDecoder which caused problems when different
+   sources used different Speex compression modes.
+
 Version 0.13.0, August 2006:
  * Modified the MIPRTPDecoder component. Now, the timestamp unit returned
    by a MIPRTPPacketDecoder instance can be stored in the corresponding

@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.6.0\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
+				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.0\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -108,7 +108,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.6.0\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
+				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.0\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -215,6 +215,10 @@
 					</File>
 					<File
 						RelativePath=".\src\components\output\mipvideoframestorage.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\output\mipwavoutput.cpp"
 						>
 					</File>
 					<File
@@ -387,6 +391,10 @@
 					RelativePath=".\src\util\mipwavreader.cpp"
 					>
 				</File>
+				<File
+					RelativePath=".\src\util\mipwavwriter.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="sessions"
@@ -466,6 +474,10 @@
 					</File>
 					<File
 						RelativePath=".\src\components\output\mipvideoframestorage.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\output\mipwavoutput.h"
 						>
 					</File>
 					<File
@@ -727,6 +739,10 @@
 				</File>
 				<File
 					RelativePath=".\src\util\mipwavreader.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\util\mipwavwriter.h"
 					>
 				</File>
 			</Filter>

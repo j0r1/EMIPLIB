@@ -33,6 +33,7 @@ copy %1\src\components\output\mipsdlaudiooutput.h %1\include\
 copy %1\src\components\output\mipsndfileoutput.h %1\include\
 copy %1\src\components\output\mipvideoframestorage.h %1\include\
 copy %1\src\components\output\mipwinmmoutput.h %1\include\
+copy %1\src\components\output\mipwavoutput.h %1\include\
 copy %1\src\components\timer\mipaveragetimer.h %1\include\
 copy %1\src\components\timer\mippusheventtimer.h %1\include\
 copy %1\src\components\transform\mipaudio3dbase.h %1\include\
@@ -83,3 +84,5 @@ copy %1\src\util\miprtpsynchronizer.h %1\include\
 copy %1\src\util\mipsignalwaiter.h %1\include\
 copy %1\src\util\mipspeexutil.h %1\include\
 copy %1\src\util\mipwavreader.h %1\include\
+copy %1\src\util\mipwavwriter.h %1\include\
+

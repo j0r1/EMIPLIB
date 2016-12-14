@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2007  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -32,6 +32,8 @@
 #include "miprtpmessage.h"
 #include <rtppacket.h>
 
+#include <iostream>
+
 #include "mipdebug.h"
 
 MIPRTPSpeexDecoder::MIPRTPSpeexDecoder()
@@ -45,7 +47,7 @@ MIPRTPSpeexDecoder::~MIPRTPSpeexDecoder()
 bool MIPRTPSpeexDecoder::validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit)
 {
 	size_t length;
-	
+
 	length = (size_t)pRTPPack->GetPayloadLength();
 	if (length < 1)
 		return false;
@@ -60,6 +62,8 @@ bool MIPRTPSpeexDecoder::validatePacket(const RTPPacket *pRTPPack, real_t &times
 		else
 			return false;
 	}
+	else
+		m_sampRate = (int)((1.0/timestampUnit)+0.5);
 	
 	return true;
 }

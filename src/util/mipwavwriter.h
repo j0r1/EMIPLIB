@@ -22,12 +22,43 @@
 
 */
 
-#ifndef MIPTYPES_UNIX_H
+/**
+ * \file mipwavwriter.h
+ */
 
-#define MIPTYPES_UNIX_H
+#ifndef MIPWAVWRITER_H
 
-#include <inttypes.h>
+#define MIPWAVWRITER_H
 
-typedef long double real_t;
+#include "mipconfig.h"
+#include "miperrorbase.h"
+#include "miptypes.h"
+#include <stdio.h>
 
-#endif // MIPTYPES_UNIX_H
+/** This is a simple WAV file writer (8 bit, mono) */
+class MIPWAVWriter : public MIPErrorBase
+{
+public:
+	MIPWAVWriter();
+	~MIPWAVWriter();
+
+	/** Opens the WAV file specified in \c fileName at sampling rate \c sampRate */
+	bool open(const std::string &fileName, int sampRate);
+	
+	/** Closes the WAV file */
+	bool close();
+
+	/** Writes a number of frames.
+	 *  This function allows you to write sound data to the file. Note that
+	 *  currently only mono sound is supported.
+	 *  \param pBuffer Sound data
+	 *  \param numFrames Number of frames in the buffer. Is currently equal to the number of bytes.
+	 */
+	bool writeFrames(uint8_t *pBuffer, int numFrames);
+private:
+	FILE *m_pFile;
+	int64_t m_frameCount;
+};
+
+#endif // MIPWAVWRITER_H
+

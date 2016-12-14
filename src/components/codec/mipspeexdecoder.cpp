@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2007  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -29,6 +29,8 @@
 #include "mipspeexdecoder.h"
 #include "mipencodedaudiomessage.h"
 #include "miprawaudiomessage.h"
+
+#include <iostream>
 
 #include "mipdebug.h"
 
@@ -164,7 +166,7 @@ bool MIPSpeexDecoder::push(const MIPComponentChain &chain, int64_t iteration, MI
 	MIPEncodedAudioMessage *pEncMsg = (MIPEncodedAudioMessage *)pMsg;
 	int sampRate = pEncMsg->getSamplingRate();
 	SpeexStateInfo::SpeexBandWidth bw;
-	
+
 	if (sampRate == 8000)
 		bw = SpeexStateInfo::NarrowBand;
 	else if (sampRate == 16000)

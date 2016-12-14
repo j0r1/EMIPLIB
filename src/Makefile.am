@@ -14,6 +14,7 @@ endif
 libemip_la_SOURCES += \
 components/output/mipmessagedumper.cpp \
 components/output/mipsndfileoutput.cpp \
+components/output/mipwavoutput.cpp \
 components/output/mipalsaoutput.cpp \
 components/output/mipesdoutput.cpp \
 components/output/mipqtoutput.cpp \
@@ -53,6 +54,7 @@ components/codec/mipulawdecoder.cpp \
 util/mipsignalwaiter.cpp \
 util/mipdirectorybrowser.cpp \
 util/mipwavreader.cpp \
+util/mipwavwriter.cpp \
 util/miprtpsynchronizer.cpp \
 util/mipspeexutil.cpp \
 sessions/mipaudiosession.cpp \
@@ -85,6 +87,7 @@ components/timer/mipaveragetimer.h \
 components/timer/mippusheventtimer.h \
 components/output/mipmessagedumper.h \
 components/output/mipsndfileoutput.h \
+components/output/mipwavoutput.h \
 components/output/mipalsaoutput.h \
 components/output/mipesdoutput.h \
 components/output/mipqtoutput.h \
@@ -130,6 +133,7 @@ components/codec/mipulawdecoder.h \
 util/mipsignalwaiter.h \
 util/mipdirectorybrowser.h \
 util/mipwavreader.h \
+util/mipwavwriter.h \
 util/miprtpsynchronizer.h \
 util/mipresample.h \
 util/mipspeexutil.h \

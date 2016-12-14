@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -62,9 +62,12 @@ public:
 	 *         audio data in. This parameter specifies how much data these buffers
 	 *         can contain, specified as a time interval. Note that this is not the
 	 *         amount of buffering introduced by the component.
+	 *  \param highPriority If \c true, the thread of the chain in which this component resides
+	 *                      will receive the highest priority. This will guarantee a smooth
+	 *                      playback.
 	 */
 	bool open(int sampRate, int channels, MIPTime blockTime = MIPTime(0.020),
-	          MIPTime bufferTime = MIPTime(10.0));
+	          MIPTime bufferTime = MIPTime(10.0), bool highPriority = false);
 
 	/* Close the soundcard playback device.
 	 * Using this function, the previously opened device is closed.
@@ -89,6 +92,7 @@ private:
 	bool m_flushBuffers;
 	MIPTime m_prevCheckTime;
 	MIPTime m_delay;
+	bool m_threadPrioritySet;
 };
 
 #endif // MIPWINMMOUTPUT_H

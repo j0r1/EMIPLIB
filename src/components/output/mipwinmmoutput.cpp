@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -64,7 +64,7 @@ MIPWinMMOutput::~MIPWinMMOutput()
 	close();
 }
 
-bool MIPWinMMOutput::open(int sampRate, int channels, MIPTime blockTime, MIPTime bufferTime)
+bool MIPWinMMOutput::open(int sampRate, int channels, MIPTime blockTime, MIPTime bufferTime, bool highPriority)
 {
 	if (m_init)
 	{
@@ -118,6 +118,10 @@ bool MIPWinMMOutput::open(int sampRate, int channels, MIPTime blockTime, MIPTime
 	m_prevBufCount = 0;
 	m_prevCheckTime = MIPTime(0);
 
+	if (highPriority)
+		m_threadPrioritySet = false;
+	else
+		m_threadPrioritySet = true;
 	m_init = true;
 	
 	return true;
@@ -175,6 +179,12 @@ bool MIPWinMMOutput::push(const MIPComponentChain &chain, int64_t iteration, MIP
 	{
 		setErrorString(MIPWINMMOUTPUT_ERRSTR_DEVICENOTOPEN);
 		return false;
+	}
+	
+	if (!m_threadPrioritySet)
+	{
+		m_threadPrioritySet = true;
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 	}
 	
 	MIPRaw16bitAudioMessage *audioMessage = (MIPRaw16bitAudioMessage *)pMsg;

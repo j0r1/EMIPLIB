@@ -63,7 +63,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libemip_la_LIBADD =
 am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	core/mipcomponentchain.cpp core/mipversion.cpp \
-	components/timer/mipaveragetimer.cpp \
+	core/mipdebug.cpp components/timer/mipaveragetimer.cpp \
 	components/timer/mippusheventtimer.cpp \
 	components/output/mipqtoutput.moc \
 	components/output/mipmessagedumper.cpp \
@@ -94,6 +94,7 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	components/transform/mipaudio3dbase.cpp \
 	components/transform/miphrirlisten.cpp \
 	components/transform/mipaudiosplitter.cpp \
+	components/transform/mipaudiodistancefade.cpp \
 	components/mixer/mipaudiomixer.cpp \
 	components/mixer/mipvideomixer.cpp \
 	components/mixer/mipmediabuffer.cpp \
@@ -108,18 +109,19 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	sessions/mipaudiosession.cpp sessions/mipvideosession.cpp
 am__objects_1 =
 am_libemip_la_OBJECTS = mipcomponent.lo mipcomponentchain.lo \
-	mipversion.lo mipaveragetimer.lo mippusheventtimer.lo \
-	$(am__objects_1) mipmessagedumper.lo mipsndfileoutput.lo \
-	mipalsaoutput.lo mipesdoutput.lo mipqtoutput.lo \
-	mipvideoframestorage.lo mipjackoutput.lo mipsdlaudiooutput.lo \
-	mipsndfileinput.lo mipaudiofileinput.lo mipv4linput.lo \
-	mipfrequencygenerator.lo mipwavinput.lo mipjackinput.lo \
-	mipossinputoutput.lo miprtpcomponent.lo miprtpspeexencoder.lo \
-	miprtpdecoder.lo miprtpspeexdecoder.lo miprtpulawencoder.lo \
-	miprtpulawdecoder.lo miprtpvideoencoder.lo \
-	miprtpvideodecoder.lo mipsamplingrateconverter.lo \
-	mipsampleencoder.lo mipaudio3dbase.lo miphrirlisten.lo \
-	mipaudiosplitter.lo mipaudiomixer.lo mipvideomixer.lo \
+	mipversion.lo mipdebug.lo mipaveragetimer.lo \
+	mippusheventtimer.lo $(am__objects_1) mipmessagedumper.lo \
+	mipsndfileoutput.lo mipalsaoutput.lo mipesdoutput.lo \
+	mipqtoutput.lo mipvideoframestorage.lo mipjackoutput.lo \
+	mipsdlaudiooutput.lo mipsndfileinput.lo mipaudiofileinput.lo \
+	mipv4linput.lo mipfrequencygenerator.lo mipwavinput.lo \
+	mipjackinput.lo mipossinputoutput.lo miprtpcomponent.lo \
+	miprtpspeexencoder.lo miprtpdecoder.lo miprtpspeexdecoder.lo \
+	miprtpulawencoder.lo miprtpulawdecoder.lo \
+	miprtpvideoencoder.lo miprtpvideodecoder.lo \
+	mipsamplingrateconverter.lo mipsampleencoder.lo \
+	mipaudio3dbase.lo miphrirlisten.lo mipaudiosplitter.lo \
+	mipaudiodistancefade.lo mipaudiomixer.lo mipvideomixer.lo \
 	mipmediabuffer.lo mipspeexencoder.lo mipspeexdecoder.lo \
 	mipavcodecencoder.lo mipavcodecdecoder.lo mipulawencoder.lo \
 	mipulawdecoder.lo mipsignalwaiter.lo mipdirectorybrowser.lo \
@@ -300,7 +302,8 @@ x_includes = @x_includes@
 x_libraries = @x_libraries@
 lib_LTLIBRARIES = libemip.la
 libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
-	core/mipversion.cpp components/timer/mipaveragetimer.cpp \
+	core/mipversion.cpp core/mipdebug.cpp \
+	components/timer/mipaveragetimer.cpp \
 	components/timer/mippusheventtimer.cpp $(am__append_1) \
 	components/output/mipmessagedumper.cpp \
 	components/output/mipsndfileoutput.cpp \
@@ -330,6 +333,7 @@ libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
 	components/transform/mipaudio3dbase.cpp \
 	components/transform/miphrirlisten.cpp \
 	components/transform/mipaudiosplitter.cpp \
+	components/transform/mipaudiodistancefade.cpp \
 	components/mixer/mipaudiomixer.cpp \
 	components/mixer/mipvideomixer.cpp \
 	components/mixer/mipmediabuffer.cpp \
@@ -401,6 +405,7 @@ components/transform/mipaudio3dbase.h \
 components/transform/miphrirbase.h \
 components/transform/miphrirlisten.h \
 components/transform/mipaudiosplitter.h \
+components/transform/mipaudiodistancefade.h \
 components/mixer/mipaudiomixer.h \
 components/mixer/mipvideomixer.h \
 components/mixer/mipmediabuffer.h \
@@ -506,6 +511,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipalsaoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudio3dbase.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiodistancefade.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiofileinput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiomixer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiosession.Plo@am__quote@
@@ -515,6 +521,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaveragetimer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipcomponent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipcomponentchain.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipdebug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipdirectorybrowser.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipesdoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipfrequencygenerator.Plo@am__quote@
@@ -595,6 +602,13 @@ mipversion.lo: core/mipversion.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='core/mipversion.cpp' object='mipversion.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipversion.lo `test -f 'core/mipversion.cpp' || echo '$(srcdir)/'`core/mipversion.cpp
+
+mipdebug.lo: core/mipdebug.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipdebug.lo -MD -MP -MF "$(DEPDIR)/mipdebug.Tpo" -c -o mipdebug.lo `test -f 'core/mipdebug.cpp' || echo '$(srcdir)/'`core/mipdebug.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipdebug.Tpo" "$(DEPDIR)/mipdebug.Plo"; else rm -f "$(DEPDIR)/mipdebug.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='core/mipdebug.cpp' object='mipdebug.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipdebug.lo `test -f 'core/mipdebug.cpp' || echo '$(srcdir)/'`core/mipdebug.cpp
 
 mipaveragetimer.lo: components/timer/mipaveragetimer.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipaveragetimer.lo -MD -MP -MF "$(DEPDIR)/mipaveragetimer.Tpo" -c -o mipaveragetimer.lo `test -f 'components/timer/mipaveragetimer.cpp' || echo '$(srcdir)/'`components/timer/mipaveragetimer.cpp; \
@@ -805,6 +819,13 @@ mipaudiosplitter.lo: components/transform/mipaudiosplitter.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transform/mipaudiosplitter.cpp' object='mipaudiosplitter.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipaudiosplitter.lo `test -f 'components/transform/mipaudiosplitter.cpp' || echo '$(srcdir)/'`components/transform/mipaudiosplitter.cpp
+
+mipaudiodistancefade.lo: components/transform/mipaudiodistancefade.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipaudiodistancefade.lo -MD -MP -MF "$(DEPDIR)/mipaudiodistancefade.Tpo" -c -o mipaudiodistancefade.lo `test -f 'components/transform/mipaudiodistancefade.cpp' || echo '$(srcdir)/'`components/transform/mipaudiodistancefade.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipaudiodistancefade.Tpo" "$(DEPDIR)/mipaudiodistancefade.Plo"; else rm -f "$(DEPDIR)/mipaudiodistancefade.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transform/mipaudiodistancefade.cpp' object='mipaudiodistancefade.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipaudiodistancefade.lo `test -f 'components/transform/mipaudiodistancefade.cpp' || echo '$(srcdir)/'`components/transform/mipaudiodistancefade.cpp
 
 mipaudiomixer.lo: components/mixer/mipaudiomixer.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipaudiomixer.lo -MD -MP -MF "$(DEPDIR)/mipaudiomixer.Tpo" -c -o mipaudiomixer.lo `test -f 'components/mixer/mipaudiomixer.cpp' || echo '$(srcdir)/'`components/mixer/mipaudiomixer.cpp; \

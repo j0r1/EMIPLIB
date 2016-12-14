@@ -249,6 +249,10 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\components\transform\mipaudiodistancefade.cpp"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\transform\mipaudiosplitter.cpp"
 						>
 					</File>
@@ -373,6 +377,10 @@
 					RelativePath=".\src\core\mipversion.cpp"
 					>
 				</File>
+				<File
+					RelativePath=".\src\core\mipdebug.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="util"
@@ -488,6 +496,10 @@
 					>
 					<File
 						RelativePath=".\src\components\transform\mipaudio3dbase.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transform\mipaudiodistancefade.h"
 						>
 					</File>
 					<File

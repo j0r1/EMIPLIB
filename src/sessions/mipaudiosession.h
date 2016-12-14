@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -73,6 +73,8 @@ public:
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
 		m_inputDevName = std::string("/dev/dsp"); 
 		m_outputDevName = std::string("/dev/dsp"); 
+#else
+		m_highPriority = false;
 #endif // !(WIN32 || _WIN32_WCE)
 		m_portbase = 5000; 
 		m_acceptOwnPackets = false; 
@@ -85,6 +87,9 @@ public:
 	
 	/** Returns the name of the output device (not available on Win32/WinCE; default: /dev/dsp). */
 	std::string getOutputDevice() const						{ return m_outputDevName; }
+#else
+	/** Returns \c true if the audio threads will receive high priority (only on Win32/WinCE; default: false). */
+	bool getUseHighPriority() const							{ return m_highPriority; }
 #endif // !(WIN32 || _WIN32_WCE)
 	/** Returns the RTP portbase (default: 5000). */
 	uint16_t getPortbase() const							{ return m_portbase; }
@@ -100,6 +105,9 @@ public:
 	
 	/** Sets the name of the input device (not available on Win32/WinCE). */
 	void setOutputDevice(const std::string &devName)				{ m_outputDevName = devName; }
+#else
+	/** Sets a flag indicating if high priority audio threads should be used (only on Win32/WinCE). */
+	void setUseHighPriority(bool f)							{ m_highPriority = f; }
 #endif // !(WIN32 || _WIN32_WCE)
 	/** Sets the RTP portbase. */
 	void setPortbase(uint16_t p)							{ m_portbase = p; }
@@ -112,6 +120,8 @@ public:
 private:
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
 	std::string m_inputDevName, m_outputDevName;
+#else
+	bool m_highPriority;
 #endif // !(WIN32 || _WIN32_WCE)
 	uint16_t m_portbase;
 	bool m_acceptOwnPackets;

@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -177,6 +177,7 @@ bool MIPRTPComponent::processNewPackets(int64_t iteration)
 				uint32_t jitterSamples = srcData->INF_GetJitter();
 				real_t jitterSeconds = 0;
 				real_t tsUnit;
+				real_t tsUnitEstimation;
 				bool setTimingInfo = false;
 				uint32_t timingInfTimestamp = 0;
 				MIPTime timingInfWallclock(0);
@@ -185,8 +186,8 @@ bool MIPRTPComponent::processNewPackets(int64_t iteration)
 					jitterSeconds = (real_t)jitterSamples*tsUnit;
 				else
 				{
-					if ((tsUnit = (real_t)srcData->INF_GetEstimatedTimestampUnit()) > 0)
-						jitterSeconds = (real_t)jitterSamples*tsUnit;
+					if ((tsUnitEstimation = (real_t)srcData->INF_GetEstimatedTimestampUnit()) > 0)
+						jitterSeconds = (real_t)jitterSamples*tsUnitEstimation;
 				}
 	
 				if (srcData->SR_HasInfo())

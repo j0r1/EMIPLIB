@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -69,6 +69,7 @@ public:
 #if (defined(WIN32) || defined(_WIN32_WCE))
 		m_width = 160;
 		m_height = 120;
+		m_devNum = 0;
 #else
 		m_devName = std::string("/dev/video0"); 
 #endif // !(WIN32 || _WIN32_WCE)
@@ -85,6 +86,9 @@ public:
 	
 	/** Returns the height (only available on Win32; default: 120). */
 	int getHeight() const								{ return m_height; }
+
+	/** Returns the device number to open (only available on Win32; default: 0). */
+	int getDevice() const								{ return m_devNum; }
 #else
 	/** Returns the device name (not available on Win32; default: /dev/video0). */
 	std::string getDevice() const							{ return m_devName; }
@@ -112,6 +116,9 @@ public:
 	
 	/** Sets the height of the video frames (only available on Win32). */
 	void setHeight(int h)								{ m_height = h; }
+
+	/** Sets the number of the input device to use (only available on Win32). */
+	void setDevice(int n)								{ m_devNum = n; }
 #else
 	/** Sets the name of the device (not available on Win32). */
 	void setDevice(const std::string &devName)					{ m_devName = devName; }
@@ -135,6 +142,7 @@ public:
 private:
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	int m_width, m_height;
+	int m_devNum;
 #else
 	std::string m_devName;
 #endif // !(WIN32 || _WIN32_WCE)

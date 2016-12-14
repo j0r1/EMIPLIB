@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -78,8 +78,6 @@ bool MIPJackOutput::open(MIPTime interval, const std::string &serverName, MIPTim
 		return false;
 	}
 	
-	int status;
-
 	std::string clientName("MIPJackOutput");
 	const char *pServName = 0;
 	jack_options_t options = JackNullOption;
@@ -231,7 +229,7 @@ bool MIPJackOutput::close()
 		
 		if (amount != 0)
 		{
-			int i, j;
+			size_t i;
 			float *pDestLeft = m_pFrameArrayLeft + m_nextPos;
 			float *pDestRight = m_pFrameArrayRight + m_nextPos;
 			const float *pSrc = frames + offset;
@@ -321,7 +319,7 @@ bool MIPJackOutput::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 		
 		if (amount != 0)
 		{
-			int i, j;
+			size_t i;
 			float *pDestLeft = m_pFrameArrayLeft + m_nextPos;
 			float *pDestRight = m_pFrameArrayRight + m_nextPos;
 			const float *pSrc = frames + offset;

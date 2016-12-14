@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -214,6 +214,10 @@ bool MIPComponentChain::deleteConnection(MIPComponent *pPullComponent, MIPCompon
 
 void *MIPComponentChain::Thread()
 {
+#ifdef MIPDEBUG
+	std::cout << "MIPComponentChain::Thread started" << std::endl;
+#endif // MIPDEBUG
+
 	bool done = false;
 	bool error = false;
 	int64_t iteration = 1;
@@ -355,6 +359,10 @@ void *MIPComponentChain::Thread()
 	}
 	
 	onThreadExit(error, errorComponent, errorString);
+	
+#ifdef MIPDEBUG
+	std::cout << "MIPComponentChain::Thread stopped" << std::endl;
+#endif // MIPDEBUG
 	
 	return 0;
 }

@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -41,6 +41,7 @@
 #include <unistd.h>
 
 #include "mipdebug.h"
+#include <iostream>
 
 #define MIPV4LINPUT_ERRSTR_ALREADYINIT				"A device is already opened"
 #define MIPV4LINPUT_ERRSTR_CANTOPEN				"Can't open the device"
@@ -316,6 +317,10 @@ bool MIPV4LInput::pull(const MIPComponentChain &chain, int64_t iteration, MIPMes
 
 void *MIPV4LInput::Thread()
 {
+#ifdef MIPDEBUG
+	std::cout << "MIPV4LInput::Thread started" << std::endl;
+#endif // MIPDEBUG
+
 	JThread::ThreadStarted();
 
 	bool done;
@@ -352,6 +357,11 @@ void *MIPV4LInput::Thread()
 		m_stopMutex.Unlock();
 
 	}
+
+#ifdef MIPDEBUG
+	std::cout << "MIPV4LInput::Thread stopped" << std::endl;
+#endif // MIPDEBUG
+
 	return 0;
 }
 

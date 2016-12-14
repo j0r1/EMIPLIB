@@ -36,6 +36,7 @@ copy %1\src\components\output\mipwinmmoutput.h %1\include\
 copy %1\src\components\timer\mipaveragetimer.h %1\include\
 copy %1\src\components\timer\mippusheventtimer.h %1\include\
 copy %1\src\components\transform\mipaudio3dbase.h %1\include\
+copy %1\src\components\transform\mipaudiodistancefade.h %1\include\
 copy %1\src\components\transform\mipaudiosplitter.h %1\include\
 copy %1\src\components\transform\miphrirbase.h %1\include\
 copy %1\src\components\transform\miphrirlisten.h %1\include\

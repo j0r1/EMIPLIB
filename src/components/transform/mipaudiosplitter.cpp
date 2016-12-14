@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -97,7 +97,6 @@ bool MIPAudioSplitter::push(const MIPComponentChain &chain, int64_t iteration, M
 	int numFrames = pRawAudioMsg->getNumberOfFrames();
 	int numFramesLeft = numFrames;
 	int intervalFrames = (int)((m_interval.getValue()*(real_t)sampRate)+0.5);
-	int intervalSamples = intervalFrames*numChannels;
 	MIPTime t = pRawAudioMsg->getTime();
 	uint64_t sourceID = pRawAudioMsg->getSourceID();
 	

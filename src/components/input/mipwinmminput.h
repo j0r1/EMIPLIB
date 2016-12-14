@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -64,9 +64,13 @@ public:
 	 *  \param bufferTime The component allocates a number of buffers to store
 	 *         audio data in. This parameter specifies how much data these buffers
 	 *         can contain, specified as a time interval.
+	 *  \param highPriority If \c true, the thread of the chain in which this
+	 *                      component resides and a background thread in which
+	 *                      the sampling takes place will both receive the
+	 *                      highest priority.
 	 */
 	bool open(int sampRate, int channels, MIPTime interval = MIPTime(0.020), 
-	          MIPTime bufferTime = MIPTime(10.0));
+	          MIPTime bufferTime = MIPTime(10.0), bool highPriority = false);
 
 	/** Closes the sound capturing device.
 	 *  This function closes a previously opened sound capturing device.
@@ -94,6 +98,7 @@ private:
 	MIPSignalWaiter m_sigWait,m_threadSigWait;
 	JMutex m_frameMutex,m_stopMutex;
 	MIPTime m_interval, m_sampleInstant;
+	bool m_threadPrioritySet;
 
 	std::string m_threadError;
 };

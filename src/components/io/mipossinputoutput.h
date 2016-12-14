@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -46,7 +46,7 @@ class MIPRaw16bitAudioMessage;
 class MIPOSSInputOutputParams
 {
 public:
-	MIPOSSInputOutputParams() : m_bufferTime(10.0), m_devName("/dev/dsp"), m_ossBufferTime(0.007)
+	MIPOSSInputOutputParams() : m_bufferTime(10.0), m_ossBufferTime(0.007), m_devName("/dev/dsp")
 											{ m_exactRate = true; m_ossFragments = 6; }
 	~MIPOSSInputOutputParams()							{ }
 

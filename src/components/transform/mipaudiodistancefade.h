@@ -23,51 +23,48 @@
 */
 
 /**
- * \file mipulawencoder.h
+ * \file mipaudiodistancefade.h
  */
 
-#ifndef MIPULAWENCODER_H
+#ifndef MIPAUDIODISTANCEFADE_H
 
-#define MIPULAWENCODER_H
+#define MIPAUDIODISTANCEFADE_H
 
 #include "mipconfig.h"
-#include "mipcomponent.h"
-#include "miptime.h"
+#include "mipaudio3dbase.h"
 #include <list>
 
-class MIPEncodedAudioMessage;
+class MIPRawFloatAudioMessage;
 
-/** An u-law encoder.
- *  This component accepts raw audio messages using 16 bit signed native endian
- *  encoding. The samples are converted to u-law encoded samples and a message
- *  with type MIPMESSAGE_TYPE_AUDIO_ENCODED and subtype MIPENCODEDAUDIOMESSAGE_TYPE_ULAW
- *  is produced.
+/** A simple 3D audio component which only takes the distance between participants into account.
+ *  A simple 3D audio component which only takes the distance between participants into account.
+ *  The compontent accepts and produces floating point raw audio messages.
  */
-class MIPULawEncoder : public MIPComponent
+class MIPAudioDistanceFade : public MIPAudio3DBase
 {
 public:
-	MIPULawEncoder();
-	~MIPULawEncoder();
+	MIPAudioDistanceFade();
+	~MIPAudioDistanceFade();
 
-	/** Initialize the component. */
-	bool init();
+	/** Initialize the component.
+	 *  This function initializes the component.
+	 *  \param cutOffDistance Specifies the distance (in meters) beyond which audio information
+	 *                        is ignored.
+	 */
+	bool init(real_t cutOffDistance = 50.0);
 
 	/** Clean up the component. */
 	bool destroy();
-
+	
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 private:
-	void clearMessages();
-	
 	bool m_init;
-	int64_t m_prevIteration;
+	real_t m_cutOffDistance;
+	std::list<MIPRawFloatAudioMessage *> m_messages;
+	std::list<MIPRawFloatAudioMessage *>::const_iterator m_msgIt;
+	int64_t m_curIteration;
+};
 
-	std::list<MIPEncodedAudioMessage *> m_messages;
-	std::list<MIPEncodedAudioMessage *>::const_iterator m_msgIt;
-
-	static const uint8_t expEnc[256];
-};	
-
-#endif // MIPULAWENCODER_H
+#endif // MIPAUDIODISTANCEFADE_H
 

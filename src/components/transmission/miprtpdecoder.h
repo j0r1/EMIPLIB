@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -42,6 +42,7 @@
 #include <list>
 
 class RTPPacket;
+class RTPSession;
 class MIPRTPReceiveMessage;
 class MIPRTPSynchronizer;
 class MIPMediaMessage;
@@ -71,8 +72,10 @@ public:
 	 *                        to work, the decoder must receive feedback from a mixer.
 	 *  \param pSynchronizer If a non-null pointer is passed, the object will be used
 	 *                       to synchronize different streams from the same participant.
+	 *  \param pRTPSess If specified, the timestamp unit returned by an MIPRTPPacketDecoder instance
+	 *                  will be stored in the RTPSourceData instance of the corresponding SSRC.
 	 */
-	bool init(bool calcStreamTime = true, MIPRTPSynchronizer *pSynchronizer = 0);
+	bool init(bool calcStreamTime = true, MIPRTPSynchronizer *pSynchronizer = 0, RTPSession *pRTPSess = 0);
 
 	/** Installs a default RTP packet decoder (for all payload types).
 	 *  Installs a default RTP packet decoder. Use a null pointer to clear all entries.
@@ -92,7 +95,7 @@ private:
 	void clearMessages();
 	void cleanUp();
 	void cleanUpSourceTable();
-	bool lookUpStreamTime(const MIPRTPReceiveMessage *pRTPPack, real_t timestampUnit, MIPTime &streamTime);
+	bool lookUpStreamTime(const MIPRTPReceiveMessage *pRTPPack, real_t timestampUnit, MIPTime &streamTime, bool &shouldSync);
 	bool adjustToPlaybackTime(const MIPRTPReceiveMessage *pRTPMsg, MIPTime &streamTime, MIPTime &insertOffset);
 
 	bool m_init;	
@@ -107,10 +110,14 @@ private:
 	{
 	public:
 		SSRCInfo(uint32_t baseTimestamp = 0) : m_lastAccessTime(0), m_playbackOffset(0), m_avgInsertTime(0),
-							m_insertTimeSpread(0), m_lastOffsetAdjustTime(0)
+							m_insertTimeSpread(0), m_lastOffsetAdjustTime(0), m_lastSyncTime(0), m_syncOffset(0)
 									{ reset(baseTimestamp); m_syncStreamID = -1; }
 		void setSyncStreamID(int64_t id)			{ m_syncStreamID = id; }
 		int64_t getSyncStreamID() const				{ return m_syncStreamID; }
+		MIPTime getLastSyncTime() const				{ return m_lastSyncTime; }
+		void setLastSyncTime(MIPTime t)				{ m_lastSyncTime = t; }
+		MIPTime getSyncOffset() const				{ return m_syncOffset; }
+		void setSyncOffset(MIPTime t)				{ m_syncOffset = t; }
 
 		MIPTime getLastAccessTime() const			{ return m_lastAccessTime; }
 		uint64_t getBaseTimestamp() const			{ return m_baseTimestamp; }
@@ -195,6 +202,8 @@ private:
 		int64_t m_recentPacksReceived;
 
 		int64_t m_syncStreamID;
+		MIPTime m_lastSyncTime;
+		MIPTime m_syncOffset;
 	};
 
 #if defined(WIN32) || defined(_WIN32_WCE)
@@ -209,6 +218,7 @@ private:
 	SSRCInfo *m_pSSRCInfo;
 	bool m_calcStreamTime;
 	MIPRTPSynchronizer *m_pSynchronizer;
+	RTPSession *m_pRTPSess;
 	MIPTime m_totalComponentDelay;
 };
 

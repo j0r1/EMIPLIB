@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -28,5 +28,14 @@
 
 #include "mipconfig.h"
 
+#ifdef MIPDEBUG
+
+#include "rtptypes.h"
+
+void *operator new(size_t s,char filename[],int line);
+void *operator new[](size_t s,char filename[],int line);
+
+#endif // MIPDEBUG
 
 #endif // MIPDEBUG_H
+

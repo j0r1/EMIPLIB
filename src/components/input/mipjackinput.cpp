@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -83,8 +83,6 @@ bool MIPJackInput::open(MIPTime interval, const std::string &serverName, MIPTime
 		return false;
 	}
 	
-	int status;
-
 	std::string clientName("MIPJackInput");
 	const char *pServName = 0;
 	jack_options_t options = JackNullOption;
@@ -162,7 +160,7 @@ bool MIPJackInput::open(MIPTime interval, const std::string &serverName, MIPTime
 	m_curReadBuffer = 0;
 	m_availableFrames = 0;
 
-	int arraySize = (int)(arrayTime.getValue()*(real_t)m_sampRate+0.5);
+	size_t arraySize = (size_t)(arrayTime.getValue()*(real_t)m_sampRate+0.5);
 	if (arraySize < m_bufSize/2*10)
 	{
 		jack_client_close(m_pClient);
@@ -430,7 +428,6 @@ int MIPJackInput::JackCallback(jack_nframes_t nframes)
 
 	m_blockMutex.Lock();
 	m_availableFrames += (size_t)nframes;
-	int numAvail = m_availableFrames;
 	m_blockMutex.Unlock();
 
 	m_sigWait2.signal();
@@ -440,6 +437,9 @@ int MIPJackInput::JackCallback(jack_nframes_t nframes)
 
 void *MIPJackInput::Thread()
 {
+#ifdef MIPDEBUG
+	std::cout << "MIPJackInput::Thread started" << std::endl;
+#endif // MIPDEBUG
 	JThread::ThreadStarted();
 	bool stop = false;
 	size_t numFrames = m_frames;
@@ -505,6 +505,9 @@ void *MIPJackInput::Thread()
 			}
 		}
 	}
+#ifdef MIPDEBUG
+	std::cout << "MIPJackInput::Thread started" << std::endl;
+#endif // MIPDEBUG
 	return 0;
 }
 #endif // MIPCONFIG_SUPPORT_JACK

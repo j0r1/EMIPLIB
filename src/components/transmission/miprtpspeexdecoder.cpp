@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -50,13 +50,15 @@ bool MIPRTPSpeexDecoder::validatePacket(const RTPPacket *pRTPPack, real_t &times
 	if (length < 1)
 		return false;
 
-	if (timestampUnit < 0) // If available, we'll use the timestamp that's been set in or calculated by jrtplib
+	if (timestampUnit < 0)
 	{
 		if (m_speexUtil.processBytes(pRTPPack->GetPayloadData(),pRTPPack->GetPayloadLength()))
 		{
 			m_sampRate = m_speexUtil.getSamplingRate();
 			timestampUnit = 1.0/((real_t)m_sampRate);
 		}
+		else
+			return false;
 	}
 	
 	return true;

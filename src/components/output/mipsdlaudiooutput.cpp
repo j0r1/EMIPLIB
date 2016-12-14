@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -73,8 +73,6 @@ bool MIPSDLAudioOutput::open(int sampRate, int channels, MIPTime interval, MIPTi
 		return false;
 	}
 	
-	int status;
-
 	SDL_AudioSpec spec, rcvSpec;
 
 	spec.freq = sampRate;
@@ -265,7 +263,7 @@ void MIPSDLAudioOutput::StaticCallback(void *udata, uint8_t *stream, int len)
 
 void MIPSDLAudioOutput::Callback(uint8_t *stream, int len)
 {
-	if (len != m_blockLength*2) // 16 bit samples
+	if ((size_t)len != m_blockLength*2) // 16 bit samples
 		return;
 	
 	memcpy(stream, m_pFrameArray + m_currentPos, len);

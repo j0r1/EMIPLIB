@@ -3,6 +3,7 @@ libemip_la_SOURCES = \
 core/mipcomponent.cpp \
 core/mipcomponentchain.cpp \
 core/mipversion.cpp \
+core/mipdebug.cpp \
 components/timer/mipaveragetimer.cpp \
 components/timer/mippusheventtimer.cpp
 
@@ -39,6 +40,7 @@ components/transform/mipsampleencoder.cpp \
 components/transform/mipaudio3dbase.cpp \
 components/transform/miphrirlisten.cpp \
 components/transform/mipaudiosplitter.cpp \
+components/transform/mipaudiodistancefade.cpp \
 components/mixer/mipaudiomixer.cpp \
 components/mixer/mipvideomixer.cpp \
 components/mixer/mipmediabuffer.cpp \
@@ -115,6 +117,7 @@ components/transform/mipaudio3dbase.h \
 components/transform/miphrirbase.h \
 components/transform/miphrirlisten.h \
 components/transform/mipaudiosplitter.h \
+components/transform/mipaudiodistancefade.h \
 components/mixer/mipaudiomixer.h \
 components/mixer/mipvideomixer.h \
 components/mixer/mipmediabuffer.h \

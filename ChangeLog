@@ -3,6 +3,20 @@
                               EMIPLIB ChangeLog
 
 
+Version 0.13.0, August 2006:
+ * Modified the MIPRTPDecoder component. Now, the timestamp unit returned
+   by a MIPRTPPacketDecoder instance can be stored in the corresponding
+   RTPSourceData instance.
+ * Added a simple 3D audio implementation which only takes distance into
+   account.
+ * Added the possibility to start audio threads with high priority in
+   Win32 and WinCE implementations.
+ * Fixed the lack of a 'm_init=false' statement in the destroy function
+   of MIPAudioSession and MIPVideoSession.
+ * If a MIPRTPSynchronizer is used in a MIPRTPDecoder, it is now only used
+   every two seconds. In between, a cached synchronization offset is used.
+ * Added memory tracking debug code and thread debug code.
+
 Version 0.12.0, July 2006:
  * Added MIPResample template function.
  * Added SDL audio output component.

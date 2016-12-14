@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <cmath>
+#include <iostream>
 
 #include "mipdebug.h"
 
@@ -650,6 +651,10 @@ void MIPOSSInputOutput::IOThread::stop()
 
 void *MIPOSSInputOutput::OutputThread::Thread()
 {
+#ifdef MIPDEBUG
+	std::cout << "MIPOSSInputOutput::OutputThread started" << std::endl;
+#endif // MIPDEBUG
+
 	JThread::ThreadStarted();	
 	
 	bool done;
@@ -669,12 +674,18 @@ void *MIPOSSInputOutput::OutputThread::Thread()
 			m_stopMutex.Unlock();
 		}
 	}
-	
+#ifdef MIPDEBUG
+	std::cout << "MIPOSSInputOutput::OutputThread stopped" << std::endl;
+#endif // MIPDEBUG
 	return 0;
 }
 
 void *MIPOSSInputOutput::InputThread::Thread()
 {
+#ifdef MIPDEBUG
+	std::cout << "MIPOSSInputOutput::InputThread started" << std::endl;
+#endif // MIPDEBUG
+	
 	JThread::ThreadStarted();	
 	
 	bool done;
@@ -694,7 +705,9 @@ void *MIPOSSInputOutput::InputThread::Thread()
 			m_stopMutex.Unlock();
 		}
 	}
-
+#ifdef MIPDEBUG
+	std::cout << "MIPOSSInputOutput::InputThread stopped" << std::endl;
+#endif // MIPDEBUG
 	return 0;
 }
 

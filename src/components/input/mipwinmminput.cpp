@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -68,7 +68,7 @@ MIPWinMMInput::~MIPWinMMInput()
 	close();
 }
 
-bool MIPWinMMInput::open(int sampRate, int channels, MIPTime interval, MIPTime bufferTime)
+bool MIPWinMMInput::open(int sampRate, int channels, MIPTime interval, MIPTime bufferTime, bool highPriority)
 {
 	if (m_init)
 	{
@@ -139,6 +139,11 @@ bool MIPWinMMInput::open(int sampRate, int channels, MIPTime interval, MIPTime b
 		m_numBuffers = 10;
 
 	m_inputBuffers = new WAVEHDR[m_numBuffers];
+
+	if (!highPriority)
+		m_threadPrioritySet = true;
+	else
+		m_threadPrioritySet = false;
 
 	if (JThread::Start() < 0)
 	{
@@ -222,6 +227,12 @@ bool MIPWinMMInput::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 		return false;
 	}
 
+	if (!m_threadPrioritySet)
+	{
+		m_threadPrioritySet = true;
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+	}
+
 	if (pMsg->getMessageType() == MIPMESSAGE_TYPE_SYSTEM && pMsg->getMessageSubtype() == MIPSYSTEMMESSAGE_TYPE_WAITTIME)
 	{
 		if (!JThread::IsRunning())
@@ -285,6 +296,13 @@ bool MIPWinMMInput::pull(const MIPComponentChain &chain, int64_t iteration, MIPM
 // the thread makes sure that the input keeps getting filled
 void *MIPWinMMInput::Thread()
 {
+#ifdef MIPDEBUG
+	std::cout << "MIPWinMMInput::Thread started" << std::endl;
+#endif // MIPDEBUG
+
+	if (!m_threadPrioritySet)
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+	
 	JThread::ThreadStarted();
 
 	m_threadError = std::string("");
@@ -353,6 +371,10 @@ void *MIPWinMMInput::Thread()
 		done = m_stopThread;
 		m_stopMutex.Unlock();
 	}
+	
+#ifdef MIPDEBUG
+	std::cout << "MIPWinMMInput::Thread stopped" << std::endl;
+#endif // MIPDEBUG
 
 	return 0;
 }

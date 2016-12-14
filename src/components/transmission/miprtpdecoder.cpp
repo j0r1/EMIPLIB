@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,8 @@
 #include "mipmediamessage.h"
 #include "miprtppacketdecoder.h"
 #include <rtppacket.h>
+#include <rtpsession.h>
+#include <rtpsourcedata.h>
 #include <iostream>
 
 #include "mipdebug.h"
@@ -55,7 +57,7 @@ MIPRTPDecoder::~MIPRTPDecoder()
 	cleanUp();
 }
 
-bool MIPRTPDecoder::init(bool calcStreamTime, MIPRTPSynchronizer *pSynchronizer)
+bool MIPRTPDecoder::init(bool calcStreamTime, MIPRTPSynchronizer *pSynchronizer, RTPSession *pRTPSess)
 {
 	if (m_init)
 		cleanUp();
@@ -67,6 +69,7 @@ bool MIPRTPDecoder::init(bool calcStreamTime, MIPRTPSynchronizer *pSynchronizer)
 	m_calcStreamTime = calcStreamTime;
 	m_pSynchronizer = pSynchronizer;
 	m_totalComponentDelay = MIPTime(0);
+	m_pRTPSess = pRTPSess;
 
 	for (int i = 0 ; i < MIPRTPDECODER_MAXPAYLOADDECODERS ; i++)
 		m_pDecoders[i] = 0;
@@ -137,6 +140,8 @@ bool MIPRTPDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 	}
 	
 	//std::cerr << "Got packet " << pRTPPack->GetExtendedSequenceNumber() << " from source " << pRTPPack->GetSSRC() << std::endl;
+
+	real_t timestampUnitPrev = timestampUnit;
 	
 	if (!pDecoder->validatePacket(pRTPPack, timestampUnit))
 	{
@@ -144,10 +149,27 @@ bool MIPRTPDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 		return true;
 	}
 
+	if (m_pRTPSess)
+	{
+		if (timestampUnitPrev != timestampUnit && timestampUnit > 0)
+		{
+			m_pRTPSess->BeginDataAccess();
+			RTPSourceData *pSrcDat = m_pRTPSess->GetSourceInfo(pRTPPack->GetSSRC());
+			if (pSrcDat != 0)
+			{
+				pSrcDat->SetTimestampUnit((double)timestampUnit);
+//				std::cout << "Storing timestamp unit 1.0/" << (1.0/timestampUnit) << " for SSRC" << pRTPPack->GetSSRC() << std::endl;
+			}
+			m_pRTPSess->EndDataAccess();
+		}
+	}
+	
 	MIPTime streamTime(0);
 	
 	if (m_calcStreamTime)
 	{
+		bool shouldSync = false;
+
 		if (timestampUnit <= 0)
 		{
 			// without the timestamp unit we can't reconstruct the stream, so we'll
@@ -155,7 +177,7 @@ bool MIPRTPDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 			return true;
 		}
 		
-		if (!lookUpStreamTime(pRTPMsg, timestampUnit, streamTime))
+		if (!lookUpStreamTime(pRTPMsg, timestampUnit, streamTime, shouldSync))
 		{
 			// something went wrong, ignore packet
 			return true;
@@ -171,19 +193,28 @@ bool MIPRTPDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 
 		if (m_pSynchronizer != 0) // a synchronization object is available
 		{
-			m_pSynchronizer->lock();
-			if (pRTPMsg->isTimingInfoSet())
+			MIPTime syncOffset;
+
+			if (shouldSync)
 			{
-				uint32_t SRtimestamp;
-				MIPTime SRwallclock(0);
+				m_pSynchronizer->lock();
+				if (pRTPMsg->isTimingInfoSet())
+				{
+					uint32_t SRtimestamp;
+					MIPTime SRwallclock(0);
 				
-				pRTPMsg->getTimingInfo(&SRwallclock,&SRtimestamp);
-				m_pSynchronizer->setStreamInfo(m_pSSRCInfo->getSyncStreamID(), SRwallclock, SRtimestamp,
+					pRTPMsg->getTimingInfo(&SRwallclock,&SRtimestamp);
+					m_pSynchronizer->setStreamInfo(m_pSSRCInfo->getSyncStreamID(), SRwallclock, SRtimestamp,
 				                               pRTPPack->GetTimestamp(), insertOffset, 
-							       m_totalComponentDelay);
+										       m_totalComponentDelay);
+				}
+				syncOffset = m_pSynchronizer->calculateSynchronizationOffset(m_pSSRCInfo->getSyncStreamID());
+				m_pSynchronizer->unlock();
+			
+				m_pSSRCInfo->setSyncOffset(syncOffset);
 			}
-			MIPTime syncOffset = m_pSynchronizer->calculateSynchronizationOffset(m_pSSRCInfo->getSyncStreamID());
-			m_pSynchronizer->unlock();
+			else
+				syncOffset = m_pSSRCInfo->getSyncOffset();
 
 			streamTime += syncOffset;
 		}
@@ -302,7 +333,7 @@ void MIPRTPDecoder::cleanUpSourceTable()
 	m_prevCleanTableTime = curTime;
 }
 
-bool MIPRTPDecoder::lookUpStreamTime(const MIPRTPReceiveMessage *pRTPMsg, real_t timestampUnit, MIPTime &streamTime)
+bool MIPRTPDecoder::lookUpStreamTime(const MIPRTPReceiveMessage *pRTPMsg, real_t timestampUnit, MIPTime &streamTime, bool &shouldSync)
 {
 	const RTPPacket *pRTPPack = pRTPMsg->getPacket();
 	MIPTime curTime = MIPTime::getCurrentTime();
@@ -324,32 +355,43 @@ bool MIPRTPDecoder::lookUpStreamTime(const MIPRTPReceiveMessage *pRTPMsg, real_t
 				m_pSSRCInfo->setSyncStreamID(id);
 			m_pSynchronizer->unlock();
 		}
-		
-		return true;
 	}
-	
-	uint64_t extendedTimestamp;
-	uint64_t baseTimestamp,diff;
-	
-	m_pSSRCInfo = &((*it).second);
-
-	if (m_pSynchronizer != 0 && m_pSSRCInfo->getSyncStreamID() < 0 && pRTPMsg->getCNameLength() > 0)
+	else
 	{
-		int64_t id;
+		uint64_t extendedTimestamp;
+		uint64_t baseTimestamp,diff;
 		
-		m_pSynchronizer->lock();
-		if (m_pSynchronizer->registerStream(pRTPMsg->getCName(), pRTPMsg->getCNameLength(), timestampUnit, &id))
-			m_pSSRCInfo->setSyncStreamID(id);
-		m_pSynchronizer->unlock();
+		m_pSSRCInfo = &((*it).second);
+
+		if (m_pSynchronizer != 0 && m_pSSRCInfo->getSyncStreamID() < 0 && pRTPMsg->getCNameLength() > 0)
+		{
+			int64_t id;
+			
+			m_pSynchronizer->lock();
+			if (m_pSynchronizer->registerStream(pRTPMsg->getCName(), pRTPMsg->getCNameLength(), timestampUnit, &id))
+				m_pSSRCInfo->setSyncStreamID(id);
+			m_pSynchronizer->unlock();
+		}
+		
+		(*it).second.setLastAccessTime(curTime);
+		extendedTimestamp = (*it).second.getExtendedTimestamp(pRTPPack->GetTimestamp());
+		baseTimestamp = (*it).second.getBaseTimestamp();
+		diff = extendedTimestamp-baseTimestamp;
+		
+		streamTime = MIPTime(((real_t)diff)*timestampUnit);
 	}
+
+	MIPTime diff = curTime;
+	diff -= m_pSSRCInfo->getLastSyncTime();
 	
-	(*it).second.setLastAccessTime(curTime);
-	extendedTimestamp = (*it).second.getExtendedTimestamp(pRTPPack->GetTimestamp());
-	baseTimestamp = (*it).second.getBaseTimestamp();
-	diff = extendedTimestamp-baseTimestamp;
-	
-	streamTime = MIPTime(((real_t)diff)*timestampUnit);
-	
+	if (diff.getValue() > 2.0)
+	{
+		shouldSync = true;
+		m_pSSRCInfo->setLastSyncTime(curTime);
+	}
+	else
+		shouldSync = false;
+
 	return true;
 }
 
@@ -475,7 +517,7 @@ bool MIPRTPDecoder::adjustToPlaybackTime(const MIPRTPReceiveMessage *pRTPMsg, MI
 			}
 		}
 	}
-
+	
 	MIPTime x = streamTime;
 	x -= m_playbackOffset;
 	insertOffset = x;

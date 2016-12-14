@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -102,14 +102,14 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	m_pInput = new MIPWinMMInput();
-	if (!m_pInput->open(sampRate, channels, inputInterval))
+	if (!m_pInput->open(sampRate, channels, inputInterval, MIPTime(10.0), pParams2->getUseHighPriority()))
 	{
 		setErrorString(m_pInput->getErrorString());
 		deleteAll();
 		return false;
 	}
 	m_pOutput = new MIPWinMMOutput();
-	if (!m_pOutput->open(sampRate, channels, outputInterval))
+	if (!m_pOutput->open(sampRate, channels, outputInterval, MIPTime(10.0), pParams2->getUseHighPriority()))
 	{
 		setErrorString(m_pOutput->getErrorString());
 		deleteAll();
@@ -225,7 +225,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		m_pTimer = new MIPAverageTimer(outputInterval);
 	
 	m_pRTPDec = new MIPRTPDecoder();
-	if (!m_pRTPDec->init(true, pSync))
+	if (!m_pRTPDec->init(true, pSync, m_pRTPSession))
 	{
 		setErrorString(m_pRTPDec->getErrorString());
 		deleteAll();
@@ -369,6 +369,7 @@ bool MIPAudioSession::destroy()
 	}
 	
 	deleteAll();
+	m_init = false;
 	return true;
 }
 

@@ -1,6 +1,6 @@
 /**\mainpage EMIPLIB
  *
- * \author Expertise Centre for Digital Media (EDM)
+ * \author Hasselt University - Expertise Centre for Digital Media
  *
  * \section intro Introduction
  *
@@ -580,7 +580,7 @@
  * 	checkError(returnValue, rtpComp);
  * 	
  * 	// Initialize the RTP audio decoder.
- * 	returnValue = rtpDec.init();
+ * 	returnValue = rtpDec.init(true, 0, &rtpSession);
  * 	checkError(returnValue, rtpDec);
  * 
  * 	// Register the U-law decoder for payload type 0

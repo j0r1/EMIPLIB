@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -89,7 +89,7 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 	width = pParams2->getWidth();
 	height = pParams2->getHeight();
 	m_pInput = new MIPDirectShowCapture();
-	if (!m_pInput->open(width, height, frameRate))
+	if (!m_pInput->open(width, height, frameRate,pParams2->getDevice()))
 	{
 		setErrorString(m_pInput->getErrorString());
 		deleteAll();
@@ -158,7 +158,7 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 	m_pTimer2 = new MIPAverageTimer(MIPTime(1.0/frameRate));
 	
 	m_pRTPDec = new MIPRTPDecoder();
-	if (!m_pRTPDec->init(true, pSync))
+	if (!m_pRTPDec->init(true, pSync, m_pRTPSession))
 	{
 		setErrorString(m_pRTPDec->getErrorString());
 		deleteAll();
@@ -274,6 +274,7 @@ bool MIPVideoSession::destroy()
 	}
 	
 	deleteAll();
+	m_init = false;
 	return true;
 }
 

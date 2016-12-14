@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -35,7 +35,7 @@
 #include "mipsystemmessage.h"
 #include "mipsignalwaiter.h"
 #include "miptime.h"
-#include <jthread.h>
+#include <jthread/jthread.h>
 
 /** Component which generates a MIPSYSTEMMESSAGE_TYPE_ISTIME system message when data has
  *  been supplied to it from another chain. 
@@ -84,7 +84,7 @@ public:
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 private:
-	class TriggerComponent : public MIPComponent, public JThread
+	class TriggerComponent : public MIPComponent, public jthread::JThread
 	{
 	public:
 		TriggerComponent(MIPSignalWaiter &sigWait, int count) : MIPComponent("MIPInterChainTimer::TriggerComponent"), m_sigWait(sigWait)
@@ -111,7 +111,7 @@ private:
 		int m_counter;
 		MIPTime m_prevTime;
 		MIPTime m_timeout;
-		JMutex m_stopMutex;
+		jthread::JMutex m_stopMutex;
 		bool m_stopThread;
 	};
 

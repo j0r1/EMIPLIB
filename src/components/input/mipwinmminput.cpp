@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -23,6 +23,9 @@
 */
 
 #include "mipconfig.h"
+
+#ifdef MIPCONFIG_SUPPORT_WINMM
+
 #include "mipwinmminput.h"
 #include "miprawaudiomessage.h"
 #include "mipsystemmessage.h"
@@ -68,7 +71,7 @@ MIPWinMMInput::~MIPWinMMInput()
 	close();
 }
 
-bool MIPWinMMInput::open(int sampRate, int channels, MIPTime interval, MIPTime bufferTime, bool highPriority)
+bool MIPWinMMInput::open(int sampRate, int channels, MIPTime interval, MIPTime bufferTime, bool highPriority, UINT deviceID)
 {
 	if (m_init)
 	{
@@ -91,7 +94,7 @@ bool MIPWinMMInput::open(int sampRate, int channels, MIPTime interval, MIPTime b
 	format.cbSize = 0;
 	format.wBitsPerSample = 2*8; // two bytes per sample
 
-	if (waveInOpen((LPHWAVEIN)&m_device, WAVE_MAPPER,(LPWAVEFORMATEX)&format,(DWORD_PTR)inputCallback,(DWORD_PTR)this,CALLBACK_FUNCTION))
+	if (waveInOpen((LPHWAVEIN)&m_device, deviceID, (LPWAVEFORMATEX)&format,(DWORD_PTR)inputCallback,(DWORD_PTR)this,CALLBACK_FUNCTION))
 	{
 		setErrorString(MIPWINMMINPUT_ERRSTR_CANTOPENDEVICE);
 		return false;
@@ -397,3 +400,6 @@ void CALLBACK MIPWinMMInput::inputCallback(HWAVEIN hwi, UINT uMsg, DWORD dwInsta
 		pInput->m_threadSigWait.signal();
 	}
 }
+
+#endif // MIPCONFIG_SUPPORT_WINMM
+

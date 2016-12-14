@@ -36,7 +36,7 @@
  * </style>
  * \endhtmlonly
  *
- * \mainpage EMIPLIB 1.0.0
+ * \mainpage EMIPLIB 1.1.0
  *
  *
  * \author Hasselt University - Expertise Centre for Digital Media

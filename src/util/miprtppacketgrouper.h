@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -36,7 +36,10 @@
 #include <vector>
 #include <list>
 
-class RTPPacket;
+namespace jrtplib
+{
+	class RTPPacket;
+}
 
 /** A helper class to help restore data if it had to be split across
  *  several RTP packets.
@@ -73,7 +76,7 @@ public:
 	 *  the \c isFirstFramePart can be set, but it is not absolutely necessary for
 	 *  the packet grouper to work correctly.
 	 */
-	bool processPacket(const RTPPacket *pPack, bool isFirstFramePart);
+	bool processPacket(const jrtplib::RTPPacket *pPack, bool isFirstFramePart);
 
 	/** Extract queued message parts which correspond to the same timestamp.
 	 *  Extract queued message parts which correspond to the same timestamp. If no

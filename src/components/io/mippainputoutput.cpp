@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -30,7 +30,6 @@
 #include "miprawaudiomessage.h"
 #include "mipsystemmessage.h"
 #include "mipstreambuffer.h"
-#include <iostream>
 
 #include "mipdebug.h"
 
@@ -302,12 +301,16 @@ int MIPPAInputOutput::portAudioCallback(const void *pInput, void *pOutput, unsig
                                         const PaStreamCallbackTimeInfo *pTimeInfo, 
 					PaStreamCallbackFlags statusFlags)
 {
-	int numBytesRead = m_pOutputBuffer->read(pOutput, m_blockBytes);
+	int numBytesRead = 0;
+	
+	if (m_pOutputBuffer)
+		numBytesRead = m_pOutputBuffer->read(pOutput, m_blockBytes);
 
 	if (numBytesRead < m_blockBytes)
 		memset(((uint8_t *)pOutput)+numBytesRead, 0, m_blockBytes-numBytesRead);
 
-	m_pInputBuffer->write(pInput, m_blockBytes);
+	if (m_pInputBuffer)
+		m_pInputBuffer->write(pInput, m_blockBytes);
 	m_sigWait.signal();
 
 	return 0;

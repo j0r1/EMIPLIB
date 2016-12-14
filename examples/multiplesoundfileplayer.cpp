@@ -26,7 +26,6 @@
 #include <mipcomponentalias.h>
 #include <iostream>
 #include <string>
-#include <unistd.h>
 #include <stdio.h>
 #include <cstdlib>
 

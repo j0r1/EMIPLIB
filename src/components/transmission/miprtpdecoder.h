@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -41,8 +41,11 @@
 #include <cmath>
 #include <list>
 
-class RTPPacket;
-class RTPSession;
+namespace jrtplib
+{
+	class RTPSession;
+}
+
 class MIPRTPReceiveMessage;
 class MIPRTPSynchronizer;
 class MIPMediaMessage;
@@ -75,7 +78,7 @@ public:
 	 *  \param pRTPSess If specified, the timestamp unit returned by an MIPRTPPacketDecoder instance
 	 *                  will be stored in the RTPSourceData instance of the corresponding SSRC.
 	 */
-	bool init(bool calcStreamTime = true, MIPRTPSynchronizer *pSynchronizer = 0, RTPSession *pRTPSess = 0);
+	bool init(bool calcStreamTime = true, MIPRTPSynchronizer *pSynchronizer = 0, jrtplib::RTPSession *pRTPSess = 0);
 
 	/** Installs a default RTP packet decoder (for all payload types).
 	 *  Installs a default RTP packet decoder. Use a null pointer to clear all entries.
@@ -224,7 +227,7 @@ private:
 	SSRCInfo *m_pSSRCInfo;
 	bool m_calcStreamTime;
 	MIPRTPSynchronizer *m_pSynchronizer;
-	RTPSession *m_pRTPSess;
+	jrtplib::RTPSession *m_pRTPSess;
 	MIPTime m_totalComponentDelay;
 	MIPTime m_maxJitterBuffer;
 };

@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -234,7 +234,7 @@ public:
 	}
 private:
 	uint64_t m_sourceID;
-	JMutex m_frameMutex;
+	jthread::JMutex m_frameMutex;
 	int m_width;
 	int m_height;
 	QImage m_img, m_tmpImg;

@@ -9,7 +9,6 @@
 #include <mipmessagedumper.h>
 #include <iostream>
 #include <string>
-#include <unistd.h>
 #include <cstdlib>
 
 void checkError(bool returnValue, const MIPComponent &component)

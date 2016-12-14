@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -36,8 +36,8 @@
 
 #include "mipcomponent.h"
 #include "miptime.h"
-#include <alsa/asoundlib.h>
-#include <jthread.h>
+#include <asoundlib.h>
+#include <jthread/jthread.h>
 #include <string>
 
 /** An Advanced Linux Sound Architecture (ALSA) soundcard output component.
@@ -45,7 +45,7 @@
  *  soundcard output functions. The component accepts floating point raw audio messages
  *  or signed 16 bit integer encoded raw audio messages and does not generate any messages itself.
  */
-class MIPAlsaOutput : public MIPComponent, private JThread
+class MIPAlsaOutput : public MIPComponent, private jthread::JThread
 {
 public:
 	MIPAlsaOutput();
@@ -91,7 +91,7 @@ private:
 	size_t m_blockLength, m_blockFrames;
 	MIPTime m_delay;
 	MIPTime m_distTime, m_blockTime;
-	JMutex m_frameMutex, m_stopMutex;
+	jthread::JMutex m_frameMutex, m_stopMutex;
 	bool m_stopLoop;
 };
 

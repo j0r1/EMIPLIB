@@ -1,7 +1,7 @@
 
 
                                EMIPLIB README 
-				  (1.0.0)
+				  (1.1.0)
 
 
 1. INTRODUCTION
@@ -34,25 +34,31 @@ too, since you'll need to link against your GPL version of libavcodec.
 
 The library depends on the JThread and JRTPLIB libraries, which can be
 found at the following sites:
-http://research.edm.uhasselt.be/jori/jthread/jthread.html
-http://research.edm.uhasselt.be/jori/jrtplib/jrtplib.html
+  http://research.edm.uhasselt.be/jori/jthread/jthread.html
+  http://research.edm.uhasselt.be/jori/jrtplib/jrtplib.html
+Note that for this version, at least JThread 1.3.0 and JRTPLIB 3.9.0 are
+required.
 
-3.1 Unix-like platforms
+The compilation of the library can be done using the CMake build
+system. In case extra include directories or libraries are needed, you 
+can use the 'ADDITIONAL_' CMake variables to specify these. They will 
+be stored in both the resulting EMIPLIB CMake configuration file and the 
+pkg-config file.
 
-Use the configure script and make to build the library. Run the configure
-script with option '--help' to see which options can be specified.
+For example, to be able to compile the DirectShow video input component,
+you may need to enter something like this in the ADDITIONAL_INCLUDE_DIRS
+variable:
+C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Include;
+C:/Program Files (x86)/Microsoft DirectX SDK (August 2007)/Include
+And something like this in the ADDITIONAL_LIBRARIES_GENERAL variable:
+C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib/strmiids.lib
 
-3.2 Win32/WinCE
-
-Project files for MS Visual Studio 8 are included in the library archive.
-Take a look at the file 'mipconfig_win.h' to enable or disable components.
-You may have to tune the project settings to make sure the right locations
-of other include files are set.
-
-If you want to compile the Qt component, you'll need to generate the
-file mipqtoutput.moc manually. To do this, go to the subdirectory
-src/components/output and run the command
-moc -o mipqtoutput.moc mipqtoutput.cpp
+To install JThread, JRTPLIB and EMIPLIB in a MS-Windows environment, an
+easy way is the following. For each project, use the same installation
+directory, and specify it using the CMake CMAKE_INSTALL_PREFIX variable
+_before_ running the CMake configure step. If you then build and install 
+JThread and JRTPLIB, the EMIPLIB configure step should be able to detect
+them without any problem.
 
 4. CONTACT
 

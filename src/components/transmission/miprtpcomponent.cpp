@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -26,10 +26,12 @@
 #include "miprtpcomponent.h"
 #include "miprtpmessage.h"
 #include "mipsystemmessage.h"
-#include <rtpsession.h>
-#include <rtpsourcedata.h>
+#include <jrtplib3/rtpsession.h>
+#include <jrtplib3/rtpsourcedata.h>
 
 #include "mipdebug.h"
+
+using namespace jrtplib;
 
 #define MIPRTPCOMPONENT_ERRSTR_NOTINIT			"Component was not initialized"
 #define MIPRTPCOMPONENT_ERRSTR_ALREADYINIT		"Component is already initialized"
@@ -49,7 +51,7 @@ MIPRTPComponent::~MIPRTPComponent()
 	destroy();
 }
 
-bool MIPRTPComponent::init(RTPSession *pSess)
+bool MIPRTPComponent::init(RTPSession *pSess, uint32_t silentTimestampIncrement)
 {
 	if (pSess == 0)
 	{
@@ -65,6 +67,9 @@ bool MIPRTPComponent::init(RTPSession *pSess)
 	
 	m_pRTPSession = pSess;
 	m_prevIteration = -1;
+	m_prevSendIteration = -1;
+	m_silentTimestampIncrease = silentTimestampIncrement;
+	m_enableSending = true;
 	m_msgIt = m_messages.begin();
 	
 	return true;
@@ -97,6 +102,25 @@ bool MIPRTPComponent::push(const MIPComponentChain &chain, int64_t iteration, MI
 	
 	if (pMsg->getMessageType() == MIPMESSAGE_TYPE_RTP && pMsg->getMessageSubtype() == MIPRTPMESSAGE_TYPE_SEND)
 	{
+		// Check if the timestamp needs to be increased first
+
+		if (m_silentTimestampIncrease != 0)
+		{
+			if (m_prevSendIteration != -1)
+			{
+				int64_t intervals = iteration - m_prevSendIteration - 1;
+				if (intervals > 0)
+				{
+					uint32_t factor = (uint32_t)intervals;
+					uint32_t tsInc = factor * m_silentTimestampIncrease;
+
+					m_pRTPSession->IncrementTimestamp(tsInc);
+				}
+			}
+		}
+
+		m_prevSendIteration = iteration;
+
 		// Send message
 		
 		MIPRTPSendMessage *pRTPMsg = (MIPRTPSendMessage *)pMsg;
@@ -109,14 +133,25 @@ bool MIPRTPComponent::push(const MIPComponentChain &chain, int64_t iteration, MI
 		if (delay.getValue() > 0 && delay.getValue() < 10.0) // ok, we can assume the time was indeed the sampling instant
 			m_pRTPSession->SetPreTransmissionDelay(RTPTime((uint32_t)delay.getSeconds(),(uint32_t)delay.getMicroSeconds()));
 
-		status = m_pRTPSession->SendPacket(pRTPMsg->getPayload(),pRTPMsg->getPayloadLength(),
-		                                pRTPMsg->getPayloadType(),pRTPMsg->getMarker(),
-						pRTPMsg->getTimestampIncrement());
+		if (m_enableSending)
+		{
+			status = m_pRTPSession->SendPacket(pRTPMsg->getPayload(),pRTPMsg->getPayloadLength(),
+							pRTPMsg->getPayloadType(),pRTPMsg->getMarker(),
+							pRTPMsg->getTimestampIncrement());
+		}
+		else
+		{
+			// If we're not actually sending the packet, we still need to increment the timestamp
+			// to keep the timing correct
+			status = m_pRTPSession->IncrementTimestamp(pRTPMsg->getTimestampIncrement());
+		}
+
 		if (status < 0)
 		{
 			setErrorString(std::string(MIPRTPCOMPONENT_ERRSTR_RTPERROR) + RTPGetErrorString(status));
 			return false;
 		}
+
 	}
 	else if (pMsg->getMessageType() == MIPMESSAGE_TYPE_SYSTEM && pMsg->getMessageSubtype() == MIPSYSTEMMESSAGE_TYPE_ISTIME)
 	{
@@ -182,11 +217,13 @@ bool MIPRTPComponent::processNewPackets(int64_t iteration)
 				uint32_t timingInfTimestamp = 0;
 				MIPTime timingInfWallclock(0);
 				
+				tsUnitEstimation = (real_t)srcData->INF_GetEstimatedTimestampUnit();
+
 				if ((tsUnit = (real_t)srcData->GetTimestampUnit()) > 0)
 					jitterSeconds = (real_t)jitterSamples*tsUnit;
 				else
 				{
-					if ((tsUnitEstimation = (real_t)srcData->INF_GetEstimatedTimestampUnit()) > 0)
+					if (tsUnitEstimation  > 0)
 						jitterSeconds = (real_t)jitterSamples*tsUnitEstimation;
 				}
 	
@@ -212,6 +249,8 @@ bool MIPRTPComponent::processNewPackets(int64_t iteration)
 					pRTPMsg->setJitter(MIPTime(jitterSeconds));
 					if (tsUnit > 0)
 						pRTPMsg->setTimestampUnit(tsUnit);
+					if (tsUnitEstimation > 0)
+						pRTPMsg->setTimestampUnitEstimate(tsUnitEstimation);
 					if (setTimingInfo)
 						pRTPMsg->setTimingInfo(timingInfWallclock, timingInfTimestamp);
 

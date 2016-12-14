@@ -1,12 +1,7 @@
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-includedir=@includedir@/emiplib
-
 Name: EMIPLIB
 Description: EDM Media over IP Library
 Requires:
-Version: @VERSION@
-Libs: -L${libdir} -lemip @MIPLINKLIBS@
-Cflags: -I${includedir} @MIPINCLUDES@
+Version: ${VERSION}
+Libs: ${EMIPLIB_LIBS_PKGCONFIG}
+Cflags: ${EMIPLIB_INCDIRS_PKGCONFIG}
 

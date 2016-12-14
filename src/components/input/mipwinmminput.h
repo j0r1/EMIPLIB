@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -31,10 +31,13 @@
 #define MIPWINMMINPUT_H
 
 #include "mipconfig.h"
+
+#ifdef MIPCONFIG_SUPPORT_WINMM
+
 #include "mipcomponent.h"
 #include "miptime.h"
 #include "mipsignalwaiter.h"
-#include <jthread.h>
+#include <jthread/jthread.h>
 #include <windows.h>
 #include <string>
 #ifndef _WIN32_WCE
@@ -50,7 +53,7 @@ class MIPRaw16bitAudioMessage;
  *  messages. The messages generated are raw audio messages, containing 16 bit
  *  signed little endian data.
  */
-class MIPWinMMInput : public MIPComponent, private JThread
+class MIPWinMMInput : public MIPComponent, private jthread::JThread
 {
 public:
 	MIPWinMMInput();
@@ -70,7 +73,8 @@ public:
 	 *                      highest priority.
 	 */
 	bool open(int sampRate, int channels, MIPTime interval = MIPTime(0.020), 
-	          MIPTime bufferTime = MIPTime(10.0), bool highPriority = false);
+	          MIPTime bufferTime = MIPTime(10.0), bool highPriority = false,
+		  UINT deviceID = WAVE_MAPPER);
 
 	/** Closes the sound capturing device.
 	 *  This function closes a previously opened sound capturing device.
@@ -96,12 +100,14 @@ private:
 	WAVEHDR *m_inputBuffers;
 	int m_numBuffers;
 	MIPSignalWaiter m_sigWait,m_threadSigWait;
-	JMutex m_frameMutex,m_stopMutex;
+	jthread::JMutex m_frameMutex,m_stopMutex;
 	MIPTime m_interval, m_sampleInstant;
 	bool m_threadPrioritySet;
 
 	std::string m_threadError;
 };
+
+#endif // MIPCONFIG_SUPPORT_WINMM
 
 #endif // MIPWINMMINPUT_H
 

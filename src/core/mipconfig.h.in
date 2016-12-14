@@ -1,0 +1,84 @@
+/*
+    
+  This file is a part of EMIPLIB, the EDM Media over IP Library.
+  
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  
+  USA
+
+*/
+
+#ifndef MIPCONFIG_H
+
+#define MIPCONFIG_H
+
+${MIPCONFIG_GPL}
+
+${MIPCONFIG_BIGENDIAN}
+
+${MIPCONFIG_SUPPORT_SNDFILE}
+
+${MIPCONFIG_SUPPORT_AUDIOFILE}
+
+${MIPCONFIG_SUPPORT_QT}
+
+${MIPCONFIG_SUPPORT_ALSA}
+
+${MIPCONFIG_SUPPORT_SPEEX}
+
+${MIPCONFIG_SUPPORT_GSM}
+
+${MIPCONFIG_SUPPORT_LPC}
+
+${MIPCONFIG_SUPPORT_AVCODEC}
+
+${MIPCONFIG_SUPPORT_AVCODEC_OLD}
+
+${MIPCONFIG_SUPPORT_INTELIPP}
+
+${MIPCONFIG_SUPPORT_ESD}
+
+${MIPCONFIG_SUPPORT_JACK}
+
+${MIPCONFIG_SUPPORT_VIDEO4LINUX}
+
+${MIPCONFIG_SUPPORT_OSS}
+
+${MIPCONFIG_SUPPORT_SDLAUDIO}
+
+${MIPCONFIG_SUPPORT_OPENAL}
+
+${MIPCONFIG_SUPPORT_PORTAUDIO}
+
+${MIPCONFIG_SUPPORT_AUDIOTRACK}
+
+${MIPCONFIG_SUPPORT_AUDIORECORDER}
+
+${MIPCONFIG_SUPPORT_WINMM}
+
+${MIPCONFIG_SUPPORT_DIRECTSHOW}
+
+${MIPCONFIG_SUPPORT_SILK}
+
+#ifdef MIPCONFIG_SUPPORT_AVCODEC
+	#ifndef __STDC_CONSTANT_MACROS
+	#define __STDC_CONSTANT_MACROS
+	#endif // __STDC_CONSTANT_MACROS
+#endif // MIPCONFIG_SUPPORT_AVCODEC
+
+#endif // MIPCONFIG_H
+

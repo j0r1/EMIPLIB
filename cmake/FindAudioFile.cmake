@@ -1,0 +1,14 @@
+
+find_path(AUDIOFILE_INCLUDE_DIR audiofile.h)
+
+set(AUDIOFILE_INCLUDE_DIRS ${AUDIOFILE_INCLUDE_DIR})
+
+find_library(AUDIOFILE_LIBRARY audiofile)
+if (AUDIOFILE_LIBRARY)
+	set(AUDIOFILE_LIBRARIES ${AUDIOFILE_LIBRARY})
+endif (AUDIOFILE_LIBRARY)
+
+include(FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(AudioFile DEFAULT_MSG AUDIOFILE_INCLUDE_DIRS AUDIOFILE_LIBRARIES)
+

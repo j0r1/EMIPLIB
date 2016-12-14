@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@
 #include "mipconfig.h"
 #include "miperrorbase.h"
 #include "mipmessage.h"
-#include <jthread.h>
+#include <jthread/jthread.h>
 #include <string>
 #include <list>
 
@@ -44,7 +44,7 @@ class MIPComponent;
  *  chain is started, messages will be passed over these links. The messages are described by
  *  classes derived from MIPMessage, components are implemented in classes derived from MIPComponent.
  */
-class MIPComponentChain : private JThread, public MIPErrorBase
+class MIPComponentChain : private jthread::JThread, public MIPErrorBase
 {
 public:
 	/** Create a chain with a specific name.
@@ -158,8 +158,8 @@ private:
 	MIPComponent *m_pInputChainStart;	
 	MIPComponent *m_pInternalChainStart;
 
-	JMutex m_loopMutex;
-	JMutex m_chainMutex;
+	jthread::JMutex m_loopMutex;
+	jthread::JMutex m_chainMutex;
 	bool m_stopLoop;
 };
 

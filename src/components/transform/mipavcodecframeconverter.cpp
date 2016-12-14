@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -398,6 +398,8 @@ bool MIPAVCodecFrameConverter::push(const MIPComponentChain &chain, int64_t iter
 	}
 
 #endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+
+	pNewMsg->copyMediaInfoFrom(*pVideoMsg);
 
 	m_messages.push_back(pNewMsg);
 	m_msgIt = m_messages.begin();

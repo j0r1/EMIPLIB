@@ -4,24 +4,28 @@
 
 #include <mipconfig.h>
 
-#if(defined(MIPCONFIG_SUPPORT_OSS) || (defined(WIN32) || defined(_WIN32_WCE)) )
+#if(defined(MIPCONFIG_SUPPORT_OSS) || defined(MIPCONFIG_SUPPORT_WINMM) || defined(MIPCONFIG_SUPPORT_PORTAUDIO))
 
 #include <mipcomponentchain.h>
 #include <mipcomponent.h>
 #include <miptime.h>
 #include <mipwavoutput.h>
 
-#if (defined(WIN32) || defined(_WIN32_WCE))
+#ifdef MIPCONFIG_SUPPORT_WINMM
 	#include <mipwinmminput.h>
 #else
+#ifdef MIPCONFIG_SUPPORT_OSS
 	#include <mipossinputoutput.h>
-#endif // WIN32 || _WIN32_WCE
+#else
+	#include <mippainputoutput.h>
+	#define NEED_PA_INIT
+#endif
+#endif 
 
 #include <miprawaudiomessage.h> // Needed for MIPRAWAUDIOMESSAGE_TYPE_S16LE
 #include <mipsampleencoder.h>
 #include <iostream>
 #include <string>
-#include <unistd.h>
 #include <stdio.h>
 
 class SoundRecorder : public MIPErrorBase
@@ -52,11 +56,15 @@ private:
 	bool m_init;
 
 	SoundRecorderChain *m_pChain;
-#if (defined(WIN32) || defined(_WIN32_WCE))
+#ifdef MIPCONFIG_SUPPORT_WINMM
 	MIPWinMMInput *m_pInput;
 #else
+#ifdef MIPCONFIG_SUPPORT_OSS
 	MIPOSSInputOutput *m_pInput;
-#endif // WIN32 || _WIN32_WCE
+#else
+	MIPPAInputOutput *m_pInput;
+#endif
+#endif 
 	MIPSampleEncoder *m_pSampEnc;
 	MIPWAVOutput *m_pOutput;
 
@@ -85,7 +93,7 @@ bool SoundRecorder::init(const std::string &fname, int sampRate)
 	MIPTime interval(0.200); // We'll use 200 ms intervals
 	int channels = 1;
 
-#if (defined(WIN32) || defined(_WIN32_WCE))
+#ifdef MIPCONFIG_SUPPORT_WINMM
 	m_pInput = new MIPWinMMInput();
 	
 	if (!m_pInput->open(sampRate, channels, interval, MIPTime(10.0), true)) // TODO: always use high priority?
@@ -95,6 +103,7 @@ bool SoundRecorder::init(const std::string &fname, int sampRate)
 		return false;
 	}
 #else
+#ifdef MIPCONFIG_SUPPORT_OSS
 	m_pInput = new MIPOSSInputOutput();
 	if (!m_pInput->open(sampRate, channels, interval, MIPOSSInputOutput::ReadOnly))
 	{
@@ -102,7 +111,16 @@ bool SoundRecorder::init(const std::string &fname, int sampRate)
 		deleteAll();
 		return false;
 	}
-#endif // WIN32 || _WIN32_WCE
+#else
+	m_pInput = new MIPPAInputOutput();
+	if (!m_pInput->open(sampRate, channels, interval, MIPPAInputOutput::ReadOnly))
+	{
+		setErrorString(m_pInput->getErrorString());
+		deleteAll();
+		return false;
+	}
+#endif
+#endif
 
 	m_pSampEnc = new MIPSampleEncoder();
 	if (!m_pSampEnc->init(MIPRAWAUDIOMESSAGE_TYPE_U8))
@@ -175,6 +193,16 @@ void SoundRecorder::deleteAll()
 
 int main(void)
 {
+#ifdef NEED_PA_INIT
+	std::string errStr;
+
+	if (!MIPPAInputOutput::initializePortAudio(errStr))
+	{
+		std::cerr << "Can't initialize PortAudio: " << errStr << std::endl;
+		return -1;
+	}
+#endif // NEED_PA_INIT
+
 	SoundRecorder sndRec;
 
 	if (!sndRec.init("sound.wav",44100))
@@ -184,6 +212,10 @@ int main(void)
 	}
 	getc(stdin);
 	sndRec.destroy();
+
+#ifdef NEED_PA_INIT
+	MIPPAInputOutput::terminatePortAudio();
+#endif // NEED_PA_INIT
 
 	return 0;
 }

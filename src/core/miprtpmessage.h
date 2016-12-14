@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -33,8 +33,8 @@
 #include "mipconfig.h"
 #include "mipmessage.h"
 #include "miptime.h"
-#include <rtpsession.h>
-#include <rtppacket.h>
+#include <jrtplib3/rtpsession.h>
+#include <jrtplib3/rtppacket.h>
 #include <string.h>
 
 /**
@@ -121,12 +121,12 @@ public:
 	 *               member function will be used to deallocate the RTPPacket
 	 *               memory.
 	 */
-	MIPRTPReceiveMessage(RTPPacket *pPack, const uint8_t *pCName, size_t cnameLength, bool deletePacket = true, RTPSession *pSess = 0) : MIPMessage(MIPMESSAGE_TYPE_RTP, MIPRTPMESSAGE_TYPE_RECEIVE), m_jitter(0)
-													{ m_deletePacket = deletePacket; m_pPack = pPack; if (cnameLength > MIPRTPMESSAGE_MAXCNAMELENGTH) m_cnameLength = MIPRTPMESSAGE_MAXCNAMELENGTH; else m_cnameLength = cnameLength; if (cnameLength > 0) memcpy(m_cname,pCName,m_cnameLength); m_tsUnit = -1; m_timingInfoSet = false; m_sourceID = 0; m_pSession = pSess; }
+	MIPRTPReceiveMessage(jrtplib::RTPPacket *pPack, const uint8_t *pCName, size_t cnameLength, bool deletePacket = true, jrtplib::RTPSession *pSess = 0) : MIPMessage(MIPMESSAGE_TYPE_RTP, MIPRTPMESSAGE_TYPE_RECEIVE), m_jitter(0)
+													{ m_deletePacket = deletePacket; m_pPack = pPack; if (cnameLength > MIPRTPMESSAGE_MAXCNAMELENGTH) m_cnameLength = MIPRTPMESSAGE_MAXCNAMELENGTH; else m_cnameLength = cnameLength; if (cnameLength > 0) memcpy(m_cname,pCName,m_cnameLength); m_tsUnit = -1; m_tsUnitEstimate = -1; m_timingInfoSet = false; m_sourceID = 0; m_pSession = pSess; }
 	~MIPRTPReceiveMessage()										{ if (m_deletePacket) { if (m_pSession) m_pSession->DeletePacket(m_pPack); else delete m_pPack; } }
 
 	/** Returns the received packet. */
-	const RTPPacket *getPacket() const								{ return m_pPack; }
+	const jrtplib::RTPPacket *getPacket() const							{ return m_pPack; }
 
 	/** Returns a pointer to the CNAME data of the sender of this packet. */
 	const uint8_t *getCName() const									{ return m_cname; }
@@ -146,6 +146,12 @@ public:
 	/** Sets the timestamp unit for the data in the packet. */
 	void setTimestampUnit(real_t unit)								{ m_tsUnit = unit; }
 
+	/** Returns the timestamp unit estimate for the data in the packet, as set by MIPRTPReceiveMessage::setTimestampUnitEstimate. */
+	real_t getTimestampUnitEstimate() const								{ return m_tsUnitEstimate; }
+
+	/** Sets the timestamp unit for the data in the packet. */
+	void setTimestampUnitEstimate(real_t unit)							{ m_tsUnitEstimate = unit; }
+
 	/** Returns true if the wallclock time - RTP timestamp relation was set. */
 	bool isTimingInfoSet() const									{ return m_timingInfoSet; }
 
@@ -161,13 +167,13 @@ public:
 	/** Returns the source ID which should be used further on. */
 	uint64_t getSourceID() const									{ return m_sourceID; }
 private:
-	RTPPacket *m_pPack;
-	RTPSession *m_pSession;
+	jrtplib::RTPPacket *m_pPack;
+	jrtplib::RTPSession *m_pSession;
 	uint8_t m_cname[MIPRTPMESSAGE_MAXCNAMELENGTH];
 	size_t m_cnameLength;
 	bool m_deletePacket;
 	MIPTime m_jitter;
-	real_t m_tsUnit;
+	real_t m_tsUnit, m_tsUnitEstimate;
 	bool m_timingInfoSet;
 	MIPTime m_timingInfWallclock;
 	uint32_t m_timingInfTimestamp;

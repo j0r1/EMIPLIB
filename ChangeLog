@@ -3,6 +3,20 @@
                               EMIPLIB ChangeLog
 
 
+Version 1.1.0, July 2011
+ * Switched to CMake build system.
+ * Bugfix in MIPAVCodecFrameConverter. Forgot to copy media info.
+ * Added MIPYUV420FileInput.
+ * Added MIPYUV420FrameCutter.
+ * Changed MIPRTPL16Encoder and MIPRTPL16Decoder, to make it possible
+   to use a sampling rate different from 44100 Hz.
+ * Added SILK based encoding/decoding components, and corresponding
+   RTP encoding/decoding components.
+ * Made adjustments for newer jthread & jrtplib versions.
+ * Fixed bug in PortAudio input/output component.
+ * Made it possible to specify a specific device in the WinMM input
+   and output components.
+
 Version 1.0.0, July 2010
  * Fixed bugs in MIPComponentChain. The feedback chain building
    procedure had to be adjusted slightly to handle the case in

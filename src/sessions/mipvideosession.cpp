@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -27,11 +27,8 @@
 #if defined(MIPCONFIG_SUPPORT_AVCODEC) && (defined(MIPCONFIG_SUPPORT_DIRECTSHOW) || defined(MIPCONFIG_SUPPORT_VIDEO4LINUX))
 
 #include "mipvideosession.h"
-#if (defined(WIN32) || defined(_WIN32_WCE))
-	#include "mipdirectshowcapture.h"
-#else
-	#include "mipv4l2input.h"
-#endif // WIN32 || _WIN32_WCE
+#include "mipdirectshowcapture.h"
+#include "mipv4l2input.h"
 #include "miptinyjpegdecoder.h"
 #include "mipavcodecframeconverter.h"
 #include "mipavcodecencoder.h"
@@ -51,12 +48,14 @@
 #include "mipencodedvideomessage.h"
 #include "mipvideoframestorage.h"
 #include "miprawvideomessage.h"
-#include <rtpsession.h>
-#include <rtpsessionparams.h>
-#include <rtperrors.h>
-#include <rtpudpv4transmitter.h>
+#include <jrtplib3/rtpsession.h>
+#include <jrtplib3/rtpsessionparams.h>
+#include <jrtplib3/rtperrors.h>
+#include <jrtplib3/rtpudpv4transmitter.h>
 
 #include "mipdebug.h"
+
+using namespace jrtplib;
 
 #define MIPVIDEOSESSION_ERRSTR_NOTINIT						"Not initialized"
 #define MIPVIDEOSESSION_ERRSTR_ALREADYINIT					"Already initialized"
@@ -105,11 +104,11 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 		
 		m_pTimer = new MIPAverageTimer(MIPTime(1.0/frameRate));
 
-#if (defined(WIN32) || defined(_WIN32_WCE))
+#ifdef MIPCONFIG_SUPPORT_DIRECTSHOW
 		width = pParams2->getWidth();
 		height = pParams2->getHeight();
 		m_pInput = new MIPDirectShowCapture();
-		if (!m_pInput->open(width, height, frameRate,pParams2->getDevice()))
+		if (!m_pInput->open(width, height, frameRate,pParams2->getDeviceNumber()))
 		{
 			setErrorString(m_pInput->getErrorString());
 			deleteAll();
@@ -130,7 +129,7 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 #else
 		width = pParams2->getWidth();
 		height = pParams2->getHeight();
-		std::string devName = pParams2->getDevice();
+		std::string devName = pParams2->getDeviceName();
 
 		m_pInput = new MIPV4L2Input();
 		if (!m_pInput->open(width, height, devName))
@@ -167,7 +166,7 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 				}
 			}
 		}
-#endif // WIN32 || _WIN32_WCE
+#endif // MIPCONFIG_SUPPORT_DIRECTSHOW
 
 		int bandwidth = pParams2->getBandwidth();
 			

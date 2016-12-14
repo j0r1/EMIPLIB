@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 #include "mipcomponent.h"
 #include "mipsignalwaiter.h"
 #include "miptime.h"
-#include <jthread.h>
+#include <jthread/jthread.h>
 
 class MIPRawYUV420PVideoMessage;
 
@@ -55,7 +55,7 @@ public:
  *  The component accepts both MIPSYSTEMMESSAGE_TYPE_WAITTIME and MIPSYSTEMMESSAGE_TYPE_ISTIME 
  *  messages.
  */
-class MIPV4LInput : public MIPComponent, private JThread
+class MIPV4LInput : public MIPComponent, private jthread::JThread
 {
 public:
 	MIPV4LInput();
@@ -111,8 +111,8 @@ private:
 	uint8_t *m_pMsgFrame;
 	size_t m_frameSize;
 	MIPRawYUV420PVideoMessage *m_pVideoMsg;
-	JMutex m_frameMutex;
-	JMutex m_stopMutex;
+	jthread::JMutex m_frameMutex;
+	jthread::JMutex m_stopMutex;
 	MIPSignalWaiter m_sigWait;
 	bool m_gotMsg, m_stopLoop;
 	bool m_gotFrame;

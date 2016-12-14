@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -32,7 +32,7 @@
 
 #define MIPRTPL16ENCODER_ERRSTR_BADMESSAGE			"Can't understand message"
 #define MIPRTPL16ENCODER_ERRSTR_NOTINIT				"RTP U-law encoder not initialized"
-#define MIPRTPL16ENCODER_ERRSTR_BADSAMPLINGRATE			"Only a sampling rate of 44100Hz is allowed"
+#define MIPRTPL16ENCODER_ERRSTR_BADSAMPLINGRATE			"A message was received with a sampling rate that differs from the one used during initialization"
 #define MIPRTPL16ENCODER_ERRSTR_BADCHANNELS			"Message with a wrong number of channels was received"
 
 MIPRTPL16Encoder::MIPRTPL16Encoder() : MIPRTPEncoder("MIPRTPL16Encoder")
@@ -45,7 +45,7 @@ MIPRTPL16Encoder::~MIPRTPL16Encoder()
 	cleanUp();
 }
 
-bool MIPRTPL16Encoder::init(bool stereo)
+bool MIPRTPL16Encoder::init(bool stereo, int sampRate)
 {
 	if (m_init)
 		cleanUp();
@@ -54,6 +54,8 @@ bool MIPRTPL16Encoder::init(bool stereo)
 		m_channels = 2;
 	else
 		m_channels = 1;
+
+	m_sampRate = sampRate;
 
 	m_prevIteration = -1;
 	m_init = true;
@@ -84,7 +86,7 @@ bool MIPRTPL16Encoder::push(const MIPComponentChain &chain, int64_t iteration, M
 	int sampRate = pRawMsg->getSamplingRate();
 	int channels = pRawMsg->getNumberOfChannels();
 	
-	if (sampRate != 44100)
+	if (sampRate != m_sampRate)
 	{
 		setErrorString(MIPRTPL16ENCODER_ERRSTR_BADSAMPLINGRATE);
 		return false;

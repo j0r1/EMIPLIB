@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@
 #include "mipconfig.h"
 #include "miperrorbase.h"
 #include "miptypes.h"
-#include <jmutex.h>
+#include <jthread/jmutex.h>
 #include <string>
 
 class MIPComponentChain;
@@ -113,7 +113,7 @@ public:
 	//       MIPComponentAlias component
 	virtual const MIPComponent *getComponentPointer() const						{ return this; }
 private:
-	JMutex m_componentMutex;
+	jthread::JMutex m_componentMutex;
 	std::string m_componentName;
 };
 

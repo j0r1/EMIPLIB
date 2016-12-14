@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -46,6 +46,8 @@
  * 	\brief Subtype for encoded audio messages containing GSM 06.10 data.
  * \def MIPENCODEDAUDIOMESSAGE_TYPE_LPC
  * 	\brief Subtype for encoded audio messages containing LPC data.
+ * \def MIPENCODEDAUDIOMESSAGE_TYPE_SILK
+ * 	\brief Subtype for encoded audio messages containing SILK data.
 */
 
 #define MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX							0x00000001
@@ -53,6 +55,7 @@
 #define MIPENCODEDAUDIOMESSAGE_TYPE_ALAW							0x00000004
 #define MIPENCODEDAUDIOMESSAGE_TYPE_GSM								0x00000008
 #define MIPENCODEDAUDIOMESSAGE_TYPE_LPC								0x00000010
+#define MIPENCODEDAUDIOMESSAGE_TYPE_SILK							0x00000020
 
 /** Container for encoded audio data.
  */

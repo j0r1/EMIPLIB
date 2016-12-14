@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -27,9 +27,11 @@
 #include "miprawaudiomessage.h"
 #include "mipencodedaudiomessage.h"
 #include "miprtpmessage.h"
-#include <rtppacket.h>
+#include <jrtplib3/rtppacket.h>
 
 #include "mipdebug.h"
+
+using namespace jrtplib;
 
 MIPRTPULawDecoder::MIPRTPULawDecoder()
 {
@@ -39,7 +41,7 @@ MIPRTPULawDecoder::~MIPRTPULawDecoder()
 {
 }
 
-bool MIPRTPULawDecoder::validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit)
+bool MIPRTPULawDecoder::validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit, real_t timestampUnitEstimate)
 {
 	size_t length;
 	

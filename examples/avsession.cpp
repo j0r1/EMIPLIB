@@ -4,15 +4,17 @@
 
 #include <mipconfig.h>
 
-#if defined(MIPCONFIG_SUPPORT_QT) && defined(MIPCONFIG_SUPPORT_AVCODEC) && defined(MIPCONFIG_SUPPORT_SPEEX) \
-	&& ((defined(MIPCONFIG_SUPPORT_OSS) && defined(MIPCONFIG_SUPPORT_VIDEO4LINUX)) || \
-	                ( (defined(WIN32) || defined(_WIN32_WCE)) && defined(MIPCONFIG_SUPPORT_DIRECTSHOW)))
+#if defined(MIPCONFIG_SUPPORT_QT) && defined(MIPCONFIG_SUPPORT_AVCODEC) \
+	&& ( (defined(MIPCONFIG_SUPPORT_OSS) && defined(MIPCONFIG_SUPPORT_VIDEO4LINUX)) || \
+	     (defined(MIPCONFIG_SUPPORT_WINMM) && defined(MIPCONFIG_SUPPORT_DIRECTSHOW)) )
 
 #include <mipvideosession.h>
 #include <mipavcodecencoder.h>
 #include <mipaudiosession.h>
 #include <iostream>
-#include <rtpipv4address.h>
+#include <jrtplib3/rtpipv4address.h>
+
+using namespace jrtplib;
 
 void checkRet(bool ret,const MIPErrorBase &obj)
 {
@@ -112,7 +114,7 @@ int main(void)
 //	Vparams.setSessionType(MIPVideoSessionParams::OutputOnly);
 	
 	Aparams.setPortbase(audioPort);
-	Aparams.setCompressionType(MIPAudioSessionParams::Speex);
+//	Aparams.setCompressionType(MIPAudioSessionParams::Speex);
 //	Aparams.setAcceptOwnPackets(true);
 //	Aparams.setInputDevice("/dev/dsp1");
 //	Aparams.setOutputDevice("/dev/dsp");
@@ -183,8 +185,4 @@ int main(void)
 }
 
 #endif 
-// MIPCONFIG_SUPPORT_QT && MIPCONFIG_SUPPORT_AVCODEC && MIPCONFIG_SUPPORT_SPEEX) 
-//	&& ((MIPCONFIG_SUPPORT_OSS && MIPCONFIG_SUPPORT_VIDEO4LINUX) ||
-//	((WIN32 || _WIN32_WCE) && MIPCONFIG_SUPPORT_DIRECTSHOW))
-
 

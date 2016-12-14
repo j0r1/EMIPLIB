@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -26,23 +26,26 @@
 #include "miprtpl16decoder.h"
 #include "miprawaudiomessage.h"
 #include "miprtpmessage.h"
-#include <rtppacket.h>
+#include <jrtplib3/rtppacket.h>
 
 #include "mipdebug.h"
 
-MIPRTPL16Decoder::MIPRTPL16Decoder(bool stereo)
+using namespace jrtplib;
+
+MIPRTPL16Decoder::MIPRTPL16Decoder(bool stereo, int sampRate)
 {
 	if (stereo)
 		m_channels = 2;
 	else
 		m_channels = 1;
+	m_sampRate = sampRate;
 }
 
 MIPRTPL16Decoder::~MIPRTPL16Decoder()
 {
 }
 
-bool MIPRTPL16Decoder::validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit)
+bool MIPRTPL16Decoder::validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit, real_t timestampUnitEstimate)
 {
 	size_t length;
 	
@@ -61,7 +64,7 @@ bool MIPRTPL16Decoder::validatePacket(const RTPPacket *pRTPPack, real_t &timesta
 			return false;
 	}
 	
-	timestampUnit = 1.0/44100.0;
+	timestampUnit = 1.0/(double)m_sampRate;
 	return true;
 }
 
@@ -74,7 +77,7 @@ void MIPRTPL16Decoder::createNewMessages(const RTPPacket *pRTPPack, std::list<MI
 
 	memcpy(pFrames, pRTPPack->GetPayloadData(), length);
 
-	MIPRaw16bitAudioMessage *pRawMsg = new MIPRaw16bitAudioMessage(44100, m_channels, numSamples/m_channels, true, MIPRaw16bitAudioMessage::BigEndian, pFrames, true);
+	MIPRaw16bitAudioMessage *pRawMsg = new MIPRaw16bitAudioMessage(m_sampRate, m_channels, numSamples/m_channels, true, MIPRaw16bitAudioMessage::BigEndian, pFrames, true);
 
 	messages.push_back(pRawMsg);
 	timestamps.push_back(pRTPPack->GetTimestamp());

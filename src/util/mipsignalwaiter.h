@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -31,7 +31,7 @@
 #define MIPSIGNALWAITER_H
 
 #include "mipconfig.h"
-#include <jmutex.h>
+#include <jthread/jmutex.h>
 #if !defined(WIN32) && !defined(_WIN32_WCE)
 	#include <pthread.h>
 #endif // !WIN32 && !_WIN32_WCE
@@ -72,7 +72,7 @@ private:
 	HANDLE m_eventObject;
 #endif // WIN32
 	bool m_init;
-	JMutex m_countMutex,m_waitMutex;
+	jthread::JMutex m_countMutex,m_waitMutex;
 	int m_count;
 	bool m_isWaiting;
 };

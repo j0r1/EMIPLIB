@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -36,10 +36,11 @@
 
 class MIPRTPSendMessage;
 
-/** Creates RTP packets for 16 bit signed big endian encoded audio packets (44100Hz).
- *  This component accepts incoming 44100Hz mono or stereo audio packets (16 bit signed
- *  big endian) and generates MIPRTPSendMessage objects which can then be transferred 
- *  to a MIPRTPComponent instance.
+/** Creates RTP packets for 16 bit signed big endian encoded audio packets.
+ *  This component accepts incoming mono or stereo audio packets (16 bit signed
+ *  big endian) of a specific sampling rate and generates MIPRTPSendMessage objects 
+ *  which can then be transferred to a MIPRTPComponent instance. The default sampling
+ *  rate is 44100 Hz, which corresponds to a predefined payload type in RFC 3551.
  */
 class MIPRTPL16Encoder : public MIPRTPEncoder
 {
@@ -48,7 +49,7 @@ public:
 	~MIPRTPL16Encoder();
 
 	/** Initializes the encoder for mono or stereo audio messages. */
-	bool init(bool stereo);
+	bool init(bool stereo, int sampRate = 44100);
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
@@ -57,7 +58,7 @@ private:
 	void clearMessages();
 
 	bool m_init;
-	int m_channels;
+	int m_channels, m_sampRate;
 	std::list<MIPRTPSendMessage *> m_messages;
 	std::list<MIPRTPSendMessage *>::const_iterator m_msgIt;
 	int64_t m_prevIteration;

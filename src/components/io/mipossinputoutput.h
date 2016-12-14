@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 #include "mipcomponent.h"
 #include "miptime.h"
 #include "mipsignalwaiter.h"
-#include <jthread.h>
+#include <jthread/jthread.h>
 #include <string>
 
 class MIPRaw16bitAudioMessage;
@@ -143,7 +143,7 @@ public:
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 private:
-	class IOThread : public JThread
+	class IOThread : public jthread::JThread
 	{
 	public:
 		IOThread(MIPOSSInputOutput &ossIO);
@@ -151,7 +151,7 @@ private:
 		void stop();
 	protected:
 		MIPOSSInputOutput &m_ossIO;
-		JMutex m_stopMutex;
+		jthread::JMutex m_stopMutex;
 		bool m_stopLoop;
 	};
 
@@ -202,7 +202,7 @@ private:
 	size_t m_nextOutputPos;
 	MIPTime m_blockTime,m_outputDistTime;
 
-	JMutex m_inputFrameMutex, m_outputFrameMutex;
+	jthread::JMutex m_inputFrameMutex, m_outputFrameMutex;
 };
 
 #endif // MIPCONFIG_SUPPORT_OSS

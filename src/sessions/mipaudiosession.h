@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -32,18 +32,21 @@
 
 #include "mipconfig.h"
 
-#if ((defined(WIN32) || defined(_WIN32_WCE)) || \
-		( !defined(WIN32) && !defined(_WIN32_WCE) && (defined(MIPCONFIG_SUPPORT_OSS) || defined(MIPCONFIG_SUPPORT_PORTAUDIO) )))
+#if (defined(MIPCONFIG_SUPPORT_WINMM) || defined(MIPCONFIG_SUPPORT_OSS) || defined(MIPCONFIG_SUPPORT_PORTAUDIO) )
 
 #include "mipcomponentchain.h"
 #include "miperrorbase.h"
 #include "miptime.h"
-#include <rtptransmitter.h>
+#include <jrtplib3/rtptransmitter.h>
 #include <string>
 #include <list>
 
-class RTPSession;
-class RTPAddress;
+namespace jrtplib
+{
+	class RTPSession;
+	class RTPAddress;
+}
+
 class MIPComponent;
 class MIPRTPComponent;
 class MIPRTPSynchronizer;
@@ -83,12 +86,16 @@ public:
 	
 	MIPAudioSessionParams()								
 	{ 
-#if ! (defined(WIN32) || defined(_WIN32_WCE))
+#ifdef MIPCONFIG_SUPPORT_WINMM
+		m_inputDevID = WAVE_MAPPER;
+		m_outputDevID = WAVE_MAPPER;
+#else
+		m_inputDevID = 0;
+		m_outputDevID = 0;
+#endif // MIPCONFIG_SUPPORT_WINMM
 		m_inputDevName = std::string("/dev/dsp"); 
 		m_outputDevName = std::string("/dev/dsp"); 
-#else
 		m_highPriority = false;
-#endif // !(WIN32 || _WIN32_WCE)
 		m_portbase = 5000; 
 		m_acceptOwnPackets = false; 
 		m_speexMode = WideBand;
@@ -105,16 +112,22 @@ public:
 		m_disableInterChainTimer = false;
 	}
 	~MIPAudioSessionParams()							{ }
-#if ! (defined(WIN32) || defined(_WIN32_WCE))
-	/** Returns the name of the input device (not available on Win32/WinCE; default: /dev/dsp). */
-	std::string getInputDevice() const						{ return m_inputDevName; }
 	
-	/** Returns the name of the output device (not available on Win32/WinCE; default: /dev/dsp). */
-	std::string getOutputDevice() const						{ return m_outputDevName; }
-#else
-	/** Returns \c true if the audio threads will receive high priority (only on Win32/WinCE; default: false). */
+	/** Returns the ID of the input device (only used on Win32; default: WAVE_MAPPER) */
+	unsigned int getInputDeviceID() const						{ return m_inputDevID; }
+
+	/** Returns the ID of the output device (only used on Win32; default: WAVE_MAPPER) */
+	unsigned int getOutputDeviceID() const						{ return m_outputDevID; }
+
+	/** Returns the name of the input device (not used on Win32/WinCE; default: /dev/dsp). */
+	std::string getInputDeviceName() const						{ return m_inputDevName; }
+	
+	/** Returns the name of the output device (not used on Win32/WinCE; default: /dev/dsp). */
+	std::string getOutputDeviceName() const						{ return m_outputDevName; }
+
+	/** Returns \c true if the audio threads will receive high priority (only used on Win32/WinCE; default: false). */
 	bool getUseHighPriority() const							{ return m_highPriority; }
-#endif // !(WIN32 || _WIN32_WCE)
+
 	/** Returns the RTP portbase (default: 5000). */
 	uint16_t getPortbase() const							{ return m_portbase; }
 
@@ -144,16 +157,22 @@ public:
 	 *  setDisableInterChainTimer for more information.
 	 */
 	bool getDisableInterChainTimer() const						{ return m_disableInterChainTimer; }
-#if ! (defined(WIN32) || defined(_WIN32_WCE))
-	/** Sets the name of the input device (not available on Win32/WinCE). */
+
+	/** Sets the ID of the input device (only used on Win32/WinCE). */
+	void setInputDevice(unsigned int ID)						{ m_inputDevID = ID; }
+	
+	/** Sets the ID of the output device (only used on Win32/WinCE). */
+	void setOutputDevice(unsigned int ID)						{ m_outputDevID = ID; }
+
+	/** Sets the name of the input device (not used on Win32/WinCE). */
 	void setInputDevice(const std::string &devName)					{ m_inputDevName = devName; }
 	
-	/** Sets the name of the input device (not available on Win32/WinCE). */
+	/** Sets the name of the input device (not used on Win32/WinCE). */
 	void setOutputDevice(const std::string &devName)				{ m_outputDevName = devName; }
-#else
-	/** Sets a flag indicating if high priority audio threads should be used (only on Win32/WinCE). */
+
+	/** Sets a flag indicating if high priority audio threads should be used (only used on Win32/WinCE). */
 	void setUseHighPriority(bool f)							{ m_highPriority = f; }
-#endif // !(WIN32 || _WIN32_WCE)
+
 	/** Sets the RTP portbase. */
 	void setPortbase(uint16_t p)							{ m_portbase = p; }
 	
@@ -188,11 +207,9 @@ public:
 	 */
 	void setDisableInterChainTimer(bool f)						{ m_disableInterChainTimer = f; }
 private:
-#if ! (defined(WIN32) || defined(_WIN32_WCE))
+	unsigned int m_inputDevID, m_outputDevID;
 	std::string m_inputDevName, m_outputDevName;
-#else
 	bool m_highPriority;
-#endif // !(WIN32 || _WIN32_WCE)
 	uint16_t m_portbase;
 	bool m_acceptOwnPackets;
 	SpeexBandWidth m_speexMode;
@@ -223,16 +240,16 @@ public:
 	 *                     The session has to be initialized, but the timestamp unit will still be 
 	 *                     adjusted.
 	 */
-	bool init(const MIPAudioSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0, RTPSession *pRTPSession = 0);
+	bool init(const MIPAudioSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0, jrtplib::RTPSession *pRTPSession = 0);
 
 	/** Destroys the session. */
 	bool destroy();
 
 	/** Add a destination. */
-	bool addDestination(const RTPAddress &addr);
+	bool addDestination(const jrtplib::RTPAddress &addr);
 
 	/** Delete a destination. */
-	bool deleteDestination(const RTPAddress &addr);
+	bool deleteDestination(const jrtplib::RTPAddress &addr);
 
 	/** Clear the destination list. */
 	bool clearDestinations();
@@ -241,10 +258,10 @@ public:
 	bool supportsMulticasting();
 
 	/** Joins a multicast group. */
-	bool joinMulticastGroup(const RTPAddress &addr);
+	bool joinMulticastGroup(const jrtplib::RTPAddress &addr);
 
 	/** Leaves a multicast group. */
-	bool leaveMulticastGroup(const RTPAddress &addr);
+	bool leaveMulticastGroup(const jrtplib::RTPAddress &addr);
 
 	/** Leaves all multicast groups. */
 	bool leaveAllMulticastGroups();
@@ -255,22 +272,22 @@ public:
 	 *  In the last two cases, packets are accepted or ignored based upon information in the
 	 *  accept or ignore list. Note that changing the receive mode will cause such a list to be cleared.
 	 */
-	bool setReceiveMode(RTPTransmitter::ReceiveMode m);
+	bool setReceiveMode(jrtplib::RTPTransmitter::ReceiveMode m);
 
 	/** Adds an address to the ignore list. */
-	bool addToIgnoreList(const RTPAddress &addr);
+	bool addToIgnoreList(const jrtplib::RTPAddress &addr);
 
 	/** Removes an address from the ignore list. */
-	bool deleteFromIgnoreList(const RTPAddress &addr);
+	bool deleteFromIgnoreList(const jrtplib::RTPAddress &addr);
 
 	/** Clears the ignore list. */
 	bool clearIgnoreList();
 
 	/** Adds an address to the accept list. */
-	bool addToAcceptList(const RTPAddress &addr);
+	bool addToAcceptList(const jrtplib::RTPAddress &addr);
 
 	/** Deletes an address from the accept list. */
-	bool deleteFromAcceptList(const RTPAddress &addr);
+	bool deleteFromAcceptList(const jrtplib::RTPAddress &addr);
 
 	/** Clears the accept list. */
 	bool clearAcceptList();
@@ -345,7 +362,7 @@ private:
 	IOChain *m_pIOChain;
 	
 	MIPRTPComponent *m_pRTPComp;
-	RTPSession *m_pRTPSession;
+	jrtplib::RTPSession *m_pRTPSession;
 	bool m_deleteRTPSession;
 	std::list<MIPComponent *> m_components;
 	std::list<MIPRTPPacketDecoder *> m_packetDecoders;
@@ -355,7 +372,7 @@ private:
 	friend class IOChain;
 };
 
-#endif // MIPCONFIG_SUPPORT_SPEEX && ((WIN32 || _WIN32_WCE) || (!WIN32 && !_WIN32_WCE && MIPCONFIG_SUPPORT_OSS))
+#endif // MIPCONFIG_SUPPORT_WINMM || MIPCONFIG_SUPPORT_OSS || MIPCONFIG_SUPPORT_PORTAUDIO
 
 #endif // MIPAUDIOSESSION_H
 

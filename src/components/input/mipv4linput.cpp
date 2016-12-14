@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -40,9 +40,9 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <cstdlib>
+#include <iostream>
 
 #include "mipdebug.h"
-#include <iostream>
 
 #define MIPV4LINPUT_ERRSTR_ALREADYINIT				"A device is already opened"
 #define MIPV4LINPUT_ERRSTR_CANTOPEN				"Can't open the device"

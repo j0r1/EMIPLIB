@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -31,10 +31,13 @@
 #define MIPWINMMOUTPUT_H
 
 #include "mipconfig.h"
+
+#ifdef MIPCONFIG_SUPPORT_WINMM
+
 #include "mipcomponent.h"
 #include "miptime.h"
 #include "mipsignalwaiter.h"
-#include <jmutex.h>
+#include <jthread/jmutex.h>
 #include <windows.h>
 #ifndef _WIN32_WCE
 	#include <mmsystem.h>
@@ -67,10 +70,11 @@ public:
 	 *                      playback.
 	 */
 	bool open(int sampRate, int channels, MIPTime blockTime = MIPTime(0.020),
-	          MIPTime bufferTime = MIPTime(10.0), bool highPriority = false);
+	          MIPTime bufferTime = MIPTime(10.0), bool highPriority = false,
+		  UINT deviceID = WAVE_MAPPER);
 
-	/* Close the soundcard playback device.
-	 * Using this function, the previously opened device is closed.
+	/** Close the soundcard playback device.
+	 *  Using this function, the previously opened device is closed.
 	 */
 	bool close();
 
@@ -87,12 +91,14 @@ private:
 	int m_numBlocks;
 	size_t m_blockLength, m_blockFrames;
 	int m_blockPos, m_blocksInitialized;
-	JMutex m_bufCountMutex;
+	jthread::JMutex m_bufCountMutex;
 	int m_bufCount, m_prevBufCount;
 	bool m_flushBuffers;
 	MIPTime m_prevCheckTime;
 	MIPTime m_delay;
 	bool m_threadPrioritySet;
 };
+
+#endif // MIPCONFIG_SUPPORT_WINMM
 
 #endif // MIPWINMMOUTPUT_H

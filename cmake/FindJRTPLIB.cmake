@@ -1,0 +1,33 @@
+
+find_package(JRTPLIB QUIET NO_MODULE)
+
+if (NOT JRTPLIB_FOUND) # Config file could not be found
+	find_path(JRTPLIB_INCLUDE_DIR jrtplib3/rtpsession.h)
+	
+	set(JRTPLIB_INCLUDE_DIRS ${JRTPLIB_INCLUDE_DIR})
+
+	if (UNIX)
+		find_library(JRTPLIB_LIBRARY jrtp)
+		if (JRTPLIB_LIBRARY)
+			set(JRTPLIB_LIBRARIES ${JRTPLIB_LIBRARY})
+		endif (JRTPLIB_LIBRARY)
+	else (UNIX)
+		find_library(JRTPLIB_LIB_RELEASE jrtplib)
+		find_library(JRTPLIB_LIB_DEBUG jrtplib_d)
+
+		if (JRTPLIB_LIB_RELEASE OR JRTPLIB_LIB_DEBUG)
+			set(JRTPLIB_LIBRARIES "")
+			if (JRTPLIB_LIB_RELEASE)
+				set(JRTPLIB_LIBRARIES ${JRTPLIB_LIBRARIES} optimized ${JRTPLIB_LIB_RELEASE})
+			endif (JRTPLIB_LIB_RELEASE)
+			if (JRTPLIB_LIB_DEBUG)
+				set(JRTPLIB_LIBRARIES ${JRTPLIB_LIBRARIES} debug ${JRTPLIB_LIB_DEBUG})
+			endif (JRTPLIB_LIB_DEBUG)
+		endif (JRTPLIB_LIB_RELEASE OR JRTPLIB_LIB_DEBUG)
+	endif(UNIX)
+endif (NOT JRTPLIB_FOUND)
+
+include(FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(JRTPLIB DEFAULT_MSG JRTPLIB_INCLUDE_DIRS JRTPLIB_LIBRARIES)
+

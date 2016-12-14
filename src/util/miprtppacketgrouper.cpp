@@ -1,7 +1,10 @@
 #include "miprtppacketgrouper.h"
-#include <rtppacket.h>
+#include <jrtplib3/rtppacket.h>
+#include <string.h>
 
 #include "mipdebug.h"
+
+using namespace jrtplib;
 
 #define MIPRTPPACKETGROUPER_ERRSTR_BADSSRC		"SSRC of RTP packet doesn't match SSRC during initialization"
 #define MIPRTPPACKETGROUPER_ERRSTR_BADBUFSIZE		"Minimal number of buffers should be 32"

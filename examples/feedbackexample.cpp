@@ -4,7 +4,7 @@
 
 #include <mipconfig.h>
 
-#if defined(WIN32) || defined(_WIN32_WCE) || defined(MIPCONFIG_SUPPORT_OSS)
+#if(defined(MIPCONFIG_SUPPORT_OSS) || defined(MIPCONFIG_SUPPORT_WINMM) || defined(MIPCONFIG_SUPPORT_PORTAUDIO))
 
 #include <mipcomponentchain.h>
 #include <mipcomponent.h>
@@ -13,11 +13,6 @@
 #include <mipwavinput.h>
 #include <mipsamplingrateconverter.h>
 #include <mipsampleencoder.h>
-#ifndef WIN32
-	#include <mipossinputoutput.h>
-#else
-	#include <mipwinmmoutput.h>
-#endif 
 #include <mipulawencoder.h>
 #include <miprtpulawencoder.h>
 #include <miprtpcomponent.h>
@@ -26,19 +21,26 @@
 #include <mipulawdecoder.h>
 #include <mipaudiomixer.h>
 #include <miprawaudiomessage.h> // Needed for MIPRAWAUDIOMESSAGE_TYPE_S16LE etc
-#include <rtpsession.h>
-#include <rtpsessionparams.h>
-#include <rtpipv4address.h>
-#include <rtpudpv4transmitter.h>
-#include <rtperrors.h>
-#if !(defined(WIN32) || defined(_WIN32_WCE))
-	#include <arpa/inet.h>
-	#include <netinet/in.h>
-	#include <unistd.h>
-#endif // !(WIM32 || _WIN32_WCE)
+#ifdef MIPCONFIG_SUPPORT_WINMM
+	#include <mipwinmmoutput.h>
+#else
+#ifdef MIPCONFIG_SUPPORT_OSS
+	#include <mipossinputoutput.h>
+#else
+	#include <mippainputoutput.h>
+	#define NEED_PA_INIT
+#endif
+#endif 
+#include <jrtplib3/rtpsession.h>
+#include <jrtplib3/rtpsessionparams.h>
+#include <jrtplib3/rtpipv4address.h>
+#include <jrtplib3/rtpudpv4transmitter.h>
+#include <jrtplib3/rtperrors.h>
 #include <stdio.h>
 #include <iostream>
 #include <string>
+
+using namespace jrtplib;
 
 void checkError(bool returnValue, const MIPComponent &component)
 {
@@ -96,6 +98,15 @@ private:
 
 int main(void)
 {
+#ifdef NEED_PA_INIT
+	std::string errStr;
+
+	if (!MIPPAInputOutput::initializePortAudio(errStr))
+	{
+		std::cerr << "Can't initialize PortAudio: " << errStr << std::endl;
+		return -1;
+	}
+#endif // NEED_PA_INIT
 #ifdef WIN32
 	WSADATA dat;
 	WSAStartup(MAKEWORD(2,2),&dat);
@@ -113,10 +124,14 @@ int main(void)
 	MIPRTPULawDecoder rtpULawDec;
 	MIPULawDecoder uLawDec;
 	MIPAudioMixer mixer;
-#ifndef WIN32
+#ifdef MIPCONFIG_SUPPORT_WINMM
+	MIPWinMMOutput sndCardOutput;
+#else
+#ifdef MIPCONFIG_SUPPORT_OSS
 	MIPOSSInputOutput sndCardOutput;
 #else
-	MIPWinMMOutput sndCardOutput;
+	MIPPAInputOutput sndCardOutput;
+#endif
 #endif
 	MyChain chain("Sound file player");
 	RTPSession rtpSession;
@@ -204,16 +219,18 @@ int main(void)
 	returnValue = sndCardOutput.open(samplingRate, numChannels, interval);
 	checkError(returnValue, sndCardOutput);
 
-#ifndef WIN32
-	// The OSS component can use several encodings. We'll check
-	// what encoding type is being used and inform the sample encoder
-	// of this.
-	uint32_t audioSubtype = sndCardOutput.getRawAudioSubtype();
-	returnValue = sampEnc3.init(audioSubtype);
-#else
-	// The WinMM soundcard output component uses 16 bit signed little
-	// endian data.
+#ifdef MIPCONFIG_SUPPORT_WINMM
+	// The WinMM output component uses signed little endian 16 bit samples.
 	returnValue = sampEnc3.init(MIPRAWAUDIOMESSAGE_TYPE_S16LE);
+#else
+#ifdef MIPCONFIG_SUPPORT_OSS
+	// The OSS component can use several encoding types. We'll ask
+	// the component to which format samples should be converted.
+	returnValue = sampEnc3.init(sndCardOutput.getRawAudioSubtype());
+#else
+	// The PortAudio output component uses signed 16 bit samples
+	returnValue = sampEnc3.init(MIPRAWAUDIOMESSAGE_TYPE_S16);
+#endif
 #endif
 	checkError(returnValue, sampEnc3);
 
@@ -281,6 +298,11 @@ int main(void)
 	
 	// We'll let the destructors of the other components take care
 	// of their de-initialization.
+
+	sndCardOutput.close(); // In case we're using PortAudio
+#ifdef NEED_PA_INIT
+	MIPPAInputOutput::terminatePortAudio();
+#endif // NEED_PA_INIT
 
 #ifdef WIN32
 	WSACleanup();

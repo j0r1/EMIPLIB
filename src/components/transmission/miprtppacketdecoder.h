@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -34,7 +34,11 @@
 #include "miptypes.h"
 #include <list>
 
-class RTPPacket;
+namespace jrtplib
+{
+	class RTPPacket;
+}
+
 class MIPMediaMessage;
 
 /** Abstract base class for RTP packet decoders for a specific kind of payload. */
@@ -50,7 +54,7 @@ public:
 	 *  true if the packet is valid and false otherwise and if possible, the timestamp unit should
 	 *  be filled in.
 	 */
-	virtual bool validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit) = 0;
+	virtual bool validatePacket(const jrtplib::RTPPacket *pRTPPack, real_t &timestampUnit, real_t timestampUnitEstimate) = 0;
 
 	/** Creates a new message from an RTP packet.
 	 *  This function has to be implemented by a derived class. Based on the validated
@@ -60,7 +64,7 @@ public:
 	 *  \param timestamps A list containing the RTP timestamp for each message in the
 	 *                    'messages' list.
 	 */
-	virtual void createNewMessages(const RTPPacket *pRTPPack, std::list<MIPMediaMessage *> &messages, 
+	virtual void createNewMessages(const jrtplib::RTPPacket *pRTPPack, std::list<MIPMediaMessage *> &messages, 
 			               std::list<uint32_t> &timestamps) = 0;
 };
 

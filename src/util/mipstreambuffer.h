@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -32,7 +32,7 @@
 
 #include "mipconfig.h"
 #include "miptypes.h"
-#include <jmutex.h>
+#include <jthread/jmutex.h>
 #include <list>
 #include <vector>
 
@@ -90,7 +90,7 @@ private:
 	int m_bytesAvailable;
 	int m_numPreAlloc;
 	int m_numPreAllocAvailable;
-	mutable JMutex m_mutex;
+	mutable jthread::JMutex m_mutex;
 };
 
 #endif // MIPSTREAMBUFFER_H

@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 #include "mipcomponent.h"
 #include "miptime.h"
 #include "mipsignalwaiter.h"
-#include <jthread.h>
+#include <jthread/jthread.h>
 #include <string>
 #include <jack/jack.h>
 
@@ -52,7 +52,7 @@ class MIPRawFloatAudioMessage;
  *        frame would consist of two samples: one for the left channel and one for
  *        the right.
  */
-class MIPJackInput : public MIPComponent, public JThread
+class MIPJackInput : public MIPComponent, public jthread::JThread
 {
 public:
 	MIPJackInput();
@@ -114,7 +114,7 @@ private:
 	bool m_gotMsg;
 	bool m_stopThread;
 	MIPSignalWaiter m_sigWait, m_sigWait2;
-	JMutex m_frameMutex, m_blockMutex, m_stopMutex;
+	jthread::JMutex m_frameMutex, m_blockMutex, m_stopMutex;
 	MIPTime m_interval, m_sampleInstant;
 };
 

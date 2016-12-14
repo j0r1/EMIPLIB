@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -24,17 +24,16 @@
 
 #include "mipconfig.h"
 
-#if ((defined(WIN32) || defined(_WIN32_WCE)) || \
-		( !defined(WIN32) && !defined(_WIN32_WCE) && (defined(MIPCONFIG_SUPPORT_OSS)||defined(MIPCONFIG_SUPPORT_PORTAUDIO) )))
+#if (defined(MIPCONFIG_SUPPORT_WINMM) || defined(MIPCONFIG_SUPPORT_OSS) || defined(MIPCONFIG_SUPPORT_PORTAUDIO) )
 
 #include "mipaudiosession.h"
-#if (defined(WIN32) || defined(_WIN32_WCE))
+#ifdef MIPCONFIG_SUPPORT_WINMM
 	#include "mipwinmminput.h"
 	#include "mipwinmmoutput.h"
 #else
 	#include "mipossinputoutput.h"
 	#include "mippainputoutput.h"
-#endif // WIN32 || _WIN32_WCE
+#endif // MIPCONFIG_SUPPORT_WINMM
 #include "mipaudiosplitter.h"
 #include "mipsampleencoder.h"
 #include "mipspeexencoder.h"
@@ -69,12 +68,14 @@
 #include "mipaudiomixer.h"
 #include "mipencodedaudiomessage.h"
 #include "mipmessagedumper.h"
-#include <rtpsession.h>
-#include <rtpsessionparams.h>
-#include <rtperrors.h>
-#include <rtpudpv4transmitter.h>
+#include <jrtplib3/rtpsession.h>
+#include <jrtplib3/rtpsessionparams.h>
+#include <jrtplib3/rtperrors.h>
+#include <jrtplib3/rtpudpv4transmitter.h>
 
 #include "mipdebug.h"
+
+using namespace jrtplib;
 
 #define MIPAUDIOSESSION_ERRSTR_NOTINIT						"Not initialized"
 #define MIPAUDIOSESSION_ERRSTR_ALREADYINIT					"Already initialized"
@@ -146,11 +147,11 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	MIPComponent *pPrevComponent = 0;
 	MIPComponent *pInputComponent = 0;
 	
-#if (defined(WIN32) || defined(_WIN32_WCE))
+#ifdef MIPCONFIG_SUPPORT_WINMM
 	MIPWinMMInput *pInput = new MIPWinMMInput();
 	storeComponent(pInput);
 	
-	if (!pInput->open(sampRate, channels, inputInterval, MIPTime(10.0), pParams2->getUseHighPriority()))
+	if (!pInput->open(sampRate, channels, inputInterval, MIPTime(10.0), pParams2->getUseHighPriority(), pParams2->getInputDeviceID()))
 	{
 		setErrorString(pInput->getErrorString());
 		deleteAll();
@@ -168,7 +169,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 #ifdef MIPCONFIG_SUPPORT_OSS	
 	MIPOSSInputOutput *pIOComp = 0;
 	
-	if (pParams2->getInputDevice() == pParams2->getOutputDevice())
+	if (pParams2->getInputDeviceName() == pParams2->getOutputDeviceName())
 	{
 		MIPOSSInputOutputParams ioParams;
 		
@@ -178,7 +179,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		pIOComp = pInput;
 		singleThread = true;
 
-		ioParams.setDeviceName(pParams2->getInputDevice());
+		ioParams.setDeviceName(pParams2->getInputDeviceName());
 
 		if (!pInput->open(sampRate, channels, inputInterval, MIPOSSInputOutput::ReadWrite, &ioParams))
 		{
@@ -201,7 +202,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		MIPOSSInputOutput *pInput = new MIPOSSInputOutput();
 		storeComponent(pInput);
 		
-		ioParams.setDeviceName(pParams2->getInputDevice());
+		ioParams.setDeviceName(pParams2->getInputDeviceName());
 		if (!pInput->open(sampRate, channels, inputInterval, MIPOSSInputOutput::ReadOnly, &ioParams))
 		{
 			setErrorString(pInput->getErrorString());
@@ -241,7 +242,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 
 #endif // MIPCONFIG_SUPPORT_OSS
 	
-#endif // WIN32 || _WIN32_WCE
+#endif // MIPCONFIG_SUPPORT_WINMM
 
 	if (pParams2->getInputMultiplier() > 1)
 	{
@@ -768,13 +769,13 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	addLink(pActiveChain, &pPrevComponent, pMixer, true);
 
 	uint32_t destType;
-#if (defined(WIN32) || defined(_WIN32_WCE))
+#ifdef MIPCONFIG_SUPPORT_WINMM
 	destType = MIPRAWAUDIOMESSAGE_TYPE_S16LE;
 	
 	MIPWinMMOutput *pOutput = new MIPWinMMOutput();
 	storeComponent(pOutput);
 	
-	if (!pOutput->open(sampRate, channels, outputInterval, MIPTime(10.0), pParams2->getUseHighPriority()))
+	if (!pOutput->open(sampRate, channels, outputInterval, MIPTime(10.0), pParams2->getUseHighPriority(), pParams2->getOutputDeviceID()))
 	{
 		setErrorString(pOutput->getErrorString());
 		deleteAll();
@@ -793,7 +794,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		storeComponent(pOutput);
 		
 		MIPOSSInputOutputParams ioParams;
-		ioParams.setDeviceName(pParams2->getOutputDevice());
+		ioParams.setDeviceName(pParams2->getOutputDeviceName());
 		
 		if (!pOutput->open(sampRate, channels, outputInterval, MIPOSSInputOutput::WriteOnly, &ioParams))
 		{
@@ -1233,5 +1234,5 @@ void MIPAudioSession::addLink(MIPComponentChain *pChain, MIPComponent **pPrevCom
 	*pPrevComp = pComp;
 }
 
-#endif // ((WIN32 || _WIN32_WCE) || (!WIN32 && !_WIN32_WCE && MIPCONFIG_SUPPORT_OSS))
+#endif // MIPCONFIG_SUPPORT_WINMM || MIPCONFIG_SUPPORT_OSS || MIPCONFIG_SUPPORT_PORTAUDIO
 

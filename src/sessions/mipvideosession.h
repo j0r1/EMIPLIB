@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -37,17 +37,18 @@
 #include "mipcomponentchain.h"
 #include "miperrorbase.h"
 #include "miptime.h"
-#include <rtptransmitter.h>
+#include <jrtplib3/rtptransmitter.h>
 #include <string>
 
-class RTPSession;
-class RTPAddress;
+namespace jrtplib
+{
+	class RTPSession;
+	class RTPAddress;
+}
+
 class MIPRTPSynchronizer;
-#if (defined(WIN32) || defined(_WIN32_WCE))
-	class MIPDirectShowCapture;
-#else
-	class MIPV4L2Input;
-#endif // WIN32 || _WIN32_WCE
+class MIPDirectShowCapture;
+class MIPV4L2Input;
 class MIPAVCodecEncoder;
 class MIPRTPH263Encoder;
 class MIPRTPVideoEncoder;
@@ -87,12 +88,8 @@ public:
 
 	MIPVideoSessionParams()								
 	{ 
-#if (defined(WIN32) || defined(_WIN32_WCE))
-
 		m_devNum = 0;
-#else
 		m_devName = std::string("/dev/video0"); 
-#endif // !(WIN32 || _WIN32_WCE)
 		m_width = 160;
 		m_height = 120;
 		m_frameRate = 15.0;
@@ -110,13 +107,13 @@ public:
 		m_maxPayloadSize = 64000;
 	}
 	~MIPVideoSessionParams()							{ }
-#if (defined(WIN32) || defined(_WIN32_WCE))
-	/** Returns the device number to open (only available on Win32; default: 0). */
-	int getDevice() const								{ return m_devNum; }
-#else
-	/** Returns the device name (not available on Win32; default: /dev/video0). */
-	std::string getDevice() const							{ return m_devName; }
-#endif // (WIN32 || _WIN32_WCE)
+
+	/** Returns the device number to open (only used on Win32; default: 0). */
+	int getDeviceNumber() const							{ return m_devNum; }
+
+	/** Returns the device name (not used on Win32; default: /dev/video0). */
+	std::string getDeviceName() const						{ return m_devName; }
+
 	/** Returns the width (default: 160). */
 	int getWidth() const								{ return m_width; }
 	
@@ -178,13 +175,12 @@ public:
 	 */
 	int getMaximumPayloadSize() const						{ return m_maxPayloadSize; }
 
-#if (defined(WIN32) || defined(_WIN32_WCE))
-	/** Sets the number of the input device to use (only available on Win32). */
+	/** Sets the number of the input device to use (only used on Win32). */
 	void setDevice(int n)								{ m_devNum = n; }
-#else
-	/** Sets the name of the device (not available on Win32). */
+
+	/** Sets the name of the device (not used on Win32). */
 	void setDevice(const std::string &devName)					{ m_devName = devName; }
-#endif // !(WIN32 || _WIN32_WCE)
+
 	/** Sets the width of the video frames. */
 	void setWidth(int w)								{ m_width = w; }
 	
@@ -244,11 +240,8 @@ public:
 	 */
 	void setMaximumPayloadSize(int s)						{ m_maxPayloadSize = s; }
 private:
-#if (defined(WIN32) || defined(_WIN32_WCE))
 	int m_devNum;
-#else
 	std::string m_devName;
-#endif // !(WIN32 || _WIN32_WCE)
 	int m_width, m_height;
 	real_t m_frameRate;
 	uint16_t m_portbase;
@@ -286,16 +279,16 @@ public:
 	 *                     The session has to be initialized, but the timestamp unit will still be 
 	 *                     adjusted.
  	 */
-	bool init(const MIPVideoSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0, RTPSession *pRTPSession = 0);
+	bool init(const MIPVideoSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0, jrtplib::RTPSession *pRTPSession = 0);
 	
 	/** Destroys the session. */
 	bool destroy();
 
 	/** Add a destination. */
-	bool addDestination(const RTPAddress &addr);
+	bool addDestination(const jrtplib::RTPAddress &addr);
 
 	/** Delete a destination. */
-	bool deleteDestination(const RTPAddress &addr);
+	bool deleteDestination(const jrtplib::RTPAddress &addr);
 
 	/** Clear the destination list. */
 	bool clearDestinations();
@@ -304,10 +297,10 @@ public:
 	bool supportsMulticasting();
 
 	/** Joins a multicast group. */
-	bool joinMulticastGroup(const RTPAddress &addr);
+	bool joinMulticastGroup(const jrtplib::RTPAddress &addr);
 
 	/** Leaves a multicast group. */
-	bool leaveMulticastGroup(const RTPAddress &addr);
+	bool leaveMulticastGroup(const jrtplib::RTPAddress &addr);
 
 	/** Leaves all multicast groups. */
 	bool leaveAllMulticastGroups();
@@ -318,22 +311,22 @@ public:
 	 *  In the last two cases, packets are accepted or ignored based upon information in the
 	 *  accept or ignore list. Note that changing the receive mode will cause such a list to be cleared.
 	 */
-	bool setReceiveMode(RTPTransmitter::ReceiveMode m);
+	bool setReceiveMode(jrtplib::RTPTransmitter::ReceiveMode m);
 
 	/** Adds an address to the ignore list. */
-	bool addToIgnoreList(const RTPAddress &addr);
+	bool addToIgnoreList(const jrtplib::RTPAddress &addr);
 
 	/** Removes an address from the ignore list. */
-	bool deleteFromIgnoreList(const RTPAddress &addr);
+	bool deleteFromIgnoreList(const jrtplib::RTPAddress &addr);
 
 	/** Clears the ignore list. */
 	bool clearIgnoreList();
 
 	/** Adds an address to the accept list. */
-	bool addToAcceptList(const RTPAddress &addr);
+	bool addToAcceptList(const jrtplib::RTPAddress &addr);
 
 	/** Deletes an address from the accept list. */
-	bool deleteFromAcceptList(const RTPAddress &addr);
+	bool deleteFromAcceptList(const jrtplib::RTPAddress &addr);
 
 	/** Clears the accept list. */
 	bool clearAcceptList();
@@ -402,11 +395,11 @@ private:
 	InputChain *m_pInputChain;
 	OutputChain *m_pOutputChain;
 	MIPAverageTimer *m_pTimer;
-#if (defined(WIN32) || defined(_WIN32_WCE))
+#ifdef MIPCONFIG_SUPPORT_DIRECTSHOW
 	MIPDirectShowCapture *m_pInput;
 #else
 	MIPV4L2Input *m_pInput;
-#endif // WIN32 || _WIN32_WCE
+#endif // MIPCONFIG_SUPPORT_DIRECTSHOW
 	MIPTinyJPEGDecoder *m_pTinyJpegDec;
 	MIPAVCodecFrameConverter *m_pInputFrameConverter;
 	MIPAVCodecFrameConverter *m_pOutputFrameConverter;
@@ -415,7 +408,7 @@ private:
 	MIPRTPVideoEncoder *m_pRTPIntVideoEnc;
 	MIPRTPComponent *m_pRTPComp;
 	
-	RTPSession *m_pRTPSession;
+	jrtplib::RTPSession *m_pRTPSession;
 	bool m_deleteRTPSession;
 	
 	MIPAverageTimer *m_pTimer2;

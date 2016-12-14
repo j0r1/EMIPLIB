@@ -83,6 +83,7 @@
 
 #if 1 && defined(__GNUC__) && (defined(__i686__) || defined(__x86_64__))
 
+#if 0
 static inline unsigned char descale_and_clamp(int x, int shift)
 {
   __asm__ (
@@ -96,6 +97,23 @@ static inline unsigned char descale_and_clamp(int x, int shift)
       : "0"(x), "Ir"(shift), "ir"(1UL<<(shift-1)), "r" (0xff), "r" (0)
       );
   return x;
+}
+#endif
+
+static inline unsigned char descale_and_clamp(int x, int shift)
+{
+  x += (1UL<<(shift-1));
+  if (x<0)
+    x = (x >> shift) | ((~(0UL)) << (32-(shift)));
+  else
+    x >>= shift;
+  x += 128;
+  if (x>255)
+    return 255;
+  else if (x<0)
+    return 0;
+  else 
+    return x;
 }
 
 #else

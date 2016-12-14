@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -30,12 +30,13 @@
 #include "miprtpsynchronizer.h"
 #include "mipmediamessage.h"
 #include "miprtppacketdecoder.h"
-#include <rtppacket.h>
-#include <rtpsession.h>
-#include <rtpsourcedata.h>
-#include <iostream>
+#include <jrtplib3/rtppacket.h>
+#include <jrtplib3/rtpsession.h>
+#include <jrtplib3/rtpsourcedata.h>
 
 #include "mipdebug.h"
+
+using namespace jrtplib;
 
 #if defined(WIN32) || defined(_WIN32_WCE)
 using namespace stdext;
@@ -142,8 +143,9 @@ bool MIPRTPDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 	//std::cerr << "Got packet " << pRTPPack->GetExtendedSequenceNumber() << " from source " << pRTPPack->GetSSRC() << std::endl;
 
 	real_t timestampUnitPrev = timestampUnit;
+	real_t timestampUnitEstimate = pRTPMsg->getTimestampUnitEstimate();
 	
-	if (!pDecoder->validatePacket(pRTPPack, timestampUnit))
+	if (!pDecoder->validatePacket(pRTPPack, timestampUnit, timestampUnitEstimate))
 	{
 		// packet type not understood, ignore packet
 		return true;

@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -36,7 +36,7 @@
 
 #include "mipcomponent.h"
 #include "miptypes.h"
-#include <jthread.h>
+#include <jthread/jthread.h>
 #include <list>
 
 class MIPQtOutputMainWindow;
@@ -47,7 +47,7 @@ class MIPQtOutputWidget;
  *  frames: one window is created for each source. Input video frames can be in either YUV420P
  *  or 32-bit RGB format.
  */
-class MIPQtOutput : public MIPComponent, private JThread
+class MIPQtOutput : public MIPComponent, private jthread::JThread
 {
 public:
 	MIPQtOutput();
@@ -64,7 +64,7 @@ public:
 private:
 	void *Thread();
 	
-	JMutex m_lock;
+	jthread::JMutex m_lock;
 	std::list<uint64_t> m_newIDs;
 	std::list<MIPQtOutputWidget *> m_outputWidgets;
 	bool m_stopWindow;

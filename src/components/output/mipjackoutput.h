@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2011  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 #include "mipcomponent.h"
 #include "miptime.h"
 #include <jack/jack.h>
-#include <jmutex.h>
+#include <jthread/jmutex.h>
 #include <string>
 
 /** A Jack audio connection kit output component.
@@ -88,7 +88,7 @@ private:
 	size_t m_blockLength, m_intervalLength;
 	MIPTime m_delay;
 	MIPTime m_distTime, m_blockTime, m_interval;
-	JMutex m_frameMutex;
+	jthread::JMutex m_frameMutex;
 };
 
 #endif // MIPCONFIG_SUPPORT_JACK

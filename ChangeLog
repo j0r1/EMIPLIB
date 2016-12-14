@@ -3,6 +3,10 @@
                               EMIPLIB ChangeLog
 
 
+Version 0.16.1, February 2008
+ * Fixed a bug in MIPInterChainTimer. Forgot to initialize a variable,
+   causing the timing to fail.
+
 Version 0.16.0, December 2007
  * Modified the MIPWinMMOutput component slightly. The changes should
    help avoid running out of buffers.

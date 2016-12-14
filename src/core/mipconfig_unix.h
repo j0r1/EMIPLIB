@@ -34,7 +34,7 @@
 
 #define MIPCONFIG_SUPPORT_AUDIOFILE
 
-// No support for Qt
+#define MIPCONFIG_SUPPORT_QT
 
 #define MIPCONFIG_SUPPORT_ALSA
 
@@ -58,7 +58,7 @@
 
 #define MIPCONFIG_SUPPORT_SDLAUDIO
 
-// No support for OpenAL
+#define MIPCONFIG_SUPPORT_OPENAL
 
 #define MIPCONFIG_SUPPORT_PORTAUDIO
 

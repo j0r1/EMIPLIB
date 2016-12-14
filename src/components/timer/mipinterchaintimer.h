@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2007  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -90,6 +90,7 @@ private:
 		TriggerComponent(MIPSignalWaiter &sigWait, int count) : MIPComponent("MIPInterChainTimer::TriggerComponent"), m_sigWait(sigWait)
 		{
 			m_targetCount = count;
+			m_counter = 0;
 		}
 
 		~TriggerComponent()

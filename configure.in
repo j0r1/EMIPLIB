@@ -1,5 +1,5 @@
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(emiplib, 0.16.0)
+AM_INIT_AUTOMAKE(emiplib, 0.16.1)
 
 MIPCONFIG_BIGENDIAN="// Little endian system"
 MIPCONFIG_SUPPORT_SNDFILE="// No support for libsndfile"

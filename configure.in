@@ -1,5 +1,5 @@
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(emiplib, 0.10.0)
+AM_INIT_AUTOMAKE(emiplib, 0.11.0)
 
 MIPCONFIG_BIGENDIAN="// Little endian system"
 MIPCONFIG_SUPPORT_SNDFILE="// No support for libsndfile"
@@ -10,10 +10,13 @@ MIPCONFIG_SUPPORT_SPEEX="// No speex support"
 MIPCONFIG_SUPPORT_AVCODEC="// No libavcodec support"
 MIPCONFIG_SUPPORT_INTELIPP="// No support for the Intel IPP library"
 MIPCONFIG_SUPPORT_ESD="// No support for esd"
+MIPCONFIG_SUPPORT_JACK="// No support for JACK"
+MIPCONFIG_SUPPORT_VIDEO4LINUX="// No support for video4linux"
+MIPCONFIG_SUPPORT_OSS="// No support for OSS"
 MIPCONFIG_GPL="// No GPL components will be compiled"
 
-MIPLINKLIBS=""
-MIPINCLUDES=""
+MIPLINKLIBS="$LDFLAGS"
+MIPINCLUDES="$CPPFLAGS"
 MIPGPL="no"
 MIPQT="no"
 MIPAVCODEC="no"
@@ -62,7 +65,7 @@ if test "$MIPQT" = "yes" ; then
 	if test "$have_qt" = "yes" ; then
 		MIPCONFIG_SUPPORT_QT="#define MIPCONFIG_SUPPORT_QT"
 		MIPINCLUDES="$MIPINCLUDES $QT_INCLUDES"
-		MIPLINKLIBS="$MIPLINKLIBS $QT_LDFLAGS $LIB_QT"
+		MIPLINKLIBS="$MIPLINKLIBS -L$qt_libdir $LIBQT $X_LDFLAGS"
 		MIPUSEQT="yes"
 	fi
 fi
@@ -202,11 +205,31 @@ AC_CHECK_HEADER(esd.h,[MIPCONFIG_SUPPORT_ESD="#define MIPCONFIG_SUPPORT_ESD"
 				  MIPLINKLIBS="$MIPLINKLIBS -lesd"])
 
 dnl ---------------------------------------------------------------------------
+dnl JACK stuff
+dnl ---------------------------------------------------------------------------
+
+AC_CHECK_HEADER(jack/jack.h,[MIPCONFIG_SUPPORT_JACK="#define MIPCONFIG_SUPPORT_JACK"
+				  MIPLINKLIBS="$MIPLINKLIBS -ljack"])
+
+
+dnl ---------------------------------------------------------------------------
 dnl Speex stuff
 dnl ---------------------------------------------------------------------------
 
 AC_CHECK_HEADER(speex/speex.h,[MIPCONFIG_SUPPORT_SPEEX="#define MIPCONFIG_SUPPORT_SPEEX"
 			       MIPLINKLIBS="$MIPLINKLIBS -lspeex"])
+
+dnl ---------------------------------------------------------------------------
+dnl OSS stuff
+dnl ---------------------------------------------------------------------------
+
+AC_CHECK_HEADER(sys/soundcard.h,[MIPCONFIG_SUPPORT_OSS="#define MIPCONFIG_SUPPORT_OSS"])
+
+dnl ---------------------------------------------------------------------------
+dnl video4linux stuff
+dnl ---------------------------------------------------------------------------
+
+AC_CHECK_HEADER(linux/videodev.h,[MIPCONFIG_SUPPORT_VIDEO4LINUX="#define MIPCONFIG_SUPPORT_VIDEO4LINUX"])
 
 dnl ---------------------------------------------------------------------------
 dnl libavcodec stuff
@@ -266,13 +289,20 @@ AC_SUBST(MIPCONFIG_SUPPORT_SPEEX)
 AC_SUBST(MIPCONFIG_SUPPORT_AVCODEC)
 AC_SUBST(MIPCONFIG_SUPPORT_INTELIPP)
 AC_SUBST(MIPCONFIG_SUPPORT_ESD)
+AC_SUBST(MIPCONFIG_SUPPORT_JACK)
+AC_SUBST(MIPCONFIG_SUPPORT_VIDEO4LINUX)
+AC_SUBST(MIPCONFIG_SUPPORT_OSS)
 AC_SUBST(MIPCONFIG_GPL)
 
 AC_OUTPUT(Makefile \
 	  src/Makefile \
 	  src/core/mipconfig_unix.h \
 	  examples/Makefile \
-          doc/Makefile)
+          doc/Makefile \
+          pkgconfig/Makefile \
+          pkgconfig/emiplib.pc \
+          pkgconfig/emiplib-uninstalled.pc \
+	  )
 
 if test $MIPGPL = "yes" ; then
 	cat << EOF

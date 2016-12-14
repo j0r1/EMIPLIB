@@ -2,6 +2,10 @@
  * \file soundfileplayer.cpp
  */
 
+#include <mipconfig.h>
+
+#if defined(WIN32) || defined(_WIN32_WCE) || defined(MIPCONFIG_SUPPORT_OSS)
+
 #include <mipcomponentchain.h>
 #include <mipcomponent.h>
 #include <miptime.h>
@@ -129,4 +133,16 @@ int main(void)
 
 	return 0;
 }
+
+#else
+
+#include <iostream>
+
+int main(void)
+{
+	std::cerr << "Not all necessary components are available to run this example." << std::endl;
+	return 0;
+}
+
+#endif // WIN32 || _WIN32_WCE || MIPCONFIG_SUPPORT_OSS
 

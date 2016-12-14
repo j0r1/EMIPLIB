@@ -28,6 +28,7 @@
 
 #include "mipesdoutput.h"
 #include "miprawaudiomessage.h"
+#include <unistd.h>
 
 #define MIPESDOUTPUT_ERRSTR_DEVICEALREADYOPEN		"Device already opened"
 #define MIPESDOUTPUT_ERRSTR_DEVICENOTOPEN		"Device is not opened"
@@ -37,32 +38,17 @@
 #define MIPESDOUTPUT_ERRSTR_UNSUPPORTEDSAMPLINGRATE	"The requested sampling rate is not supported"
 #define MIPESDOUTPUT_ERRSTR_UNSUPPORTEDCHANNELS		"The requested number of channels is not supported"
 #define MIPESDOUTPUT_ERRSTR_BLOCKTIMETOOLARGE		"Block time too large"
-#define MIPESDOUTPUT_ERRSTR_CANTSTARTBACKGROUNDTHREAD	"Can't start the background thread"
 #define MIPESDOUTPUT_ERRSTR_PULLNOTIMPLEMENTED		"No pull available for this component"
-#define MIPESDOUTPUT_ERRSTR_THREADSTOPPED		"Background thread stopped"
 #define MIPESDOUTPUT_ERRSTR_BADMESSAGE			"Only raw audio messages are supported"
 #define MIPESDOUTPUT_ERRSTR_INCOMPATIBLECHANNELS	"Incompatible number of channels"
 #define MIPESDOUTPUT_ERRSTR_INCOMPATIBLESAMPLINGRATE	"Incompatible sampling rate"
 #define MIPESDOUTPUT_ERRSTR_BUFFERFULL			"Buffer full"
-#define MIPESDOUTPUT_ERRSTR_UNKNOWNCHANNELS		"The ESD device used an unknown number of channels"
-#define MIPESDOUTPUT_ERRSTR_UNSUPPORTEDBITS		"The ESD device does not use 16 bit samples"
+#define MIPESDOUTPUT_ERRSTR_UNKNOWNCHANNELS		"ESD only supports mono or stereo sound, using more then two channels is not supported"
+#define MIPESDOUTPUT_ERRSTR_UNSUPPORTEDBITS		"ESD only supports 8 and 16 bit samples"
+#define MIPESDOUTPUT_ERRSTR_PROBLEMWRITING		"Problem writing to ESD"
 
-MIPEsdOutput::MIPEsdOutput() : MIPComponent("MIPEsdOutput"), m_delay(0), m_distTime(0), m_blockTime(0)
+MIPEsdOutput::MIPEsdOutput() : MIPComponent("MIPEsdOutput"), m_opened(false)
 {
-	int status;
-	
-	if ((status = m_frameMutex.Init()) < 0)
-	{
-		std::cerr << "Error: can't initialize ESD output thread mutex (JMutex error code " << status << ")" << std::endl;
-		exit(-1);
-	}
-	if ((status = m_stopMutex.Init()) < 0)
-	{
-		std::cerr << "Error: can't initialize ESD output thread mutex (JMutex error code " << status << ")" << std::endl;
-		exit(-1);
-	}
-
-	m_opened = false;
 }
 
 MIPEsdOutput::~MIPEsdOutput()
@@ -70,7 +56,7 @@ MIPEsdOutput::~MIPEsdOutput()
 	close();
 }
 
-bool MIPEsdOutput::open(MIPTime blockTime, MIPTime arrayTime)
+bool MIPEsdOutput::open(int sampRate, int channels, int sampWidth, MIPTime blockTime, MIPTime arrayTime)
 {
 	if (m_opened)
 	{
@@ -78,65 +64,44 @@ bool MIPEsdOutput::open(MIPTime blockTime, MIPTime arrayTime)
 		return false;
 	}
 	
-	int status = esd_audio_open();
-	if (status < 0)
+	esd_format_t esd_fmt = 0;
+	
+	m_channels = channels;
+	switch(m_channels)
+	{
+		case 1:
+			esd_fmt |= ESD_MONO;
+			break;
+		case 2:
+			esd_fmt |= ESD_STEREO;
+			break;
+		default:
+			setErrorString(MIPESDOUTPUT_ERRSTR_UNKNOWNCHANNELS);
+			return false;
+	}
+
+	m_sampWidth = sampWidth;
+	switch(m_sampWidth)
+	{
+		case 8:
+			esd_fmt |= ESD_BITS8;
+			break;
+		case 16:
+			esd_fmt |= ESD_BITS16;
+			break;
+		default:
+			setErrorString(MIPESDOUTPUT_ERRSTR_UNSUPPORTEDBITS);
+			return false;
+	}
+
+	m_sampRate = sampRate;
+	m_esd_handle = esd_play_stream(esd_fmt, m_sampRate, "localhost", "emipesd");
+	if (m_esd_handle < 0)
 	{
 		setErrorString(MIPESDOUTPUT_ERRSTR_CANTOPENDEVICE);
 		return false;
 	}
-
-	m_sampRate = esd_audio_rate;
-	esd_format_t fmt = esd_audio_format;
-
-	if ((fmt & ESD_MASK_CHAN) == ESD_MONO)
-		m_channels = 1;
-	else if ((fmt & ESD_MASK_CHAN) == ESD_STEREO)
-		m_channels = 2;
-	else
-	{
-		setErrorString(MIPESDOUTPUT_ERRSTR_UNKNOWNCHANNELS);
-		return false;
-	}
-
-	if ((fmt & ESD_MASK_BITS) != ESD_BITS16)
-	{
-		setErrorString(MIPESDOUTPUT_ERRSTR_UNSUPPORTEDBITS);
-		return false;
-	}
-
-	m_frameArrayLength = ((size_t)((arrayTime.getValue() * ((real_t)m_sampRate)) + 0.5)) * ((size_t)m_channels);
-	m_blockFrames = ((size_t)((blockTime.getValue() * ((real_t)m_sampRate)) + 0.5));
-	m_blockLength = m_blockFrames * ((size_t)m_channels);
-
-	if (m_blockLength > m_frameArrayLength/4)
-	{
-		setErrorString(MIPESDOUTPUT_ERRSTR_BLOCKTIMETOOLARGE);
-		return false;
-	}
-
-	// make sure a fixed number of blocks fit in the frame array
-	size_t numBlocks = m_frameArrayLength / m_blockLength + 1;
-	
-	m_frameArrayLength = numBlocks * m_blockLength;
-	m_pFrameArray = new uint16_t[m_frameArrayLength];
-	for (size_t i = 0 ; i < m_frameArrayLength ; i++)
-		m_pFrameArray[i] = 0;
-	
-	m_currentPos = 0;
-	m_nextPos = m_blockLength;
-	m_distTime = blockTime;
-	m_blockTime = blockTime;
-
-	m_stopLoop = false;
-	if (JThread::Start() < 0)
-	{
-		delete [] m_pFrameArray;
-		std::cerr << "error" << std::endl;
-		setErrorString(MIPESDOUTPUT_ERRSTR_CANTSTARTBACKGROUNDTHREAD);
-		return false;
-	}
 	m_opened = true;
-	
 	return true;
 }
 
@@ -148,22 +113,8 @@ bool MIPEsdOutput::close()
 		return false;
 	}
 
-	MIPTime starttime = MIPTime::getCurrentTime();
-	
-	m_stopMutex.Lock();
-	m_stopLoop = true;
-	m_stopMutex.Unlock();
-	
-	while (JThread::IsRunning() && (MIPTime::getCurrentTime().getValue()-starttime.getValue()) < 5.0)
-	{
-		MIPTime::wait(MIPTime(0.010));
-	}
-
-	if (JThread::IsRunning())
-		JThread::Kill();
-
 	esd_audio_close();
-	delete [] m_pFrameArray;
+	::close(m_esd_handle);
 		
 	return true;
 }
@@ -176,15 +127,15 @@ bool MIPEsdOutput::push(const MIPComponentChain &chain, int64_t iteration, MIPMe
 		return false;
 	}
 
-	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_AUDIO_RAW && pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_S16))
+	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_AUDIO_RAW))
 	{
 		setErrorString(MIPESDOUTPUT_ERRSTR_BADMESSAGE);
 		return false;
 	}
 	
-	if (!JThread::IsRunning())
+	if (pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_U8)
 	{
-		setErrorString(MIPESDOUTPUT_ERRSTR_THREADSTOPPED);
+		setErrorString(MIPESDOUTPUT_ERRSTR_UNSUPPORTEDBITS);
 		return false;
 	}
 
@@ -195,45 +146,26 @@ bool MIPEsdOutput::push(const MIPComponentChain &chain, int64_t iteration, MIPMe
 		setErrorString(MIPESDOUTPUT_ERRSTR_INCOMPATIBLESAMPLINGRATE);
 		return false;
 	}
+
 	if (audioMessage->getNumberOfChannels() != m_channels)
 	{
 		setErrorString(MIPESDOUTPUT_ERRSTR_INCOMPATIBLECHANNELS);
 		return false;
 	}
 	
-	size_t num = audioMessage->getNumberOfFrames() * m_channels;
-	size_t offset = 0;
+	size_t amount = audioMessage->getNumberOfFrames() * m_channels;
 	const uint16_t *frames = audioMessage->getFrames();
 
-	m_frameMutex.Lock();
-	while (num > 0)
+	if (amount != 0)
 	{
-		size_t maxAmount = m_frameArrayLength - m_nextPos;
-		size_t amount = (num > maxAmount)?maxAmount:num;
-		
-		if (m_nextPos <= m_currentPos && m_nextPos + amount > m_currentPos)
+		if (write(m_esd_handle, frames, amount*sizeof(uint16_t)) < 0)
 		{
-			std::cerr << "Strange error" << std::endl;
-			m_nextPos = m_currentPos + m_blockLength;
+			setErrorString(MIPESDOUTPUT_ERRSTR_PROBLEMWRITING);
+			return false;
 		}
-		
-		if (amount != 0)
-			memcpy(m_pFrameArray + m_nextPos, frames + offset, amount*sizeof(uint16_t));
 
-		if (amount != num)
-		{
-			m_nextPos = 0;
-			//std::cerr << "Cycling next pos" << std::endl;
-		}
-		else
-			m_nextPos += amount;
-		
-		offset += amount;
-		num -= amount;
 	}
-	m_distTime += MIPTime(((real_t)audioMessage->getNumberOfFrames())/((real_t)m_sampRate));
-	m_frameMutex.Unlock();
-	
+
 	return true;
 }
 
@@ -242,56 +174,5 @@ bool MIPEsdOutput::pull(const MIPComponentChain &chain, int64_t iteration, MIPMe
 	setErrorString(MIPESDOUTPUT_ERRSTR_PULLNOTIMPLEMENTED);
 	return false;
 }
-
-void *MIPEsdOutput::Thread()
-{
-	JThread::ThreadStarted();
-
-	bool done;
-	
-	m_stopMutex.Lock();
-	done = m_stopLoop;
-	m_stopMutex.Unlock();
-
-	while (!done)
-	{
-		esd_audio_write(m_pFrameArray + m_currentPos, m_blockLength*sizeof(uint16_t));
-		
-		m_frameMutex.Lock();
-		m_currentPos += m_blockLength;
-		m_distTime -= m_blockTime;
-		if (m_currentPos + m_blockLength > m_frameArrayLength)
-		{
-			m_currentPos = 0;
-//			std::cerr << "Cycling" << std::endl;
-		}
-		
-		if (m_nextPos < m_currentPos + m_blockLength && m_nextPos >= m_currentPos)
-		{
-			m_nextPos = m_currentPos + m_blockLength;
-			if (m_nextPos >= m_frameArrayLength)
-				m_nextPos = 0;
-			m_distTime = m_blockTime;
-			//std::cerr << "Pushing next position" << std::endl;
-		}
-		
-		if (m_distTime > MIPTime(0.200))
-		{
-			m_nextPos = m_currentPos + m_blockLength;
-			if (m_nextPos >= m_frameArrayLength)
-				m_nextPos = 0;
-			m_distTime = m_blockTime;
-//			std::cerr << "Adjusting to runaway input (" << m_distTime.getString() << ")" << std::endl;
-		}
-		m_frameMutex.Unlock();
-		
-		m_stopMutex.Lock();
-		done = m_stopLoop;
-		m_stopMutex.Unlock();
-	}
-
-	return 0;
-}
-
 #endif // MIPCONFIG_SUPPORT_ESD
 

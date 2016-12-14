@@ -23,6 +23,9 @@
 */
 
 #include "mipconfig.h"
+
+#ifdef MIPCONFIG_SUPPORT_VIDEO4LINUX
+
 #include "mipv4linput.h"
 #include "miptime.h"
 #include "miprawvideomessage.h"
@@ -351,4 +354,6 @@ void *MIPV4LInput::Thread()
 	}
 	return 0;
 }
+
+#endif // MIPCONFIG_SUPPORT_VIDEO4LINUX
 

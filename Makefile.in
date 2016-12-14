@@ -139,9 +139,12 @@ MIPCONFIG_SUPPORT_AUDIOFILE = @MIPCONFIG_SUPPORT_AUDIOFILE@
 MIPCONFIG_SUPPORT_AVCODEC = @MIPCONFIG_SUPPORT_AVCODEC@
 MIPCONFIG_SUPPORT_ESD = @MIPCONFIG_SUPPORT_ESD@
 MIPCONFIG_SUPPORT_INTELIPP = @MIPCONFIG_SUPPORT_INTELIPP@
+MIPCONFIG_SUPPORT_JACK = @MIPCONFIG_SUPPORT_JACK@
+MIPCONFIG_SUPPORT_OSS = @MIPCONFIG_SUPPORT_OSS@
 MIPCONFIG_SUPPORT_QT = @MIPCONFIG_SUPPORT_QT@
 MIPCONFIG_SUPPORT_SNDFILE = @MIPCONFIG_SUPPORT_SNDFILE@
 MIPCONFIG_SUPPORT_SPEEX = @MIPCONFIG_SUPPORT_SPEEX@
+MIPCONFIG_SUPPORT_VIDEO4LINUX = @MIPCONFIG_SUPPORT_VIDEO4LINUX@
 MIPINCLUDES = @MIPINCLUDES@
 MIPLINKLIBS = @MIPLINKLIBS@
 MIP_USEQT_FALSE = @MIP_USEQT_FALSE@
@@ -221,7 +224,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 x_includes = @x_includes@
 x_libraries = @x_libraries@
-SUBDIRS = src examples doc
+SUBDIRS = src examples doc pkgconfig
 EXTRA_DIST = Doxyfile emiplib.sln emiplib.vcproj emiplib_wce.sln emiplib_wce.vcproj \
 	     LICENSE.GPL LICENSE.LGPL ChangeLog copyheaderfiles.bat
 
@@ -409,7 +412,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/src/core
+	$(mkdir_p) $(distdir)/pkgconfig $(distdir)/src/core
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

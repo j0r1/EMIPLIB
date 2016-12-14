@@ -49,9 +49,16 @@ class MIPEncodedAudioMessage;
 class MIPSpeexEncoder : public MIPComponent
 {
 public:
-	/** Used to select speex encoding type.
-	 */
-	enum SpeexBandWidth { NarrowBand, WideBand, UltraWideBand };
+	/** Used to select speex encoding type. */
+	enum SpeexBandWidth 
+	{ 
+ 		/** Narrow band mode (8000 Hz) */
+		NarrowBand,
+	 	/** Wide band mode (16000 Hz) */
+		WideBand,		
+ 		/** Ultra wide band mode (32000 Hz) */
+		UltraWideBand
+	};
 	
 	MIPSpeexEncoder();
 	~MIPSpeexEncoder();

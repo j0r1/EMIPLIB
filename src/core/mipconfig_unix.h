@@ -34,17 +34,23 @@
 
 #define MIPCONFIG_SUPPORT_AUDIOFILE
 
-#define MIPCONFIG_SUPPORT_QT
+// No support for Qt
 
 #define MIPCONFIG_SUPPORT_ALSA
 
 #define MIPCONFIG_SUPPORT_SPEEX
 
-#define MIPCONFIG_SUPPORT_AVCODEC
+// No libavcodec support
 
-#define MIPCONFIG_SUPPORT_INTELIPP
+// No support for the Intel IPP library
 
 #define MIPCONFIG_SUPPORT_ESD
+
+#define MIPCONFIG_SUPPORT_JACK
+
+#define MIPCONFIG_SUPPORT_VIDEO4LINUX
+
+#define MIPCONFIG_SUPPORT_OSS
 
 #endif // MIPCONFIG_UNIX_H
 

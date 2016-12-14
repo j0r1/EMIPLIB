@@ -17,11 +17,13 @@ components/output/mipalsaoutput.cpp \
 components/output/mipesdoutput.cpp \
 components/output/mipqtoutput.cpp \
 components/output/mipvideoframestorage.cpp \
+components/output/mipjackoutput.cpp \
 components/input/mipsndfileinput.cpp \
 components/input/mipaudiofileinput.cpp \
 components/input/mipv4linput.cpp \
 components/input/mipfrequencygenerator.cpp \
 components/input/mipwavinput.cpp \
+components/input/mipjackinput.cpp \
 components/io/mipossinputoutput.cpp \
 components/transmission/miprtpcomponent.cpp \
 components/transmission/miprtpaudioencoder.cpp \
@@ -80,12 +82,14 @@ components/output/mipesdoutput.h \
 components/output/mipqtoutput.h \
 components/output/mipwinmmoutput.h \
 components/output/mipvideoframestorage.h \
+components/output/mipjackoutput.h \
 components/input/mipsndfileinput.h  \
 components/input/mipaudiofileinput.h  \
 components/input/mipv4linput.h \
 components/input/mipwinmminput.h \
 components/input/mipfrequencygenerator.h \
 components/input/mipwavinput.h \
+components/input/mipjackinput.h \
 components/io/mipossinputoutput.h \
 components/transmission/miprtpcomponent.h \
 components/transmission/miprtpaudioencoder.h \
@@ -110,13 +114,14 @@ util/mipsignalwaiter.h \
 util/mipdirectorybrowser.h \
 util/mipwavreader.h \
 util/miprtpsynchronizer.h \
+util/mipresample.h \
 sessions/mipaudiosession.h \
 sessions/mipvideosession.h
 
 INCLUDES = -I core/ -I util/ -I components/codec/ -I components/input/ -I components/io/ -I components/mixer/ \
 	   -I components/output/ -I components/timer/ -I components/transform/ -I components/transmission/ \
 	   @MIPINCLUDES@
-libemip_la_LDFLAGS = -release 0.10.0
+libemip_la_LDFLAGS = -release 0.11.0
 libemipincludedir = ${includedir}/emiplib
 
 if MIP_USEQT

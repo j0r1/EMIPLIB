@@ -31,6 +31,9 @@
 #define MIPOSSINPUTOUTPUT_H
 
 #include "mipconfig.h"
+
+#ifdef MIPCONFIG_SUPPORT_OSS
+
 #include "mipcomponent.h"
 #include "miptime.h"
 #include "mipsignalwaiter.h"
@@ -202,6 +205,8 @@ private:
 
 	JMutex m_inputFrameMutex, m_outputFrameMutex;
 };
+
+#endif // MIPCONFIG_SUPPORT_OSS
 
 #endif // MIPOSSINPUTOUTPUT_H
 

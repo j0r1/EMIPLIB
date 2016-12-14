@@ -71,8 +71,7 @@ MIPAlsaOutput::~MIPAlsaOutput()
 }
 
 bool MIPAlsaOutput::open(int sampRate, int channels, const std::string device, 
-		  MIPTime blockTime,
-		  MIPTime arrayTime)
+		  MIPTime blockTime, MIPTime arrayTime, bool floatSamples)
 {
 	if (m_pDevice != 0)
 	{
@@ -81,6 +80,8 @@ bool MIPAlsaOutput::open(int sampRate, int channels, const std::string device,
 	}
 	
 	int status;
+
+	m_floatSamples = floatSamples;
 	
 	if ((status = snd_pcm_open(&m_pDevice, device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) < 0)
 	{
@@ -109,13 +110,27 @@ bool MIPAlsaOutput::open(int sampRate, int channels, const std::string device,
 		return false;
 	}
 
-	if ((status = snd_pcm_hw_params_set_format(m_pDevice, m_pHwParameters, SND_PCM_FORMAT_FLOAT)) < 0)
+	if (floatSamples)
 	{
-		snd_pcm_hw_params_free(m_pHwParameters);
-		snd_pcm_close(m_pDevice);
-		m_pDevice = 0;
-		setErrorString(MIPALSAOUTPUT_ERRSTR_FLOATNOTSUPPORTED);
-		return false;
+		if ((status = snd_pcm_hw_params_set_format(m_pDevice, m_pHwParameters, SND_PCM_FORMAT_FLOAT)) < 0)
+		{
+			snd_pcm_hw_params_free(m_pHwParameters);
+			snd_pcm_close(m_pDevice);
+			m_pDevice = 0;
+			setErrorString(MIPALSAOUTPUT_ERRSTR_FLOATNOTSUPPORTED);
+			return false;
+		}
+	}
+	else
+	{
+		if ((status = snd_pcm_hw_params_set_format(m_pDevice, m_pHwParameters, SND_PCM_FORMAT_S16)) < 0)
+		{
+			snd_pcm_hw_params_free(m_pHwParameters);
+			snd_pcm_close(m_pDevice);
+			m_pDevice = 0;
+			setErrorString(MIPALSAOUTPUT_ERRSTR_FLOATNOTSUPPORTED);
+			return false;
+		}
 	}
 
 	// For some reason this does not work well on my soundcard at home
@@ -183,9 +198,21 @@ bool MIPAlsaOutput::open(int sampRate, int channels, const std::string device,
 	size_t numBlocks = m_frameArrayLength / m_blockLength + 1;
 	
 	m_frameArrayLength = numBlocks * m_blockLength;
-	m_pFrameArray = new float[m_frameArrayLength];
-	for (size_t i = 0 ; i < m_frameArrayLength ; i++)
-		m_pFrameArray[i] = 0;
+
+	if (floatSamples)
+	{
+		m_pFrameArrayFloat = new float[m_frameArrayLength];
+		for (size_t i = 0 ; i < m_frameArrayLength ; i++)
+			m_pFrameArrayFloat[i] = 0;
+		m_pFrameArrayInt = 0;
+	}
+	else
+	{
+		m_pFrameArrayInt = new uint16_t[m_frameArrayLength];
+		for (size_t i = 0 ; i < m_frameArrayLength ; i++)
+			m_pFrameArrayInt[i] = 0;
+		m_pFrameArrayFloat = 0;
+	}
 	
 	m_currentPos = 0;
 	m_nextPos = m_blockLength;
@@ -202,7 +229,10 @@ bool MIPAlsaOutput::open(int sampRate, int channels, const std::string device,
 		snd_pcm_hw_params_free(m_pHwParameters);
 		snd_pcm_close(m_pDevice);
 		m_pDevice = 0;
-		delete [] m_pFrameArray;
+		if (m_pFrameArrayFloat)
+			delete [] m_pFrameArrayFloat;
+		if (m_pFrameArrayInt)
+			delete [] m_pFrameArrayInt;
 		setErrorString(MIPALSAOUTPUT_ERRSTR_CANTSTARTBACKGROUNDTHREAD);
 		return false;
 	}
@@ -235,14 +265,20 @@ bool MIPAlsaOutput::close()
 	snd_pcm_hw_params_free(m_pHwParameters);
 	snd_pcm_close(m_pDevice);
 	m_pDevice = 0;
-	delete [] m_pFrameArray;
-		
+
+	if (m_pFrameArrayFloat)
+		delete [] m_pFrameArrayFloat;
+	if (m_pFrameArrayInt)
+		delete [] m_pFrameArrayInt;
+
 	return true;
 }
 
 bool MIPAlsaOutput::push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg)
 {
-	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_AUDIO_RAW && pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_FLOAT))
+	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_AUDIO_RAW && 
+		((pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_FLOAT && m_floatSamples) ||
+		 (pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_S16 && !m_floatSamples) ) ) )
 	{
 		setErrorString(MIPALSAOUTPUT_ERRSTR_BADMESSAGE);
 		return false;
@@ -260,7 +296,7 @@ bool MIPAlsaOutput::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 		return false;
 	}
 
-	MIPRawFloatAudioMessage *audioMessage = (MIPRawFloatAudioMessage *)pMsg;
+	MIPAudioMessage *audioMessage = (MIPAudioMessage *)pMsg;
 	
 	if (audioMessage->getSamplingRate() != m_sampRate)
 	{
@@ -275,33 +311,70 @@ bool MIPAlsaOutput::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 	
 	size_t num = audioMessage->getNumberOfFrames() * m_channels;
 	size_t offset = 0;
-	const float *frames = audioMessage->getFrames();
 
-	m_frameMutex.Lock();
-	while (num > 0)
+	if (m_floatSamples)
 	{
-		size_t maxAmount = m_frameArrayLength - m_nextPos;
-		size_t amount = (num > maxAmount)?maxAmount:num;
-		
-		if (m_nextPos <= m_currentPos && m_nextPos + amount > m_currentPos)
+		MIPRawFloatAudioMessage *audioMessageFloat = (MIPRawFloatAudioMessage *)pMsg;
+		const float *frames = audioMessageFloat->getFrames();
+	
+		m_frameMutex.Lock();
+		while (num > 0)
 		{
-			//std::cerr << "Strange error" << std::endl;
-			m_nextPos = m_currentPos + m_blockLength;
+			size_t maxAmount = m_frameArrayLength - m_nextPos;
+			size_t amount = (num > maxAmount)?maxAmount:num;
+			
+			if (m_nextPos <= m_currentPos && m_nextPos + amount > m_currentPos)
+			{
+				//std::cerr << "Strange error" << std::endl;
+				m_nextPos = m_currentPos + m_blockLength;
+			}
+			
+			if (amount != 0)
+				memcpy(m_pFrameArrayFloat + m_nextPos, frames + offset, amount*sizeof(float));
+	
+			if (amount != num)
+			{
+				m_nextPos = 0;
+				//std::cerr << "Cycling next pos" << std::endl;
+			}
+			else
+				m_nextPos += amount;
+			
+			offset += amount;
+			num -= amount;
 		}
-		
-		if (amount != 0)
-			memcpy(m_pFrameArray + m_nextPos, frames + offset, amount*sizeof(float));
-
-		if (amount != num)
+	}
+	else // integer samples
+	{
+		MIPRaw16bitAudioMessage *audioMessageInt = (MIPRaw16bitAudioMessage *)pMsg;
+		const uint16_t *frames = audioMessageInt->getFrames();
+	
+		m_frameMutex.Lock();
+		while (num > 0)
 		{
-			m_nextPos = 0;
-			//std::cerr << "Cycling next pos" << std::endl;
+			size_t maxAmount = m_frameArrayLength - m_nextPos;
+			size_t amount = (num > maxAmount)?maxAmount:num;
+			
+			if (m_nextPos <= m_currentPos && m_nextPos + amount > m_currentPos)
+			{
+				//std::cerr << "Strange error" << std::endl;
+				m_nextPos = m_currentPos + m_blockLength;
+			}
+			
+			if (amount != 0)
+				memcpy(m_pFrameArrayInt + m_nextPos, frames + offset, amount*sizeof(uint16_t));
+	
+			if (amount != num)
+			{
+				m_nextPos = 0;
+				//std::cerr << "Cycling next pos" << std::endl;
+			}
+			else
+				m_nextPos += amount;
+			
+			offset += amount;
+			num -= amount;
 		}
-		else
-			m_nextPos += amount;
-		
-		offset += amount;
-		num -= amount;
 	}
 	m_distTime += MIPTime(((real_t)audioMessage->getNumberOfFrames())/((real_t)m_sampRate));
 	m_frameMutex.Unlock();
@@ -327,10 +400,21 @@ void *MIPAlsaOutput::Thread()
 
 	while (!done)
 	{
-		if (snd_pcm_writei(m_pDevice, m_pFrameArray + m_currentPos, m_blockFrames) < 0)
+		if (m_floatSamples)
 		{
-			snd_pcm_prepare(m_pDevice);
-			//std::cerr << "Preparing device" << std::endl;
+			if (snd_pcm_writei(m_pDevice, m_pFrameArrayFloat + m_currentPos, m_blockFrames) < 0)
+			{
+				snd_pcm_prepare(m_pDevice);
+				//std::cerr << "Preparing device" << std::endl;
+			}
+		}
+		else
+		{
+			if (snd_pcm_writei(m_pDevice, m_pFrameArrayInt + m_currentPos, m_blockFrames) < 0)
+			{
+				snd_pcm_prepare(m_pDevice);
+				//std::cerr << "Preparing device" << std::endl;
+			}
 		}
 		
 		m_frameMutex.Lock();

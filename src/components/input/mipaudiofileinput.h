@@ -41,7 +41,7 @@
 
 /** A sound file input component.
  *  This component can be used to read audio from a file. The component uses the
- *  \c libaudiofile library to accomplish this. This component accepts MIPSYSTEMMESSAGE_ISTIME
+ *  \c libaudiofile library to accomplish this. This component accepts MIPSYSTEMMESSAGE_TYPE_ISTIME
  *  messages, so a timing component should sent its messages to the component. The
  *  output messages contain raw audio in 16 bit integer encoding.
  *  \note A frame consists of a number of samples (equal to the number of channels)

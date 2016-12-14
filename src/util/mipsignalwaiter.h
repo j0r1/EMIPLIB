@@ -32,8 +32,9 @@
 
 #include "mipconfig.h"
 #include <jmutex.h>
-
-#define MIPSIGNALWAITER_DUMMYBUFLEN					1
+#if !defined(WIN32) && !defined(_WIN32_WCE)
+	#include <pthread.h>
+#endif // !WIN32 && !_WIN32_WCE
 
 /** Objects of this type can be used to send signals between threads.
  *  This kind of object can be used to send signals between threads. For
@@ -65,12 +66,12 @@ public:
 	bool isInit()								{ return m_init; }
 private:
 #ifndef WIN32
-	int m_sigPipe[2];
+	pthread_cond_t m_cond;
+	pthread_mutex_t m_mutex;
 #else
 	HANDLE m_eventObject;
 #endif // WIN32
 	bool m_init;
-	char m_dummyBuf[MIPSIGNALWAITER_DUMMYBUFLEN];
 	JMutex m_countMutex,m_waitMutex;
 	int m_count;
 	bool m_isWaiting;

@@ -24,7 +24,8 @@
 
 #include "mipconfig.h"
 
-#ifdef MIPCONFIG_SUPPORT_SPEEX
+#if defined(MIPCONFIG_SUPPORT_SPEEX) && ((defined(WIN32) || defined(_WIN32_WCE)) || \
+		( !defined(WIN32) && !defined(_WIN32_WCE) && defined(MIPCONFIG_SUPPORT_OSS)))
 
 #include "mipaudiosession.h"
 #if (defined(WIN32) || defined(_WIN32_WCE))
@@ -42,6 +43,7 @@
 #include "miprtpaudiodecoder.h"
 #include "mipmediabuffer.h"
 #include "mipspeexdecoder.h"
+#include "mipsamplingrateconverter.h"
 #include "mipaudiomixer.h"
 #include "mipencodedaudiomessage.h"
 #include <rtpsession.h>
@@ -87,6 +89,13 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	int sampRate = 16000;
 	int channels = 1;
 	bool singleThread = false;
+
+	if (pParams2->getSpeexEncoding() == MIPSpeexEncoder::NarrowBand)
+		sampRate = 8000;
+	else if (pParams2->getSpeexEncoding() == MIPSpeexEncoder::WideBand)
+		sampRate = 16000;
+	else // ultra wide band
+		sampRate = 32000;
 	
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	m_pInput = new MIPWinMMInput();
@@ -166,7 +175,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	}
 
 	m_pSpeexEnc = new MIPSpeexEncoder();
-	if (!m_pSpeexEnc->init(MIPSpeexEncoder::WideBand))
+	if (!m_pSpeexEnc->init(pParams2->getSpeexEncoding()))
 	{
 		setErrorString(m_pSpeexEnc->getErrorString());
 		deleteAll();
@@ -232,6 +241,14 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		deleteAll();
 		return false;
 	}
+
+	m_pSampConv = new MIPSamplingRateConverter();
+	if (!m_pSampConv->init(sampRate, channels, false))
+	{
+		setErrorString(m_pSampConv->getErrorString());
+		deleteAll();
+		return false;
+	}
 	
 	m_pMixer = new MIPAudioMixer();
 	if (!m_pMixer->init(sampRate, channels, outputInterval, true, false))
@@ -280,7 +297,8 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		m_pOutputChain->addConnection(m_pRTPComp, m_pRTPDec);
 		m_pOutputChain->addConnection(m_pRTPDec, m_pMediaBuf, true);
 		m_pOutputChain->addConnection(m_pMediaBuf, m_pSpeexDec, true, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX);
-		m_pOutputChain->addConnection(m_pSpeexDec, m_pMixer, true);
+		m_pOutputChain->addConnection(m_pSpeexDec, m_pSampConv, true);
+		m_pOutputChain->addConnection(m_pSampConv, m_pMixer, true);
 		m_pOutputChain->addConnection(m_pMixer, m_pSampEnc2, true);
 		m_pOutputChain->addConnection(m_pSampEnc2, m_pOutput, true);
 	
@@ -310,7 +328,8 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		m_pIOChain->addConnection(m_pRTPComp, m_pRTPDec);
 		m_pIOChain->addConnection(m_pRTPDec, m_pMediaBuf, true);
 		m_pIOChain->addConnection(m_pMediaBuf, m_pSpeexDec, true, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX);
-		m_pIOChain->addConnection(m_pSpeexDec, m_pMixer, true);
+		m_pIOChain->addConnection(m_pSpeexDec, m_pSampConv, true);
+		m_pIOChain->addConnection(m_pSampConv, m_pMixer, true);
 		m_pIOChain->addConnection(m_pMixer, m_pSampEnc2, true);
 		m_pIOChain->addConnection(m_pSampEnc2, m_pOutput, true);
 	
@@ -562,6 +581,7 @@ void MIPAudioSession::zeroAll()
 	m_pRTPDec = 0;
 	m_pMediaBuf = 0;
 	m_pSpeexDec = 0;
+	m_pSampConv = 0;
 	m_pMixer = 0;
 	m_pSampEnc2 = 0;
 	m_pTimer = 0;
@@ -619,7 +639,7 @@ void MIPAudioSession::deleteAll()
 		delete m_pRTPComp;
 	if (m_pRTPSession)
 	{
-		m_pRTPSession->Destroy();
+		m_pRTPSession->BYEDestroy(RTPTime(2,0),0,0);
 		delete m_pRTPSession;
 	}
 	if (m_pRTPDec)
@@ -628,6 +648,8 @@ void MIPAudioSession::deleteAll()
 		delete m_pMediaBuf;
 	if (m_pSpeexDec)
 		delete m_pSpeexDec;
+	if (m_pSampConv)
+		delete m_pSampConv;
 	if (m_pMixer)
 		delete m_pMixer;
 	if (m_pSampEnc2)
@@ -639,5 +661,5 @@ void MIPAudioSession::deleteAll()
 	zeroAll();
 }
 
-#endif // MIPCONFIG_SUPPORT_SPEEX
+#endif // MIPCONFIG_SUPPORT_SPEEX && ((WIN32 || _WIN32_WCE) || (!WIN32 && !_WIN32_WCE && MIPCONFIG_SUPPORT_OSS))
 

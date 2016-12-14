@@ -23,6 +23,9 @@
 */
 
 #include "mipconfig.h"
+
+#ifdef MIPCONFIG_SUPPORT_OSS
+
 #include "mipossinputoutput.h"
 #include "miprawaudiomessage.h"
 #include "mipsystemmessage.h"
@@ -694,3 +697,6 @@ void *MIPOSSInputOutput::InputThread::Thread()
 
 	return 0;
 }
+
+#endif // MIPCONFIG_SUPPORT_OSS
+

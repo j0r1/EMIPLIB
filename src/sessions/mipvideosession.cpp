@@ -24,7 +24,7 @@
 
 #include "mipconfig.h"
 
-#ifdef MIPCONFIG_SUPPORT_AVCODEC
+#if defined(MIPCONFIG_SUPPORT_AVCODEC) && (defined(MIPCONFIG_SUPPORT_DIRECTSHOW) || defined(MIPCONFIG_SUPPORT_VIDEO4LINUX))
 
 #include "mipvideosession.h"
 #if (defined(WIN32) || defined(_WIN32_WCE))
@@ -527,7 +527,7 @@ void MIPVideoSession::deleteAll()
 		delete m_pRTPComp;
 	if (m_pRTPSession)
 	{
-		m_pRTPSession->Destroy();
+		m_pRTPSession->BYEDestroy(RTPTime(2,0),0,0);
 		delete m_pRTPSession;
 	}
 	if (m_pTimer2)
@@ -619,5 +619,5 @@ bool MIPVideoSession::getVideoFrame(uint64_t sourceID, uint8_t **pData, int *pWi
 	return true;
 }
 
-#endif // MIPCONFIG_SUPPORT_AVCODEC
+#endif // MIPCONFIG_SUPPORT_AVCODEC && (MIPCONFIG_SUPPORT_DIRECTSHOW || MIPCONFIG_SUPPORT_VIDEO4LINUX)
 

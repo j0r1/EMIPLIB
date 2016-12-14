@@ -3,6 +3,25 @@
                               EMIPLIB ChangeLog
 
 
+Version 0.11.0, April 2006:
+ * Adjusted the audio session component to make it possible to select
+   a specific Speex encoding mode (narrow band, wide band, ultra wide 
+   band)
+ * Created a template function to resample audio. Calculations can
+   now be done completely using integers.
+ * Modified the MIPSamplingRateConverter to allow 16 bit signed samples
+   too.
+ * In MIPAudioSession and MIPVideoSession, an RTP BYE packet is sent
+   when the session is stopped.
+ * A MIPSamplingRateConverter object was added to the MIPAudioSession
+   class. Otherwise, a Speex packet corresponding to a different
+   sampling rate would cause the output chain to stop.
+ * Added a JACK audio output component.
+ * Added a JACK audio input component.
+ * Added checks in the configure script for OSS and Video4Linux.
+ * Removed background thread from the ESD output component.
+ * Added pkg-config files.
+
 Version 0.10.0, March 2006:
  * Fixed bug in MIPAudioSession. In the GNU/Linux version, when the same
    OSS device was used for both input and output, there were some problems.

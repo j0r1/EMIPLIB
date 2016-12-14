@@ -25,12 +25,14 @@
 #include "mipconfig.h"
 #include "mipsamplingrateconverter.h"
 #include "miprawaudiomessage.h"
+#include "mipresample.h"
 
 #include "mipdebug.h"
 
 #define MIPSAMPLINGRATECONVERTER_ERRSTR_NOTINIT				"Not initialized"
 #define MIPSAMPLINGRATECONVERTER_ERRSTR_BADMESSAGETYPE			"Only floating point raw audio messages are allowed"
 #define MIPSAMPLINGRATECONVERTER_ERRSTR_CANTHANDLECHANNELS		"Can't handle channel conversion"
+#define MIPSAMPLINGRATECONVERTER_ERRSTR_CANTRESAMPLE			"Unable to resample the data"
 
 MIPSamplingRateConverter::MIPSamplingRateConverter() : MIPComponent("MIPSamplingRateConverter")
 {
@@ -42,13 +44,14 @@ MIPSamplingRateConverter::~MIPSamplingRateConverter()
 	cleanUp();
 }
 
-bool MIPSamplingRateConverter::init(int outRate, int outChannels)
+bool MIPSamplingRateConverter::init(int outRate, int outChannels, bool floatSamples)
 {
 	if (m_init)
 		cleanUp();
 
 	m_outRate = outRate;
 	m_outChannels = outChannels;
+	m_floatSamples = floatSamples;
 
 	m_prevIteration = -1;
 	m_init = true;
@@ -67,7 +70,7 @@ void MIPSamplingRateConverter::cleanUp()
 
 void MIPSamplingRateConverter::clearMessages()
 {
-	std::list<MIPRawFloatAudioMessage *>::iterator it;
+	std::list<MIPAudioMessage *>::iterator it;
 
 	for (it = m_messages.begin() ; it != m_messages.end() ; it++)
 		delete (*it);
@@ -83,13 +86,15 @@ bool MIPSamplingRateConverter::push(const MIPComponentChain &chain, int64_t iter
 		return false;
 	}
 	
-	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_AUDIO_RAW && pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_FLOAT)) 
+	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_AUDIO_RAW && 
+		( (pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_FLOAT && m_floatSamples) ||
+		  (pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_S16 && !m_floatSamples) ) ) ) 
 	{
 		setErrorString(MIPSAMPLINGRATECONVERTER_ERRSTR_BADMESSAGETYPE);
 		return false;
 	}
 
-	MIPRawFloatAudioMessage *pAudioMsg = (MIPRawFloatAudioMessage *)pMsg;
+	MIPAudioMessage *pAudioMsg = (MIPAudioMessage *)pMsg;
 	
 	if (pAudioMsg->getNumberOfChannels() != 1 && m_outChannels != pAudioMsg->getNumberOfChannels() && m_outChannels != 1)
 	{
@@ -102,75 +107,38 @@ bool MIPSamplingRateConverter::push(const MIPComponentChain &chain, int64_t iter
 	real_t frameTime = (((real_t)numInFrames)/((real_t)pAudioMsg->getSamplingRate()));
 	int numNewFrames = (int)((frameTime * ((real_t)m_outRate))+0.5);
 	int numNewSamples = numNewFrames * m_outChannels;
+	MIPAudioMessage *pNewMsg = 0;
 	
-	const float *oldFrames = pAudioMsg->getFrames();
-	float *newFrames = new float [numNewSamples];
-
-	int outSampPos, i;
-	float inFramePos, inFrameStep;
-
-	inFrameStep = ((float)(numInFrames))/((float)numNewFrames);
-	
-	for (i = 0, outSampPos = 0, inFramePos = 0 ; i < numNewFrames ; i++, outSampPos += m_outChannels, inFramePos += inFrameStep)
+	if (m_floatSamples)
 	{
-		int inFrameOffset = (int)inFramePos;
-		float inFrameFrac = inFramePos-(float)inFrameOffset;
-			
-		if (m_outChannels == 1)
-		{
-			float val = 0;
-			
-			for (int j = 0 ; j < numInChannels ; j++)
-			{
-				if (inFrameOffset < numInFrames-1)
-				{
-					val += (1.0f - inFrameFrac) * oldFrames[inFrameOffset * numInChannels + j] +
-					      inFrameFrac * oldFrames[(inFrameOffset + 1) * numInChannels + j];
-				}
-				else
-					val += oldFrames[(numInFrames - 1) * numInChannels + j];
-			}
-			val /= (float)numInChannels;
-			newFrames[outSampPos] = val;
-		}
-		else if (numInChannels == 1)
-		{
-			float val = 0;
-
-			if (inFrameOffset < numInFrames-1)
-			{
-				val = (1.0f - inFrameFrac) * oldFrames[inFrameOffset] +
-				      inFrameFrac * oldFrames[inFrameOffset + 1];
-			}
-			else
-				val = oldFrames[numInFrames - 1];
-				
-			for (int j = 0 ; j < m_outChannels ; j++)
-				newFrames[outSampPos + j] = val;
-		}
-		else // input channels == output channels
-		{
-			for (int j = 0 ; j < numInChannels ; j++)
-			{
-				float val = 0;
-
-				if (inFrameOffset < numInFrames-1)
-				{
-					val = (1.0f - inFrameFrac) * oldFrames[inFrameOffset * numInChannels + j] +
-					      inFrameFrac * oldFrames[(inFrameOffset + 1) * numInChannels + j];
-				}
-				else
-					val = oldFrames[(numInFrames - 1) * numInChannels + j];
-				
-				newFrames[outSampPos+j] = val;
-			}
-		}
-	}
-
-	MIPRawFloatAudioMessage *pNewMsg;
+		MIPRawFloatAudioMessage *pFloatAudioMsg = (MIPRawFloatAudioMessage *)pMsg;
+		const float *oldFrames = pFloatAudioMsg->getFrames();
+		float *newFrames = new float [numNewSamples];
 	
-	pNewMsg = new MIPRawFloatAudioMessage(m_outRate, m_outChannels, numNewFrames, newFrames, true);
-	pNewMsg->copyMediaInfoFrom(*pAudioMsg); // copy time info and source ID
+		if (!MIPResample<float,float>(oldFrames, numInFrames, numInChannels, newFrames, numNewFrames, m_outChannels))
+		{
+			setErrorString(MIPSAMPLINGRATECONVERTER_ERRSTR_CANTRESAMPLE);
+			return false;
+		}
+		
+		pNewMsg = new MIPRawFloatAudioMessage(m_outRate, m_outChannels, numNewFrames, newFrames, true);
+		pNewMsg->copyMediaInfoFrom(*pAudioMsg); // copy time info and source ID
+	}
+	else // 16 bit signed
+	{
+		MIPRaw16bitAudioMessage *pIntAudioMsg = (MIPRaw16bitAudioMessage *)pMsg;
+		const uint16_t *oldFrames = pIntAudioMsg->getFrames();
+		uint16_t *newFrames = new uint16_t [numNewSamples];
+	
+		if (!MIPResample<int16_t,int32_t>((const int16_t *)oldFrames, numInFrames, numInChannels, (int16_t *)newFrames, numNewFrames, m_outChannels))
+		{
+			setErrorString(MIPSAMPLINGRATECONVERTER_ERRSTR_CANTRESAMPLE);
+			return false;
+		}
+		
+		pNewMsg = new MIPRaw16bitAudioMessage(m_outRate, m_outChannels, numNewFrames, true, MIPRaw16bitAudioMessage::Native, newFrames, true);
+		pNewMsg->copyMediaInfoFrom(*pAudioMsg); // copy time info and source ID
+	}
 	
 	if (m_prevIteration != iteration)
 	{

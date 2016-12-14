@@ -34,10 +34,11 @@
 #include "mipcomponent.h"
 #include <list>
 
-class MIPRawFloatAudioMessage;
+class MIPAudioMessage;
 
 /** Converts sampling rate and number of channels of raw audio messages.
- *  This component accepts incoming floating point raw audio messages and produces
+ *  This component accepts incoming floating point or 16 bit signed integer raw audio 
+ *  messages and produces
  *  similar messages with a specific sampling rate and number of channels set during
  *  initialization.
  */
@@ -48,10 +49,12 @@ public:
 	~MIPSamplingRateConverter();
 
 	/** Initialize the sampling rate converter.
-	 *  This function instructs the converter to generate floating point raw audio 
+	 *  This function instructs the converter to generate raw audio 
 	 *  messages with sampling rate \c outRate and number of channels \c outChannels.
+	 *  If the \c floatSamples flag is set, floating point samples will be used,
+	 *  otherwise 16 bit signed native endian samples will be used.
 	 */
-	bool init(int outRate, int outChannels);
+	bool init(int outRate, int outChannels, bool floatSamples = true);
 	
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
@@ -60,10 +63,11 @@ private:
 	void clearMessages();
 	
 	bool m_init;
-	std::list<MIPRawFloatAudioMessage *> m_messages;
-	std::list<MIPRawFloatAudioMessage *>::const_iterator m_msgIt;
+	std::list<MIPAudioMessage *> m_messages;
+	std::list<MIPAudioMessage *>::const_iterator m_msgIt;
 	int64_t m_prevIteration;
 	int m_outRate, m_outChannels;
+	bool m_floatSamples;
 };
 
 #endif // MIPSAMPLINGRATECONVERTER_H

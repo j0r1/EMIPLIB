@@ -190,7 +190,7 @@ public:
 	/** Stores audio data.
 	 *  Stores audio data.
 	 *  \param isSigned Flag indicating if the samples are stored as signed or unsigned data.
-	 *  \param isBigEndian Flag indicating if the samples are encoded in little endian or bigendian format.
+	 *  \param sampleEncoding Indicates if the samples are encoded in little endian, big endian or native format.
 	 *  \param pFrames The audio data.
 	 *  \param deleteFrames Flag indicating if the data contained in \c pFrames should be
 	 *                      deleted when this message is destroyed or when the data is replaced.

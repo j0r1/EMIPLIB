@@ -43,7 +43,7 @@
 /** An Advanced Linux Sound Architecture (ALSA) soundcard output component.
  *  This component uses the Advanced Linux Sound Architecture (ALSA) system to provide
  *  soundcard output functions. The component accepts floating point raw audio messages
- *  and does not generate any messages itself.
+ *  or signed 16 bit integer encoded raw audio messages and does not generate any messages itself.
  */
 class MIPAlsaOutput : public MIPComponent, private JThread
 {
@@ -62,10 +62,13 @@ public:
 	 *  \param arrayTime The amount of memory allocated to internal buffers,
 	 *                   specified as a time interval. Note that this does not correspond
 	 *                   to the amount of buffering introduced by this component.
+	 *  \param floatSamples Flag indicating if floating point samples or integer samples
+	 *                      should be used.
 	 */
 	bool open(int sampRate, int channels, const std::string device = std::string("plughw:0,0"), 
                   MIPTime blockTime = MIPTime(0.020), 
-		  MIPTime arrayTime = MIPTime(10.0));
+		  MIPTime arrayTime = MIPTime(10.0),
+		  bool floatSamples = true);
 
 	/** Closes the soundcard device.
 	 *  This function closes the previously opened soundcard device.
@@ -80,7 +83,9 @@ private:
 	snd_pcm_hw_params_t *m_pHwParameters;
 	int m_sampRate;
 	int m_channels;
-	float *m_pFrameArray;
+	float *m_pFrameArrayFloat;
+	uint16_t *m_pFrameArrayInt;
+	bool m_floatSamples;
 	size_t m_frameArrayLength;
 	size_t m_currentPos, m_nextPos;
 	size_t m_blockLength, m_blockFrames;

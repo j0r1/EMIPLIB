@@ -32,7 +32,7 @@
 
 #include "mipconfig.h"
 
-#ifdef MIPCONFIG_SUPPORT_AVCODEC
+#if defined(MIPCONFIG_SUPPORT_AVCODEC) && (defined(MIPCONFIG_SUPPORT_DIRECTSHOW) || defined(MIPCONFIG_SUPPORT_VIDEO4LINUX))
 
 #include "mipcomponentchain.h"
 #include "miperrorbase.h"
@@ -298,7 +298,7 @@ private:
 	friend class OutputChain;
 };
 
-#endif // MIPCONFIG_SUPPORT_AVCODEC
+#endif // MIPCONFIG_SUPPORT_AVCODEC && (MIPCONFIG_SUPPORT_DIRECTSHOW || MIPCONFIG_SUPPORT_VIDEO4LINUX)
 
 #endif // MIPVIDEOSESSION_H
 

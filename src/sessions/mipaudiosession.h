@@ -32,11 +32,13 @@
 
 #include "mipconfig.h"
 
-#ifdef MIPCONFIG_SUPPORT_SPEEX
+#if defined(MIPCONFIG_SUPPORT_SPEEX) && ((defined(WIN32) || defined(_WIN32_WCE)) || \
+		( !defined(WIN32) && !defined(_WIN32_WCE) && defined(MIPCONFIG_SUPPORT_OSS)))
 
 #include "mipcomponentchain.h"
 #include "miperrorbase.h"
 #include "miptime.h"
+#include "mipspeexencoder.h"
 #include <rtptransmitter.h>
 #include <string>
 
@@ -58,6 +60,7 @@ class MIPAverageTimer;
 class MIPRTPAudioDecoder;
 class MIPMediaBuffer;
 class MIPSpeexDecoder;
+class MIPSamplingRateConverter;
 class MIPAudioMixer;
 
 /** Parameters for an audio session. */
@@ -72,6 +75,7 @@ public:
 #endif // !(WIN32 || _WIN32_WCE)
 		m_portbase = 5000; 
 		m_acceptOwnPackets = false; 
+		m_speexMode = MIPSpeexEncoder::WideBand;
 	}
 	~MIPAudioSessionParams()							{ }
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
@@ -87,6 +91,8 @@ public:
 	/** Returns \c true if own packets will be accepted (default: \c false). */
 	bool getAcceptOwnPackets() const						{ return m_acceptOwnPackets; }
 	
+	/** Returns the Speex mode (default: WideBand). */
+	MIPSpeexEncoder::SpeexBandWidth getSpeexEncoding() const			{ return m_speexMode; }
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
 	/** Sets the name of the input device (not available on Win32/WinCE). */
 	void setInputDevice(const std::string &devName)					{ m_inputDevName = devName; }
@@ -99,12 +105,16 @@ public:
 	
 	/** Sets a flag indicating if own packets should be accepted. */
 	void setAcceptOwnPackets(bool v)						{ m_acceptOwnPackets = v; }
+
+	/** Sets the Speex encoding mode. */
+	void setSpeexEncoding(MIPSpeexEncoder::SpeexBandWidth b)			{ m_speexMode = b; }
 private:
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
 	std::string m_inputDevName, m_outputDevName;
 #endif // !(WIN32 || _WIN32_WCE)
 	uint16_t m_portbase;
 	bool m_acceptOwnPackets;
+	MIPSpeexEncoder::SpeexBandWidth m_speexMode;
 };
 
 /** Creates a VoIP session.
@@ -257,6 +267,7 @@ private:
 	MIPRTPAudioDecoder *m_pRTPDec;
 	MIPMediaBuffer *m_pMediaBuf;
 	MIPSpeexDecoder *m_pSpeexDec;
+	MIPSamplingRateConverter *m_pSampConv;
 	MIPAudioMixer *m_pMixer;
 	MIPSampleEncoder *m_pSampEnc2;
 	
@@ -265,7 +276,7 @@ private:
 	friend class IOChain;
 };
 
-#endif // MIPCONFIG_SUPPORT_SPEEX
+#endif // MIPCONFIG_SUPPORT_SPEEX && ((WIN32 || _WIN32_WCE) || (!WIN32 && !_WIN32_WCE && MIPCONFIG_SUPPORT_OSS))
 
 #endif // MIPAUDIOSESSION_H
 

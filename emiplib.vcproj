@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.0\src,..\jrtplib-3.5.0\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
+                                AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.0\src,..\jrtplib-3.5.2\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -108,7 +108,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.0\src,..\jrtplib-3.5.0\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
+                                AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.0\src,..\jrtplib-3.5.2\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"

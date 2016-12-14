@@ -31,6 +31,9 @@
 #define MIPV4LINPUT_H
 
 #include "mipconfig.h"
+
+#ifdef MIPCONFIG_SUPPORT_VIDEO4LINUX
+
 #include "mipcomponent.h"
 #include "mipsignalwaiter.h"
 #include "miptime.h"
@@ -116,6 +119,8 @@ private:
 	MIPTime m_captureTime;
 	uint64_t m_sourceID;
 };
+
+#endif // MIPCONFIG_SUPPORT_VIDEO4LINUX
 
 #endif // MIPV4LINPUT_H
 

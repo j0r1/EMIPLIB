@@ -1,7 +1,7 @@
 
 
                                EMIPLIB README 
-				  (0.10.0)
+				  (0.11.0)
 
 
 1. INTRODUCTION
@@ -37,7 +37,7 @@ found at the following sites:
 http://research.edm.uhasselt.be/jori/jthread/jthread.html
 http://research.edm.uhasselt.be/jori/jrtplib/jrtplib.html
 
-3.1 GNU/Linux
+3.1 Unix-like platforms
 
 Use the configure script and make to build the library. Run the configure
 script with option '--help' to see which options can be specified.

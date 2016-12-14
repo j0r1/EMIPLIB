@@ -64,8 +64,8 @@ void MIPSignalWaiter::destroy()
 	if (!m_init)
 		return;
 #ifndef WIN32
-	close(m_sigPipe[0]);
-	close(m_sigPipe[1]);
+	pthread_cond_destroy(&m_cond);
+	pthread_mutex_destroy(&m_mutex);
 #else
 	CloseHandle(m_eventObject);
 #endif // WIN32
@@ -86,9 +86,15 @@ bool MIPSignalWaiter::init()
 		return false;
 	}
 #else // unix like function
-	if (pipe(m_sigPipe) == -1)
+	if (pthread_cond_init(&m_cond, 0) < 0)
 	{
 		// TODO error description
+		return false;
+	}
+	if (pthread_mutex_init(&m_mutex, 0) < 0)
+	{
+		// TODO error description
+		pthread_cond_destroy(&m_cond);
 		return false;
 	}
 #endif // WIN32
@@ -120,7 +126,8 @@ bool MIPSignalWaiter::waitForSignal()
 	m_waitMutex.Unlock();
 
 #ifndef WIN32
-	read(m_sigPipe[0],m_dummyBuf,1);
+	pthread_cond_wait(&m_cond, &m_mutex);
+	pthread_mutex_unlock(&m_mutex);
 #else
 	WaitForSingleObject(m_eventObject,INFINITE);
 	ResetEvent(m_eventObject);
@@ -140,7 +147,7 @@ bool MIPSignalWaiter::signal()
 	if (m_isWaiting)
 	{
 #ifndef WIN32
-		write(m_sigPipe[1],"*",1);
+		pthread_cond_signal(&m_cond);
 #else
 		SetEvent(m_eventObject);
 #endif // WIN32
@@ -168,7 +175,7 @@ bool MIPSignalWaiter::clearSignalBuffers()
 	if (m_isWaiting)
 	{
 #ifndef WIN32
-		write(m_sigPipe[1],"*",1);
+		pthread_cond_signal(&m_cond);
 #else
 		SetEvent(m_eventObject);
 #endif // WIN32
@@ -179,3 +186,4 @@ bool MIPSignalWaiter::clearSignalBuffers()
 	m_countMutex.Unlock();
 	return true;
 }
+

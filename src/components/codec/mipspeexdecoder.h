@@ -36,7 +36,6 @@
 
 #include "mipcomponent.h"
 #include "miptime.h"
-#include <speex/speex.h>
 #if defined(WIN32) || defined(_WIN32_WCE)
 	#include <hash_map>
 #else
@@ -45,6 +44,7 @@
 #include <list>
 
 class MIPAudioMessage;
+struct SpeexBits;
 
 /** Decodes messages which contain Speex encoded data.
  *  This component can be used to decompress data using the Speex codec. Input messages
@@ -77,38 +77,17 @@ private:
 	class SpeexStateInfo
 	{
 	public:
-		/** Used to select speex encoding type. */
 		enum SpeexBandWidth 
 		{	 
- 			/** Narrow band mode (8000 Hz) */
 			NarrowBand,
-		 	/** Wide band mode (16000 Hz) */
 			WideBand,		
-	 		/** Ultra wide band mode (32000 Hz) */
 			UltraWideBand
 		};
 
-		SpeexStateInfo(SpeexBandWidth b) 
-		{ 
-			m_lastTime = MIPTime::getCurrentTime(); 
-			speex_bits_init(&m_bits); 
-			if (b == NarrowBand)
-				m_pState = speex_decoder_init(&speex_nb_mode);
-			else if (b == WideBand)
-				m_pState = speex_decoder_init(&speex_wb_mode);
-			else
-				m_pState = speex_decoder_init(&speex_uwb_mode);
-			m_bandWidth = b;
-			speex_decoder_ctl(m_pState, SPEEX_GET_FRAME_SIZE, &m_numFrames); 
-		}
-		
-		~SpeexStateInfo() 
-		{ 
-			speex_bits_destroy(&m_bits);
-			speex_decoder_destroy(m_pState);
-		}
+		SpeexStateInfo(SpeexBandWidth b);
+		~SpeexStateInfo();
 
-		SpeexBits *getBits()							{ return &m_bits; }
+		SpeexBits *getBits()							{ return m_pBits; }
 		void *getState()							{ return m_pState; }
 		MIPTime getLastUpdateTime() const					{ return m_lastTime; }
 		SpeexBandWidth getBandWidth() const					{ return m_bandWidth; }
@@ -117,7 +96,7 @@ private:
 	private:
 		MIPTime m_lastTime;
 		void *m_pState;
-		SpeexBits m_bits;
+		SpeexBits *m_pBits;
 		SpeexBandWidth m_bandWidth;
 		int m_numFrames;
 	};

@@ -29,8 +29,7 @@
 #include "mipspeexdecoder.h"
 #include "mipencodedaudiomessage.h"
 #include "miprawaudiomessage.h"
-
-#include <iostream>
+#include <speex/speex.h>
 
 #include "mipdebug.h"
 
@@ -45,6 +44,29 @@ using namespace __gnu_cxx;
 #define MIPSPEEXDECODER_ERRSTR_BADMESSAGE				"Bad message"
 #define MIPSPEEXDECODER_ERRSTR_BADSAMPRATE				"Bad sampling rate"
 	
+MIPSpeexDecoder::SpeexStateInfo::SpeexStateInfo(SpeexBandWidth b)
+{ 
+	m_lastTime = MIPTime::getCurrentTime(); 
+	m_pBits = new SpeexBits;
+	speex_bits_init(m_pBits); 
+	if (b == NarrowBand)
+		m_pState = speex_decoder_init(&speex_nb_mode);
+	else if (b == WideBand)
+		m_pState = speex_decoder_init(&speex_wb_mode);
+	else
+		m_pState = speex_decoder_init(&speex_uwb_mode);
+	m_bandWidth = b;
+	speex_decoder_ctl(m_pState, SPEEX_GET_FRAME_SIZE, &m_numFrames); 
+}
+		
+MIPSpeexDecoder::SpeexStateInfo::~SpeexStateInfo() 
+{ 
+	speex_bits_destroy(m_pBits);
+	delete m_pBits;
+	speex_decoder_destroy(m_pState);
+}
+
+
 MIPSpeexDecoder::MIPSpeexDecoder() : MIPComponent("MIPSpeexDecoder")
 {
 	m_init = false;

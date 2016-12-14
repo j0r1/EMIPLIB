@@ -128,17 +128,20 @@ private:
 	class MIPConnection
 	{
 	public:
-		MIPConnection(MIPComponent *pPull, MIPComponent *pPush, bool feedback, uint64_t mask)	{ m_mask = mask; m_pPull = pPull; m_pPush = pPush; m_marked = false; m_feedback = feedback; }
+		MIPConnection(MIPComponent *pPull, MIPComponent *pPush, bool feedback, uint32_t mask1,
+		              uint32_t mask2)								{ m_mask1 = mask1; m_mask2 = mask2; m_pPull = pPull; m_pPush = pPush; m_marked = false; m_feedback = feedback; }
 		MIPComponent *getPullComponent() const							{ return m_pPull; }
 		MIPComponent *getPushComponent() const							{ return m_pPush; }
 		bool isMarked() const									{ return m_marked; }
 		void setMark(bool v)									{ m_marked = v; }
-		uint64_t getMask() const								{ return m_mask; }
+		uint32_t getMask1() const								{ return m_mask1; }
+		uint32_t getMask2() const								{ return m_mask2; }
 		bool giveFeedback() const								{ return m_feedback; }
-		bool operator==(const MIPConnection &c)	const						{ if (m_pPull == c.m_pPull && m_pPush == c.m_pPush && m_mask == c.m_mask && m_feedback == c.m_feedback) return true; return false; }
+		bool operator==(const MIPConnection &c)	const						{ if (m_pPull == c.m_pPull && m_pPush == c.m_pPush && m_mask1 == c.m_mask1 && m_mask2 == c.m_mask2 && m_feedback == c.m_feedback) return true; return false; }
 	private:
 		MIPComponent *m_pPull, *m_pPush;
-		uint64_t m_mask;
+		uint32_t m_mask1;
+		uint32_t m_mask2;
 		bool m_marked;
 		bool m_feedback;
 	};

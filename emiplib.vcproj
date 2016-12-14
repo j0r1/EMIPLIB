@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.0\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
+				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.1\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, src\thirdparty\lpc, src\thirdparty\gsm\inc, C:\Program Files\Microsoft Platform SDK\Include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -79,7 +79,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copying header files"
-				CommandLine="$(ProjectDir)\copyheaderfiles.bat $(ProjectDir)"
+				CommandLine="&quot;$(ProjectDir)\copyheaderfiles.bat&quot; &quot;$(ProjectDir)&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -108,7 +108,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.0\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
+				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.1\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, src\thirdparty\lpc, src\thirdparty\gsm\inc, C:\Program Files\Microsoft Platform SDK\Include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -143,7 +143,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copying header files"
-				CommandLine="$(ProjectDir)\copyheaderfiles.bat $(ProjectDir)"
+				CommandLine="&quot;$(ProjectDir)\copyheaderfiles.bat&quot; &quot;$(ProjectDir)&quot;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -225,6 +225,10 @@
 						RelativePath=".\src\components\output\mipwinmmoutput.cpp"
 						>
 					</File>
+					<File
+						RelativePath=".\src\components\output\mipopenaloutput.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="transmission"
@@ -261,6 +265,31 @@
 						RelativePath=".\src\components\transmission\miprtpvideoencoder.cpp"
 						>
 					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpalawdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpalawencoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtplpcdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtplpcencoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpgsmdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpgsmencoder.cpp"
+						>
+					</File>
+	
 				</Filter>
 				<Filter
 					Name="transform"
@@ -287,6 +316,10 @@
 					</File>
 					<File
 						RelativePath=".\src\components\transform\mipsamplingrateconverter.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transform\mipaudiofilter.cpp"
 						>
 					</File>
 				</Filter>
@@ -343,6 +376,30 @@
 					</File>
 					<File
 						RelativePath=".\src\components\codec\mipulawencoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipalawdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipalawencoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\miplpcdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\miplpcencoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipgsmdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipgsmencoder.cpp"
 						>
 					</File>
 				</Filter>
@@ -407,6 +464,94 @@
 					RelativePath=".\src\sessions\mipvideosession.cpp"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="thirdparty"
+				>
+				<Filter
+					Name="lpc"
+				>
+					<File
+						RelativePath=".\src\thirdparty\lpc\lpccodec.cpp"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="gsm"
+				>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_add.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_code.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_create.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_debug.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_decode.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_decode2.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_destroy.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_encode.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_explode.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_implode.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_long_term.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_lpc.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_option.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_preprocess.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_print.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_rpe.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_short_term.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\src\gsm_table.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -484,6 +629,11 @@
 						RelativePath=".\src\components\output\mipwinmmoutput.h"
 						>
 					</File>
+					<File
+						RelativePath=".\src\components\output\mipopenaloutput.h"
+						>
+					</File>
+
 				</Filter>
 				<Filter
 					Name="transmission"
@@ -532,6 +682,30 @@
 						RelativePath=".\src\components\transmission\miprtpvideoencoder.h"
 						>
 					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpalawdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpalawencoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtplpcdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtplpcencoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpgsmdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpgsmencoder.h"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="transform"
@@ -562,6 +736,10 @@
 					</File>
 					<File
 						RelativePath=".\src\components\transform\mipsamplingrateconverter.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transform\mipaudiofilter.h"
 						>
 					</File>
 				</Filter>
@@ -618,6 +796,30 @@
 					</File>
 					<File
 						RelativePath=".\src\components\codec\mipulawencoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipalawdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipalawencoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\miplpcdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\miplpcencoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipgsmdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipgsmencoder.h"
 						>
 					</File>
 				</Filter>
@@ -757,6 +959,42 @@
 					RelativePath=".\src\sessions\mipvideosession.h"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="thirdparty"
+				>
+				<Filter
+					Name="lpc"
+				>
+					<File
+						RelativePath=".\src\thirdparty\lpc\lpccodec.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="gsm"
+				>
+					<File
+						RelativePath=".\src\thirdparty\gsm\inc\config.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\inc\gsm.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\inc\private.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\inc\proto.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\thirdparty\gsm\inc\unproto.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 	</Files>

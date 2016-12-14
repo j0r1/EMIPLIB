@@ -29,6 +29,7 @@
 #include "mipspeexencoder.h"
 #include "mipencodedaudiomessage.h"
 #include "miprawaudiomessage.h"
+#include <speex/speex.h>
 
 #include "mipdebug.h"
 
@@ -71,7 +72,8 @@ bool MIPSpeexEncoder::init(SpeexBandWidth b, int quality, int complexity, bool v
 		return false;
 	}
 
-	speex_bits_init(&m_bits);
+	m_pBits = new SpeexBits;
+	speex_bits_init(m_pBits);
 
 	if (b == NarrowBand)
 	{
@@ -116,7 +118,8 @@ bool MIPSpeexEncoder::destroy()
 		return false;
 	}
 	
-	speex_bits_destroy(&m_bits);
+	speex_bits_destroy(m_pBits);
+	delete m_pBits;
 	speex_encoder_destroy(m_pState);
 	clearMessages();
 	delete [] m_pFloatBuffer;
@@ -167,7 +170,7 @@ bool MIPSpeexEncoder::push(const MIPComponentChain &chain, int64_t iteration, MI
 			return false;
 		}
 	
-		speex_bits_reset(&m_bits);
+		speex_bits_reset(m_pBits);
 	
 		const float *pFloatBuf = pAudioMsg->getFrames();
 		for (int i = 0 ; i < m_numFrames ; i++)
@@ -175,8 +178,8 @@ bool MIPSpeexEncoder::push(const MIPComponentChain &chain, int64_t iteration, MI
 		
 		uint8_t *pBuffer = new uint8_t[m_numFrames]; // this should be more than enough memory
 	
-		speex_encode(m_pState, m_pFloatBuffer, &m_bits);
-		size_t numBytes = (size_t)speex_bits_write(&m_bits, (char *)pBuffer, (int)m_numFrames);
+		speex_encode(m_pState, m_pFloatBuffer, m_pBits);
+		size_t numBytes = (size_t)speex_bits_write(m_pBits, (char *)pBuffer, (int)m_numFrames);
 		
 		MIPEncodedAudioMessage *pNewMsg = new MIPEncodedAudioMessage(MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX, m_sampRate, 1, m_numFrames, pBuffer, numBytes, true);
 		pNewMsg->copyMediaInfoFrom(*pAudioMsg); // copy time and sourceID
@@ -206,12 +209,12 @@ bool MIPSpeexEncoder::push(const MIPComponentChain &chain, int64_t iteration, MI
 			return false;
 		}
 	
-		speex_bits_reset(&m_bits);
+		speex_bits_reset(m_pBits);
 	
 		uint8_t *pBuffer = new uint8_t[m_numFrames]; // this should be more than enough memory
 	
-		speex_encode_int(m_pState, (int16_t *)pAudioMsg->getFrames(), &m_bits);
-		size_t numBytes = (size_t)speex_bits_write(&m_bits, (char *)pBuffer, (int)m_numFrames);
+		speex_encode_int(m_pState, (int16_t *)pAudioMsg->getFrames(), m_pBits);
+		size_t numBytes = (size_t)speex_bits_write(m_pBits, (char *)pBuffer, (int)m_numFrames);
 		
 		MIPEncodedAudioMessage *pNewMsg = new MIPEncodedAudioMessage(MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX, m_sampRate, 1, m_numFrames, pBuffer, numBytes, true);
 		pNewMsg->copyMediaInfoFrom(*pAudioMsg); // copy time and sourceID

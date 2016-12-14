@@ -1,5 +1,5 @@
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(emiplib, 0.14.0)
+AM_INIT_AUTOMAKE(emiplib, 0.15.0)
 
 MIPCONFIG_BIGENDIAN="// Little endian system"
 MIPCONFIG_SUPPORT_SNDFILE="// No support for libsndfile"
@@ -7,6 +7,8 @@ MIPCONFIG_SUPPORT_AUDIOFILE="// No support for libaudiofile"
 MIPCONFIG_SUPPORT_QT="// No support for Qt"
 MIPCONFIG_SUPPORT_ALSA="// No support for ALSA"
 MIPCONFIG_SUPPORT_SPEEX="// No speex support"
+MIPCONFIG_SUPPORT_GSM="// No GSM support"
+MIPCONFIG_SUPPORT_LPC="// No LPC support"
 MIPCONFIG_SUPPORT_AVCODEC="// No libavcodec support"
 MIPCONFIG_SUPPORT_INTELIPP="// No support for the Intel IPP library"
 MIPCONFIG_SUPPORT_ESD="// No support for esd"
@@ -14,6 +16,7 @@ MIPCONFIG_SUPPORT_JACK="// No support for JACK"
 MIPCONFIG_SUPPORT_VIDEO4LINUX="// No support for video4linux"
 MIPCONFIG_SUPPORT_OSS="// No support for OSS"
 MIPCONFIG_SUPPORT_SDLAUDIO="// No support for SDL audio"
+MIPCONFIG_SUPPORT_OPENAL="// No support for OpenAL"
 MIPCONFIG_GPL="// No GPL components will be compiled"
 
 MIPLINKLIBS="$LDFLAGS"
@@ -254,6 +257,30 @@ if test $MIPAVCODEC = "yes" ; then
 fi
 
 dnl ---------------------------------------------------------------------------
+dnl GSM support
+dnl ---------------------------------------------------------------------------
+
+AC_ARG_ENABLE(gsm,[  --disable-gsm           Disable GSM codec],
+	      [ if test $enableval = "yes" ; then
+	       		MIPCONFIG_SUPPORT_GSM="#define MIPCONFIG_SUPPORT_GSM"
+	        fi ], [ MIPCONFIG_SUPPORT_GSM="#define MIPCONFIG_SUPPORT_GSM" ])
+
+dnl ---------------------------------------------------------------------------
+dnl LPC support
+dnl ---------------------------------------------------------------------------
+
+AC_ARG_ENABLE(lpc,[  --disable-lpc           Disable LPC codec],
+	      [ if test $enableval = "yes" ; then
+	       		MIPCONFIG_SUPPORT_LPC="#define MIPCONFIG_SUPPORT_LPC"
+	        fi ], [ MIPCONFIG_SUPPORT_LPC="#define MIPCONFIG_SUPPORT_LPC" ])
+
+dnl ---------------------------------------------------------------------------
+dnl OpenAL support
+dnl ---------------------------------------------------------------------------
+
+AC_CHECK_HEADER(AL/al.h,[MIPCONFIG_SUPPORT_OPENAL="#define MIPCONFIG_SUPPORT_OPENAL"])
+
+dnl ---------------------------------------------------------------------------
 dnl Check if it's a big endian or little endian system
 dnl Note that we must be careful when a cross-compiler is being used...
 dnl ---------------------------------------------------------------------------
@@ -294,6 +321,8 @@ AC_SUBST(MIPCONFIG_SUPPORT_AUDIOFILE)
 AC_SUBST(MIPCONFIG_SUPPORT_QT)
 AC_SUBST(MIPCONFIG_SUPPORT_ALSA)
 AC_SUBST(MIPCONFIG_SUPPORT_SPEEX)
+AC_SUBST(MIPCONFIG_SUPPORT_GSM)
+AC_SUBST(MIPCONFIG_SUPPORT_LPC)
 AC_SUBST(MIPCONFIG_SUPPORT_AVCODEC)
 AC_SUBST(MIPCONFIG_SUPPORT_INTELIPP)
 AC_SUBST(MIPCONFIG_SUPPORT_ESD)
@@ -301,11 +330,16 @@ AC_SUBST(MIPCONFIG_SUPPORT_JACK)
 AC_SUBST(MIPCONFIG_SUPPORT_VIDEO4LINUX)
 AC_SUBST(MIPCONFIG_SUPPORT_OSS)
 AC_SUBST(MIPCONFIG_SUPPORT_SDLAUDIO)
+AC_SUBST(MIPCONFIG_SUPPORT_OPENAL)
 AC_SUBST(MIPCONFIG_GPL)
 
 AC_OUTPUT(Makefile \
 	  src/Makefile \
 	  src/core/mipconfig_unix.h \
+	  src/thirdparty/Makefile \
+	  src/thirdparty/lpc/Makefile \
+	  src/thirdparty/gsm/Makefile \
+	  src/thirdparty/gsm/doc/Makefile \
 	  examples/Makefile \
           doc/Makefile \
           pkgconfig/Makefile \

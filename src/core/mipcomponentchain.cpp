@@ -176,9 +176,7 @@ bool MIPComponentChain::addConnection(MIPComponent *pPullComponent, MIPComponent
 		return false;
 	}
 	
-	uint64_t mask = (((uint64_t)allowedMessageTypes) << 32) | ((uint64_t)allowedSubmessageTypes);
-
-	m_inputConnections.push_back(MIPConnection(pPullComponent, pPushComponent, feedback, mask));
+	m_inputConnections.push_back(MIPConnection(pPullComponent, pPushComponent, feedback, allowedMessageTypes, allowedSubmessageTypes));
 	return true;
 }
 
@@ -191,10 +189,8 @@ bool MIPComponentChain::deleteConnection(MIPComponent *pPullComponent, MIPCompon
 		return false;
 	}
 	
-	uint64_t mask = (((uint64_t)allowedMessageTypes) << 32) | ((uint64_t)allowedSubmessageTypes);
-
 	std::list<MIPConnection>::iterator it;
-	MIPConnection conn(pPullComponent, pPushComponent, feedback, mask);
+	MIPConnection conn(pPullComponent, pPushComponent, feedback, allowedMessageTypes, allowedSubmessageTypes);
 
 	it = m_inputConnections.begin();
 	while (it != m_inputConnections.end())
@@ -260,7 +256,8 @@ void *MIPComponentChain::Thread()
 		{
 			MIPComponent *pPullComp = (*it).getPullComponent();
 			MIPComponent *pPushComp = (*it).getPushComponent();
-			uint64_t mask = (*it).getMask();
+			uint32_t mask1 = (*it).getMask1();
+			uint32_t mask2 = (*it).getMask2();
 
 			pPullComp->lock();
 			if (pPushComp != pPullComp)
@@ -282,9 +279,10 @@ void *MIPComponentChain::Thread()
 //					std::cout << m_chainName << " pull stop:  " << pPullComp->getComponentName() << std::endl;
 					if (msg) // Ok, pass the message
 					{
-						uint64_t msgType = msg->getTotalType();
+						uint32_t msgType = msg->getMessageType();
+						uint32_t msgSubtype = msg->getMessageSubtype();
 
-						if (msgType&mask)
+						if ((msgType&mask1) && (msgSubtype&mask2))
 						{
 //							std::cout << m_chainName << " push start: " << pPushComp->getComponentName() << std::endl;
 							if(!pPushComp->push(*this, iteration, msg))

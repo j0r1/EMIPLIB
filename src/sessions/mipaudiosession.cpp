@@ -24,7 +24,7 @@
 
 #include "mipconfig.h"
 
-#if defined(MIPCONFIG_SUPPORT_SPEEX) && ((defined(WIN32) || defined(_WIN32_WCE)) || \
+#if ((defined(WIN32) || defined(_WIN32_WCE)) || \
 		( !defined(WIN32) && !defined(_WIN32_WCE) && defined(MIPCONFIG_SUPPORT_OSS)))
 
 #include "mipaudiosession.h"
@@ -37,13 +37,30 @@
 #include "mipaudiosplitter.h"
 #include "mipsampleencoder.h"
 #include "mipspeexencoder.h"
+#include "miplpcencoder.h"
+#include "mipgsmencoder.h"
+#include "mipulawencoder.h"
+#include "mipalawencoder.h"
 #include "miprtpspeexencoder.h"
+#include "miprtplpcencoder.h"
+#include "miprtpgsmencoder.h"
+#include "miprtpalawencoder.h"
+#include "miprtpulawencoder.h"
 #include "miprtpcomponent.h"
 #include "mipaveragetimer.h"
 #include "miprtpdecoder.h"
+#include "miprtpdummydecoder.h"
 #include "miprtpspeexdecoder.h"
+#include "miprtplpcdecoder.h"
+#include "miprtpgsmdecoder.h"
+#include "miprtpalawdecoder.h"
+#include "miprtpulawdecoder.h"
 #include "mipmediabuffer.h"
 #include "mipspeexdecoder.h"
+#include "miplpcdecoder.h"
+#include "mipgsmdecoder.h"
+#include "mipulawdecoder.h"
+#include "mipalawdecoder.h"
 #include "mipsamplingrateconverter.h"
 #include "mipaudiomixer.h"
 #include "mipencodedaudiomessage.h"
@@ -53,8 +70,12 @@
 #include <rtperrors.h>
 #include <rtpudpv4transmitter.h>
 
+#include <iostream>
+
 #define MIPAUDIOSESSION_ERRSTR_NOTINIT						"Not initialized"
 #define MIPAUDIOSESSION_ERRSTR_ALREADYINIT					"Already initialized"
+#define MIPAUDIOSESSION_ERRSTR_MULTIPLIERTOOSMALL				"The input and output sampling interval multipliers must be at least 1"
+#define MIPAUDIOSESSION_ERRSTR_MULTIPLIERTOOLARGE				"The input and output sampling interval multipliers may not exceed 100"
 
 MIPAudioSession::MIPAudioSession()
 {
@@ -81,117 +102,302 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	if (pParams)
 		pParams2 = pParams;
 
-#ifdef _WIN32_WCE
-	MIPTime inputInterval(0.060);
-	MIPTime outputInterval(0.040);
-#else
-	MIPTime inputInterval(0.020);
-	MIPTime outputInterval(0.020);
-#endif // _WIN32_WCE
+	if (pParams2->getInputMultiplier() < 1 || pParams2->getOutputMultiplier() < 1)
+	{
+		setErrorString(MIPAUDIOSESSION_ERRSTR_MULTIPLIERTOOSMALL);
+		return false;
+	}
+
+	if (pParams2->getInputMultiplier() > 100 || pParams2->getOutputMultiplier() > 100)
+	{
+		setErrorString(MIPAUDIOSESSION_ERRSTR_MULTIPLIERTOOLARGE);
+		return false;
+	}
+
+	MIPTime inputInterval(0.020 * pParams2->getInputMultiplier());
+	MIPTime outputInterval(0.020 * pParams2->getOutputMultiplier());
+
 	int sampRate = 16000;
 	int channels = 1;
 	bool singleThread = false;
 
-
-	if (pParams2->getSpeexEncoding() == MIPSpeexEncoder::NarrowBand)
+	if (pParams2->getCompressionType() == MIPAudioSessionParams::Speex)
+	{
+		if (pParams2->getSpeexEncoding() == MIPAudioSessionParams::NarrowBand)
+			sampRate = 8000;
+		else if (pParams2->getSpeexEncoding() == MIPAudioSessionParams::WideBand)
+			sampRate = 16000;
+		else // ultra wide band
+			sampRate = 32000;
+	}
+	else
 		sampRate = 8000;
-	else if (pParams2->getSpeexEncoding() == MIPSpeexEncoder::WideBand)
-		sampRate = 16000;
-	else // ultra wide band
-		sampRate = 32000;
+		
+	MIPComponentChain *pActiveChain = 0;
+	MIPComponent *pPrevComponent = 0;
 	
 #if (defined(WIN32) || defined(_WIN32_WCE))
-	m_pInput = new MIPWinMMInput();
-	if (!m_pInput->open(sampRate, channels, inputInterval, MIPTime(10.0), pParams2->getUseHighPriority()))
+	MIPWinMMInput *pInput = new MIPWinMMInput();
+	storeComponent(pInput);
+	
+	if (!pInput->open(sampRate, channels, inputInterval, MIPTime(10.0), pParams2->getUseHighPriority()))
 	{
-		setErrorString(m_pInput->getErrorString());
+		setErrorString(pInput->getErrorString());
 		deleteAll();
 		return false;
 	}
-	m_pOutput = new MIPWinMMOutput();
-	if (!m_pOutput->open(sampRate, channels, outputInterval, MIPTime(10.0), pParams2->getUseHighPriority()))
-	{
-		setErrorString(m_pOutput->getErrorString());
-		deleteAll();
-		return false;
-	}
+	
+	m_pInputChain = new InputChain(this);
+	m_pInputChain->setChainStart(pInput);
+
+	pActiveChain = m_pInputChain;
+	pPrevComponent = pInput;
 #else
+	MIPOSSInputOutput *pIOComp = 0;
+	
 	if (pParams2->getInputDevice() == pParams2->getOutputDevice())
 	{
 		MIPOSSInputOutputParams ioParams;
 		
-		m_pInput = new MIPOSSInputOutput();
-		m_pOutput = m_pInput;
+		MIPOSSInputOutput *pInput = new MIPOSSInputOutput();
+		storeComponent(pInput);
+		
+		pIOComp = pInput;
 		singleThread = true;
 
 		ioParams.setDeviceName(pParams2->getInputDevice());
 
-		if (!m_pInput->open(sampRate, channels, inputInterval, MIPOSSInputOutput::ReadWrite, &ioParams))
+		if (!pInput->open(sampRate, channels, inputInterval, MIPOSSInputOutput::ReadWrite, &ioParams))
 		{
-			setErrorString(m_pInput->getErrorString());
+			setErrorString(pInput->getErrorString());
 			deleteAll();
 			return false;
 		}
+		
+		m_pIOChain = new IOChain(this);
+		m_pIOChain->setChainStart(pInput);
+
+		pActiveChain = m_pIOChain;
+		pPrevComponent = pInput;
 	}
 	else
 	{
 		MIPOSSInputOutputParams ioParams;
 		
-		m_pInput = new MIPOSSInputOutput();
+		MIPOSSInputOutput *pInput = new MIPOSSInputOutput();
+		storeComponent(pInput);
 		
 		ioParams.setDeviceName(pParams2->getInputDevice());
-		if (!m_pInput->open(sampRate, channels, inputInterval, MIPOSSInputOutput::ReadOnly, &ioParams))
+		if (!pInput->open(sampRate, channels, inputInterval, MIPOSSInputOutput::ReadOnly, &ioParams))
 		{
-			setErrorString(m_pInput->getErrorString());
+			setErrorString(pInput->getErrorString());
 			deleteAll();
 			return false;
 		}
-
-		m_pOutput = new MIPOSSInputOutput();
 		
-		ioParams.setDeviceName(pParams2->getOutputDevice());
-		if (!m_pOutput->open(sampRate, channels, outputInterval, MIPOSSInputOutput::WriteOnly, &ioParams))
-		{
-			setErrorString(m_pOutput->getErrorString());
-			deleteAll();
-			return false;
-		}
+		m_pInputChain = new InputChain(this);
+		m_pInputChain->setChainStart(pInput);
+
+		pActiveChain = m_pInputChain;
+		pPrevComponent = pInput;
 	}
 #endif // WIN32 || _WIN32_WCE
 
-#ifdef _WIN32_WCE
-	m_pSplitter = new MIPAudioSplitter();
-	if (!m_pSplitter->init(MIPTime(0.020)))
+	if (pParams2->getInputMultiplier() > 1)
 	{
-		setErrorString(m_pSplitter->getErrorString());
+		MIPAudioSplitter *pSplitter = new MIPAudioSplitter();
+		storeComponent(pSplitter);
+		
+		if (!pSplitter->init(MIPTime(0.020)))
+		{
+			setErrorString(pSplitter->getErrorString());
+			deleteAll();
+			return false;
+		}
+		addLink(pActiveChain, &pPrevComponent, pSplitter);
+	}
+
+	MIPSampleEncoder *pSampEnc = new MIPSampleEncoder();
+	storeComponent(pSampEnc);
+	
+	if (!pSampEnc->init(MIPRAWAUDIOMESSAGE_TYPE_S16))
+	{
+		setErrorString(pSampEnc->getErrorString());
 		deleteAll();
 		return false;
 	}
-#endif // _WIN32_WCE
-
-
-	m_pSampEnc = new MIPSampleEncoder();
-	if (!m_pSampEnc->init(MIPRAWAUDIOMESSAGE_TYPE_S16))
+	addLink(pActiveChain, &pPrevComponent, pSampEnc);
+	
+	switch (pParams2->getCompressionType())
 	{
-		setErrorString(m_pSampEnc->getErrorString());
-		deleteAll();
-		return false;
-	}
+		case MIPAudioSessionParams::Speex:
+		{
+#ifdef MIPCONFIG_SUPPORT_SPEEX
+			MIPSpeexEncoder *pSpeexEnc = new MIPSpeexEncoder();
+			storeComponent(pSpeexEnc);
+	
+			MIPSpeexEncoder::SpeexBandWidth encoding;
 
-	m_pSpeexEnc = new MIPSpeexEncoder();
-	if (!m_pSpeexEnc->init(pParams2->getSpeexEncoding()))
-	{
-		setErrorString(m_pSpeexEnc->getErrorString());
-		deleteAll();
-		return false;
-	}
+			switch(pParams2->getSpeexEncoding())
+			{
+				case MIPAudioSessionParams::NarrowBand:
+					encoding = MIPSpeexEncoder::NarrowBand;
+					break;
+				case MIPAudioSessionParams::WideBand:
+					encoding = MIPSpeexEncoder::WideBand;
+					break;
+				case MIPAudioSessionParams::UltraWideBand:
+				default:
+					encoding = MIPSpeexEncoder::UltraWideBand;
+			}
+			
+			if (!pSpeexEnc->init(encoding))
+			{
+				setErrorString(pSpeexEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pSpeexEnc);
 
-	m_pRTPEnc = new MIPRTPSpeexEncoder();
-	if (!m_pRTPEnc->init())
-	{
-		setErrorString(m_pRTPEnc->getErrorString());
-		deleteAll();
-		return false;
+			MIPRTPSpeexEncoder *pRTPEnc = new MIPRTPSpeexEncoder();
+			storeComponent(pRTPEnc);
+		
+			if (!pRTPEnc->init())
+			{
+				setErrorString(pRTPEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pRTPEnc);
+
+			pRTPEnc->setPayloadType(pParams2->getSpeexOutgoingPayloadType());
+#else
+			setErrorString(MIPAUDIOSESSION_ERRSTR_NOSPEEX);
+			deleteAll();
+			return false;
+#endif // MIPCONFIG_SUPPORT_SPEEX
+		}
+		break;
+		case MIPAudioSessionParams::LPC:
+		{
+#ifdef MIPCONFIG_SUPPORT_LPC
+			MIPLPCEncoder *pLPCEnc = new MIPLPCEncoder();
+			storeComponent(pLPCEnc);
+	
+			if (!pLPCEnc->init())
+			{
+				setErrorString(pLPCEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pLPCEnc);
+
+			MIPRTPLPCEncoder *pRTPEnc = new MIPRTPLPCEncoder();
+			storeComponent(pRTPEnc);
+		
+			if (!pRTPEnc->init())
+			{
+				setErrorString(pRTPEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pRTPEnc);
+
+			pRTPEnc->setPayloadType(7);
+#else
+			setErrorString(MIPAUDIOSESSION_ERRSTR_LPC);
+			deleteAll();
+			return false;
+#endif // MIPCONFIG_SUPPORT_LPC
+		}
+		break;
+		case MIPAudioSessionParams::GSM:
+		{
+#ifdef MIPCONFIG_SUPPORT_GSM
+			MIPGSMEncoder *pGSMEnc = new MIPGSMEncoder();
+			storeComponent(pGSMEnc);
+	
+			if (!pGSMEnc->init())
+			{
+				setErrorString(pGSMEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pGSMEnc);
+
+			MIPRTPGSMEncoder *pRTPEnc = new MIPRTPGSMEncoder();
+			storeComponent(pRTPEnc);
+		
+			if (!pRTPEnc->init())
+			{
+				setErrorString(pRTPEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pRTPEnc);
+
+			pRTPEnc->setPayloadType(3);
+#else
+			setErrorString(MIPAUDIOSESSION_ERRSTR_GSM);
+			deleteAll();
+			return false;
+#endif // MIPCONFIG_SUPPORT_GSM
+		}
+		break;
+		case MIPAudioSessionParams::ALaw:
+		{
+			MIPALawEncoder *pALawEnc = new MIPALawEncoder();
+			storeComponent(pALawEnc);
+	
+			if (!pALawEnc->init())
+			{
+				setErrorString(pALawEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pALawEnc);
+
+			MIPRTPALawEncoder *pRTPEnc = new MIPRTPALawEncoder();
+			storeComponent(pRTPEnc);
+		
+			if (!pRTPEnc->init())
+			{
+				setErrorString(pRTPEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pRTPEnc);
+
+			pRTPEnc->setPayloadType(8);
+		}
+		break;
+		case MIPAudioSessionParams::ULaw:
+		default:
+		{
+			MIPULawEncoder *pULawEnc = new MIPULawEncoder();
+			storeComponent(pULawEnc);
+	
+			if (!pULawEnc->init())
+			{
+				setErrorString(pULawEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pULawEnc);
+
+			MIPRTPULawEncoder *pRTPEnc = new MIPRTPULawEncoder();
+			storeComponent(pRTPEnc);
+		
+			if (!pRTPEnc->init())
+			{
+				setErrorString(pRTPEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pRTPEnc);
+
+			pRTPEnc->setPayloadType(0);
+		}
 	}
 
 	RTPUDPv4TransmissionParams transParams;
@@ -213,110 +419,258 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		return false;
 	}
 
-	m_pRTPComp = new MIPRTPComponent();
-	if (!m_pRTPComp->init(m_pRTPSession))
+	MIPRTPComponent *pRTPComp = new MIPRTPComponent();
+	storeComponent(pRTPComp);
+	
+	if (!pRTPComp->init(m_pRTPSession))
 	{
-		setErrorString(m_pRTPComp->getErrorString());
+		setErrorString(pRTPComp->getErrorString());
 		deleteAll();
 		return false;
 	}
+	addLink(pActiveChain, &pPrevComponent, pRTPComp);
 
 	if (!singleThread)
-		m_pTimer = new MIPAverageTimer(outputInterval);
-	
-	m_pRTPDec = new MIPRTPDecoder();
-	if (!m_pRTPDec->init(true, pSync, m_pRTPSession))
 	{
-		setErrorString(m_pRTPDec->getErrorString());
+		MIPAverageTimer *pTimer = new MIPAverageTimer(outputInterval);
+		storeComponent(pTimer);
+		
+		m_pOutputChain = new OutputChain(this);
+		m_pOutputChain->setChainStart(pTimer);
+		
+		pActiveChain = m_pOutputChain;
+		pPrevComponent = pTimer;
+		addLink(pActiveChain, &pPrevComponent, pRTPComp);
+	}
+	
+	MIPRTPDecoder *pRTPDec = new MIPRTPDecoder();
+	storeComponent(pRTPDec);
+	
+	if (!pRTPDec->init(true, pSync, m_pRTPSession))
+	{
+		setErrorString(pRTPDec->getErrorString());
+		deleteAll();
+		return false;
+	}
+	addLink(pActiveChain, &pPrevComponent, pRTPDec);
+
+	MIPRTPDummyDecoder *pRTPDummyDec = new MIPRTPDummyDecoder();
+	storePacketDecoder(pRTPDummyDec);
+	
+	if (!pRTPDec->setDefaultPacketDecoder(pRTPDummyDec))
+	{
+		setErrorString(pRTPDec->getErrorString());
+		deleteAll();
+		return false;
+	}	
+
+#ifdef MIPCONFIG_SUPPORT_SPEEX
+	MIPRTPSpeexDecoder *pRTPSpeexDec = new MIPRTPSpeexDecoder();
+	storePacketDecoder(pRTPSpeexDec);
+	
+	if (!pRTPDec->setPacketDecoder(pParams2->getSpeexIncomingPayloadType(), pRTPSpeexDec))
+	{
+		setErrorString(pRTPDec->getErrorString());
+		deleteAll();
+		return false;
+	}
+#endif // MIPCONFIG_SUPPORT_SPEEX
+
+#ifdef MIPCONFIG_SUPPORT_LPC
+	MIPRTPLPCDecoder *pRTPLPCDec = new MIPRTPLPCDecoder();
+	storePacketDecoder(pRTPLPCDec);
+	
+	if (!pRTPDec->setPacketDecoder(7, pRTPLPCDec))
+	{
+		setErrorString(pRTPDec->getErrorString());
+		deleteAll();
+		return false;
+	}
+#endif // MIPCONFIG_SUPPORT_LPC
+
+#ifdef MIPCONFIG_SUPPORT_GSM
+	MIPRTPGSMDecoder *pRTPGSMDec = new MIPRTPGSMDecoder();
+	storePacketDecoder(pRTPGSMDec);
+	
+	if (!pRTPDec->setPacketDecoder(3, pRTPGSMDec))
+	{
+		setErrorString(pRTPDec->getErrorString());
+		deleteAll();
+		return false;
+	}
+#endif // MIPCONFIG_SUPPORT_GSM
+
+	MIPRTPALawDecoder *pRTPALawDec = new MIPRTPALawDecoder();
+	storePacketDecoder(pRTPALawDec);
+	
+	if (!pRTPDec->setPacketDecoder(8, pRTPALawDec))
+	{
+		setErrorString(pRTPDec->getErrorString());
 		deleteAll();
 		return false;
 	}
 
-	m_pRTPSpeexDec = new MIPRTPSpeexDecoder();
-	if (!m_pRTPDec->setDefaultPacketDecoder(m_pRTPSpeexDec))
+	MIPRTPULawDecoder *pRTPULawDec = new MIPRTPULawDecoder();
+	storePacketDecoder(pRTPULawDec);
+	
+	if (!pRTPDec->setPacketDecoder(0, pRTPULawDec))
 	{
-		setErrorString(m_pRTPDec->getErrorString());
+		setErrorString(pRTPDec->getErrorString());
 		deleteAll();
 		return false;
 	}
 
-	m_pMediaBuf = new MIPMediaBuffer();
-	if (!m_pMediaBuf->init(outputInterval))
+	MIPMediaBuffer *pMediaBuf = new MIPMediaBuffer();
+	storeComponent(pMediaBuf);
+	
+	if (!pMediaBuf->init(outputInterval))
 	{
-		setErrorString(m_pMediaBuf->getErrorString());
+		setErrorString(pMediaBuf->getErrorString());
+		deleteAll();
+		return false;
+	}
+	addLink(pActiveChain, &pPrevComponent, pMediaBuf, true);
+	
+	MIPSamplingRateConverter *pSampConv = new MIPSamplingRateConverter();
+	storeComponent(pSampConv);
+	
+	if (!pSampConv->init(sampRate, channels, false))
+	{
+		setErrorString(pSampConv->getErrorString());
 		deleteAll();
 		return false;
 	}
 	
-	m_pSpeexDec = new MIPSpeexDecoder();
-	if (!m_pSpeexDec->init(false))
+#ifdef MIPCONFIG_SUPPORT_SPEEX
+	MIPSpeexDecoder *pSpeexDec = new MIPSpeexDecoder();
+	storeComponent(pSpeexDec);
+	
+	if (!pSpeexDec->init(false))
 	{
-		setErrorString(m_pSpeexDec->getErrorString());
+		setErrorString(pSpeexDec->getErrorString());
 		deleteAll();
 		return false;
 	}
+	pActiveChain->addConnection(pMediaBuf, pSpeexDec, false, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX);
+	pActiveChain->addConnection(pSpeexDec, pSampConv, false);
+#endif // MIPCONFIG_SUPPORT_SPEEX
+	
+#ifdef MIPCONFIG_SUPPORT_LPC
+	MIPLPCDecoder *pLPCDec = new MIPLPCDecoder();
+	storeComponent(pLPCDec);
+	
+	if (!pLPCDec->init())
+	{
+		setErrorString(pLPCDec->getErrorString());
+		deleteAll();
+		return false;
+	}
+	pActiveChain->addConnection(pMediaBuf, pLPCDec, false, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_LPC);
+	pActiveChain->addConnection(pLPCDec, pSampConv, false);
+#endif // MIPCONFIG_SUPPORT_LPC
 
-	m_pSampConv = new MIPSamplingRateConverter();
-	if (!m_pSampConv->init(sampRate, channels, false))
-	{
-		setErrorString(m_pSampConv->getErrorString());
-		deleteAll();
-		return false;
-	}
+#ifdef MIPCONFIG_SUPPORT_GSM
+	MIPGSMDecoder *pGSMDec = new MIPGSMDecoder();
+	storeComponent(pGSMDec);
 	
-	m_pMixer = new MIPAudioMixer();
-	if (!m_pMixer->init(sampRate, channels, outputInterval, true, false))
+	if (!pGSMDec->init())
 	{
-		setErrorString(m_pMixer->getErrorString());
+		setErrorString(pGSMDec->getErrorString());
 		deleteAll();
 		return false;
 	}
+	pActiveChain->addConnection(pMediaBuf, pGSMDec, false, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_GSM);
+	pActiveChain->addConnection(pGSMDec, pSampConv, false);
+#endif // MIPCONFIG_SUPPORT_GSM
+
+	MIPALawDecoder *pALawDec = new MIPALawDecoder();
+	storeComponent(pALawDec);
+	
+	if (!pALawDec->init())
+	{
+		setErrorString(pALawDec->getErrorString());
+		deleteAll();
+		return false;
+	}
+	pActiveChain->addConnection(pMediaBuf, pALawDec, false, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_ALAW);
+	pActiveChain->addConnection(pALawDec, pSampConv, false);
+
+	MIPULawDecoder *pULawDec = new MIPULawDecoder();
+	storeComponent(pULawDec);
+	
+	if (!pULawDec->init())
+	{
+		setErrorString(pULawDec->getErrorString());
+		deleteAll();
+		return false;
+	}
+	pActiveChain->addConnection(pMediaBuf, pULawDec, true, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_ULAW);
+	pActiveChain->addConnection(pULawDec, pSampConv, true);
+
+	pPrevComponent = pSampConv;
+	
+	MIPAudioMixer *pMixer = new MIPAudioMixer();
+	storeComponent(pMixer);
+	
+	if (!pMixer->init(sampRate, channels, outputInterval, true, false))
+	{
+		setErrorString(pMixer->getErrorString());
+		deleteAll();
+		return false;
+	}
+	addLink(pActiveChain, &pPrevComponent, pMixer, true);
 
 	uint32_t destType;
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	destType = MIPRAWAUDIOMESSAGE_TYPE_S16LE;
-#else
-	destType = m_pOutput->getRawAudioSubtype();
-#endif // WIN32 || _WIN32_WCE
 	
-	m_pSampEnc2 = new MIPSampleEncoder();
-	if (!m_pSampEnc2->init(destType))
+	MIPWinMMOutput *pOutput = new MIPWinMMOutput();
+	storeComponent(pOutput);
+	
+	if (!pOutput->open(sampRate, channels, outputInterval, MIPTime(10.0), pParams2->getUseHighPriority()))
 	{
-		setErrorString(m_pSampEnc2->getErrorString());
+		setErrorString(pOutput->getErrorString());
 		deleteAll();
 		return false;
 	}
-
-
-	if (!singleThread)
+#else
+	MIPOSSInputOutput *pOutput;
+	
+	if (singleThread)
+		pOutput = pIOComp;
+	else
 	{
-		// Create input chain
+		pOutput = new MIPOSSInputOutput();
+		storeComponent(pOutput);
 		
-		m_pInputChain = new InputChain(this);
-	
-		m_pInputChain->setChainStart(m_pInput);
-	#ifdef _WIN32_WCE
-		m_pInputChain->addConnection(m_pInput, m_pSplitter);
-		m_pInputChain->addConnection(m_pSplitter, m_pSampEnc);
-	#else
-		m_pInputChain->addConnection(m_pInput, m_pSampEnc);
-	#endif // _WIN32_WCE
-		m_pInputChain->addConnection(m_pSampEnc, m_pSpeexEnc);
-		m_pInputChain->addConnection(m_pSpeexEnc, m_pRTPEnc);
-		m_pInputChain->addConnection(m_pRTPEnc, m_pRTPComp);
+		MIPOSSInputOutputParams ioParams;
+		ioParams.setDeviceName(pParams2->getOutputDevice());
 		
-		m_pOutputChain = new OutputChain(this);
+		if (!pOutput->open(sampRate, channels, outputInterval, MIPOSSInputOutput::WriteOnly, &ioParams))
+		{
+			setErrorString(pOutput->getErrorString());
+			deleteAll();
+			return false;
+		}
+	}
+
+	destType = pOutput->getRawAudioSubtype();
+#endif // WIN32 || _WIN32_WCE
 	
-		m_pOutputChain->setChainStart(m_pTimer);
-		m_pOutputChain->addConnection(m_pTimer, m_pRTPComp);
-		m_pOutputChain->addConnection(m_pRTPComp, m_pRTPDec);
-		m_pOutputChain->addConnection(m_pRTPDec, m_pMediaBuf, true);
-		m_pOutputChain->addConnection(m_pMediaBuf, m_pSpeexDec, true, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX);
-		m_pOutputChain->addConnection(m_pSpeexDec, m_pSampConv, true);
-		m_pOutputChain->addConnection(m_pSampConv, m_pMixer, true);
-		m_pOutputChain->addConnection(m_pMixer, m_pSampEnc2, true);
-		m_pOutputChain->addConnection(m_pSampEnc2, m_pOutput, true);
+	MIPSampleEncoder *pSampEnc2 = new MIPSampleEncoder();
+	storeComponent(pSampEnc2);
 	
+	if (!pSampEnc2->init(destType))
+	{
+		setErrorString(pSampEnc2->getErrorString());
+		deleteAll();
+		return false;
+	}
+	addLink(pActiveChain, &pPrevComponent, pSampEnc2, true);
+	addLink(pActiveChain, &pPrevComponent, pOutput, true);
+
+	if (!singleThread)	
+	{
 		if (!m_pInputChain->start())
 		{
 			setErrorString(m_pInputChain->getErrorString());
@@ -333,21 +687,6 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	}
 	else // single I/O thread
 	{
-		m_pIOChain = new IOChain(this);
-		
-		m_pIOChain->setChainStart(m_pInput);
-		m_pIOChain->addConnection(m_pInput, m_pSampEnc);
-		m_pIOChain->addConnection(m_pSampEnc, m_pSpeexEnc);
-		m_pIOChain->addConnection(m_pSpeexEnc, m_pRTPEnc);
-		m_pIOChain->addConnection(m_pRTPEnc, m_pRTPComp);
-		m_pIOChain->addConnection(m_pRTPComp, m_pRTPDec);
-		m_pIOChain->addConnection(m_pRTPDec, m_pMediaBuf, true);
-		m_pIOChain->addConnection(m_pMediaBuf, m_pSpeexDec, true, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX);
-		m_pIOChain->addConnection(m_pSpeexDec, m_pSampConv, true);
-		m_pIOChain->addConnection(m_pSampConv, m_pMixer, true);
-		m_pIOChain->addConnection(m_pMixer, m_pSampEnc2, true);
-		m_pIOChain->addConnection(m_pSampEnc2, m_pOutput, true);
-
 		if (!m_pIOChain->start())
 		{
 			setErrorString(m_pIOChain->getErrorString());
@@ -587,22 +926,10 @@ void MIPAudioSession::zeroAll()
 	m_pInputChain = 0;
 	m_pOutputChain = 0;
 	m_pIOChain = 0;
-	m_pInput = 0;
-	m_pOutput = 0;
-	m_pSampEnc = 0;
-	m_pSpeexEnc = 0;
-	m_pRTPEnc = 0;
-	m_pRTPComp = 0;
 	m_pRTPSession = 0;
-	m_pRTPDec = 0;
-	m_pRTPSpeexDec = 0;
-	m_pMediaBuf = 0;
-	m_pSpeexDec = 0;
-	m_pSampConv = 0;
-	m_pMixer = 0;
-	m_pSampEnc2 = 0;
-	m_pTimer = 0;
-	m_pSplitter = 0;
+
+	m_components.clear();
+	m_packetDecoders.clear();
 }
 
 void MIPAudioSession::deleteAll()
@@ -622,63 +949,63 @@ void MIPAudioSession::deleteAll()
 		m_pIOChain->stop();
 		delete m_pIOChain;
 	}
-#if (defined(WIN32) || defined(_WIN32_WCE))
-	if (m_pInput)
-		delete m_pInput;
-	if (m_pOutput)
-		delete m_pOutput;
-#else
-	if (m_pInput && m_pOutput)
-	{
-		if (m_pInput == m_pOutput)
-			delete m_pInput;
-		else
-		{
-			delete m_pInput;
-			delete m_pOutput;
-		}
-	}
-	else
-	{
-		if (m_pInput)
-			delete m_pInput;
-		if (m_pOutput)
-			delete m_pOutput;
-	}
-#endif // WIN32 || _WIN32_WCE
-	if (m_pSampEnc)
-		delete m_pSampEnc;
-	if (m_pSpeexEnc)
-		delete m_pSpeexEnc;
-	if (m_pRTPEnc)
-		delete m_pRTPEnc;
-	if (m_pRTPComp)
-		delete m_pRTPComp;
+
+	std::list<MIPComponent *>::const_iterator it;
+
+	for (it = m_components.begin() ; it != m_components.end() ; it++)
+		delete (*it);
+	m_components.clear();
+	
+	std::list<MIPRTPPacketDecoder *>::const_iterator it2;
+
+	for (it2 = m_packetDecoders.begin() ; it2 != m_packetDecoders.end() ; it2++)
+		delete (*it2);
+	m_packetDecoders.clear();
+
+	// Note: this should be deleted last, after we can be certain that all RTP
+	// packets from this session have been deleted
 	if (m_pRTPSession)
 	{
 		m_pRTPSession->BYEDestroy(RTPTime(2,0),0,0);
 		delete m_pRTPSession;
 	}
-	if (m_pRTPDec)
-		delete m_pRTPDec;
-	if (m_pRTPSpeexDec)
-		delete m_pRTPSpeexDec;
-	if (m_pMediaBuf)
-		delete m_pMediaBuf;
-	if (m_pSpeexDec)
-		delete m_pSpeexDec;
-	if (m_pSampConv)
-		delete m_pSampConv;
-	if (m_pMixer)
-		delete m_pMixer;
-	if (m_pSampEnc2)
-		delete m_pSampEnc2;
-	if (m_pTimer)
-		delete m_pTimer;
-	if (m_pSplitter)
-		delete m_pSplitter;
+
 	zeroAll();
 }
 
-#endif // MIPCONFIG_SUPPORT_SPEEX && ((WIN32 || _WIN32_WCE) || (!WIN32 && !_WIN32_WCE && MIPCONFIG_SUPPORT_OSS))
+void MIPAudioSession::storeComponent(MIPComponent *pComp)
+{
+	bool found = false;
+	std::list<MIPComponent *>::const_iterator it;
+	
+	for (it = m_components.begin() ; !found && it != m_components.end() ; it++)
+		if (pComp == (*it))
+			found = true;
+
+	if (!found)
+		m_components.push_back(pComp);
+}
+
+void MIPAudioSession::storePacketDecoder(MIPRTPPacketDecoder *pDec)
+{
+	bool found = false;
+	std::list<MIPRTPPacketDecoder *>::const_iterator it;
+	
+	for (it = m_packetDecoders.begin() ; !found && it != m_packetDecoders.end() ; it++)
+		if (pDec == (*it))
+			found = true;
+
+	if (!found)
+		m_packetDecoders.push_back(pDec);
+}
+
+void MIPAudioSession::addLink(MIPComponentChain *pChain, MIPComponent **pPrevComp, MIPComponent *pComp, 
+                              bool feedback, uint32_t mask1, uint32_t mask2)
+{
+	pChain->addConnection(*pPrevComp, pComp, feedback, mask1, mask2);
+//	std::cout << "Adding link from " << (*pPrevComp)->getComponentName() << " to " << pComp->getComponentName() << std::endl;
+	*pPrevComp = pComp;
+}
+
+#endif // ((WIN32 || _WIN32_WCE) || (!WIN32 && !_WIN32_WCE && MIPCONFIG_SUPPORT_OSS))
 

@@ -36,10 +36,10 @@
 
 #include "mipcomponent.h"
 #include "miptime.h"
-#include <speex/speex.h>
 #include <list>
 
 class MIPEncodedAudioMessage;
+struct SpeexBits;
 
 /** Compress audio using the Speex codec.
  *  Using this component, floating point mono raw audio messages and raw 16 bit raw audio
@@ -83,7 +83,7 @@ private:
 	
 	bool m_init;
 	void *m_pState;
-	SpeexBits m_bits;
+	SpeexBits *m_pBits;
 	int m_sampRate;
 	int m_numFrames;
 	float *m_pFloatBuffer;

@@ -85,11 +85,6 @@ public:
 	/** Returns the message subtype.
 	 */
 	uint32_t getMessageSubtype() const						{ return m_msgSubtype; }
-
-	/** Returns a 64 bit number containing the message type in the high 32 bits and
-	 *  the subtype in the low 32 bits.
-	 */
-	uint64_t getTotalType() const							{ return (((uint64_t)m_msgType)<<32)|((uint64_t)m_msgSubtype); }
 protected:
 	/** Changes the subtype of the message.
 	 */

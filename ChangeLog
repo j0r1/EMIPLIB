@@ -3,6 +3,22 @@
                               EMIPLIB ChangeLog
 
 
+Version 0.15.0, August 2007:
+ * Changed the MIPMessage filtering somewhat. The previous implementation
+   did not create the desired behaviour.
+ * Added A-law compression/decompression. Thanks to Jim Heising
+   (JHeising@worksoutsoft.com) for contributing the code.
+ * Fixed bug in MIPWAVReader (8-bit samples were interpreted wrong)
+ * In MIPAudioSession, other sampling intervals than the defaults can now 
+   be used.
+ * In MIPAudioSession, you can now select between a number of compression
+   types.
+ * Added MIPAudioFilter, with which you can remove certain frequencies from
+   audio data.
+ * Added GSM 06.10 compression/decompression.
+ * Added LPC compression/decompression.
+ * Added an OpenAL output component.
+
 Version 0.14.0, February 2007:
  * Added MIPWAVWriter and MIPWAVOutput. They allow simple sound recording
    in case libsndfile isn't available.

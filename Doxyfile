@@ -23,7 +23,7 @@ PROJECT_NAME           = EMIPLIB
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = 0.14.0
+PROJECT_NUMBER         = 0.15.0
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
@@ -471,7 +471,7 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = 
+EXCLUDE                = src/thirdparty/
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -1002,7 +1002,8 @@ PREDEFINED             = MIPCONFIG_SUPPORT_SNDFILE MIPCONFIG_SUPPORT_ALSA \
 			WIN32 _WIN32_WCE MIPCONFIG_GPL \
 			MIPCONFIG_SUPPORT_AUDIOFILE MIPCONFIG_SUPPORT_JACK \
 			MIPCONFIG_SUPPORT_OSS MIPCONFIG_SUPPORT_VIDEO4LINUX \
-			MIPCONFIG_SUPPORT_SDLAUDIO
+			MIPCONFIG_SUPPORT_SDLAUDIO MIPCONFIG_SUPPORT_LPC \
+			MIPCONFIG_SUPPORT_GSM MIPCONFIG_SUPPORT_OPENAL
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 

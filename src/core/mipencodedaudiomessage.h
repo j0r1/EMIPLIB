@@ -39,10 +39,19 @@
  * 	\brief Subtype for encoded audio messages containing Speex data.
  * \def MIPENCODEDAUDIOMESSAGE_TYPE_ULAW
  * 	\brief Subtype for encoded audio messages containing u-law data.
- */
+ * \def MIPENCODEDAUDIOMESSAGE_TYPE_ALAW
+ * 	\brief Subtype for encoded audio messages containing A-law data.
+ * \def MIPENCODEDAUDIOMESSAGE_TYPE_GSM
+ * 	\brief Subtype for encoded audio messages containing GSM 06.10 data.
+ * \def MIPENCODEDAUDIOMESSAGE_TYPE_LPC
+ * 	\brief Subtype for encoded audio messages containing LPC data.
+*/
 
 #define MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX							0x00000001
 #define MIPENCODEDAUDIOMESSAGE_TYPE_ULAW							0x00000002
+#define MIPENCODEDAUDIOMESSAGE_TYPE_ALAW							0x00000004
+#define MIPENCODEDAUDIOMESSAGE_TYPE_GSM								0x00000008
+#define MIPENCODEDAUDIOMESSAGE_TYPE_LPC								0x00000010
 
 /** Container for encoded audio data.
  */

@@ -1,7 +1,7 @@
 
 
                                EMIPLIB README 
-				  (0.14.0)
+				  (0.15.0)
 
 
 1. INTRODUCTION
@@ -66,4 +66,15 @@ instructions.
 
 If you don't like to post your question to the mailing list, you can also
 send a more private mail to emiplibinfo@edm.uhasselt.be.
+
+5. ACKNOWLEDGMENTS
+
+We would like to thank Jutta Degener and Carsten Bormann for writing
+their GSM codec and allowing us to include it in EMIPLIB. The
+copyright and disclaimer of the GSM codec can be found in the file
+src/thirdparty/gsm/COPYRIGHT.
+
+We would also like to thank Ron Frederick for making his LPC codec
+available to the public and for allowing us to include a derived
+version in this library.
 

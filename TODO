@@ -1,9 +1,9 @@
 
 EMIPLIB TODO list:
 
- * Make the RTP encoders and decoders compliant with standards. Currently,
+ * Make the video RTP encoder and decoder compliant with standards. Currently,
    a simple ad hoc encoding scheme is used. This should obviously change.
- * Add codecs for audio and video.
+ * Add codecs for video.
  * In the MS-Windows version: change the project file to allow the file 
    mipqtoutput.moc to be generated automatically.
  * Improve the ALSA output component.

@@ -73,6 +73,7 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	components/output/mipvideoframestorage.cpp \
 	components/output/mipjackoutput.cpp \
 	components/output/mipsdlaudiooutput.cpp \
+	components/output/mipopenaloutput.cpp \
 	components/input/mipsndfileinput.cpp \
 	components/input/mipaudiofileinput.cpp \
 	components/input/mipv4linput.cpp \
@@ -86,14 +87,21 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	components/transmission/miprtpspeexdecoder.cpp \
 	components/transmission/miprtpulawencoder.cpp \
 	components/transmission/miprtpulawdecoder.cpp \
+	components/transmission/miprtpalawencoder.cpp \
+	components/transmission/miprtpalawdecoder.cpp \
 	components/transmission/miprtpvideoencoder.cpp \
 	components/transmission/miprtpvideodecoder.cpp \
+	components/transmission/miprtplpcencoder.cpp \
+	components/transmission/miprtplpcdecoder.cpp \
+	components/transmission/miprtpgsmencoder.cpp \
+	components/transmission/miprtpgsmdecoder.cpp \
 	components/transform/mipsamplingrateconverter.cpp \
 	components/transform/mipsampleencoder.cpp \
 	components/transform/mipaudio3dbase.cpp \
 	components/transform/miphrirlisten.cpp \
 	components/transform/mipaudiosplitter.cpp \
 	components/transform/mipaudiodistancefade.cpp \
+	components/transform/mipaudiofilter.cpp \
 	components/mixer/mipaudiomixer.cpp \
 	components/mixer/mipvideomixer.cpp \
 	components/mixer/mipmediabuffer.cpp \
@@ -102,32 +110,67 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	components/codec/mipavcodecencoder.cpp \
 	components/codec/mipavcodecdecoder.cpp \
 	components/codec/mipulawencoder.cpp \
-	components/codec/mipulawdecoder.cpp util/mipsignalwaiter.cpp \
+	components/codec/mipulawdecoder.cpp \
+	components/codec/mipalawencoder.cpp \
+	components/codec/mipalawdecoder.cpp \
+	components/codec/mipgsmencoder.cpp \
+	components/codec/mipgsmdecoder.cpp \
+	components/codec/miplpcencoder.cpp \
+	components/codec/miplpcdecoder.cpp util/mipsignalwaiter.cpp \
 	util/mipdirectorybrowser.cpp util/mipwavreader.cpp \
 	util/mipwavwriter.cpp util/miprtpsynchronizer.cpp \
 	util/mipspeexutil.cpp sessions/mipaudiosession.cpp \
-	sessions/mipvideosession.cpp
+	sessions/mipvideosession.cpp thirdparty/lpc/lpccodec.cpp \
+	thirdparty/lpc/lpccodec.h thirdparty/gsm/src/gsm_add.cpp \
+	thirdparty/gsm/src/gsm_code.cpp \
+	thirdparty/gsm/src/gsm_create.cpp \
+	thirdparty/gsm/src/gsm_debug.cpp \
+	thirdparty/gsm/src/gsm_decode.cpp \
+	thirdparty/gsm/src/gsm_decode2.cpp \
+	thirdparty/gsm/src/gsm_destroy.cpp \
+	thirdparty/gsm/src/gsm_encode.cpp \
+	thirdparty/gsm/src/gsm_explode.cpp \
+	thirdparty/gsm/src/gsm_implode.cpp \
+	thirdparty/gsm/src/gsm_long_term.cpp \
+	thirdparty/gsm/src/gsm_lpc.cpp \
+	thirdparty/gsm/src/gsm_option.cpp \
+	thirdparty/gsm/src/gsm_preprocess.cpp \
+	thirdparty/gsm/src/gsm_print.cpp \
+	thirdparty/gsm/src/gsm_rpe.cpp \
+	thirdparty/gsm/src/gsm_short_term.cpp \
+	thirdparty/gsm/src/gsm_table.cpp thirdparty/gsm/inc/config.h \
+	thirdparty/gsm/inc/gsm.h thirdparty/gsm/inc/private.h \
+	thirdparty/gsm/inc/proto.h thirdparty/gsm/inc/unproto.h
 am__objects_1 =
 am_libemip_la_OBJECTS = mipcomponent.lo mipcomponentchain.lo \
 	mipversion.lo mipdebug.lo mipaveragetimer.lo \
 	mippusheventtimer.lo $(am__objects_1) mipmessagedumper.lo \
 	mipsndfileoutput.lo mipwavoutput.lo mipalsaoutput.lo \
 	mipesdoutput.lo mipqtoutput.lo mipvideoframestorage.lo \
-	mipjackoutput.lo mipsdlaudiooutput.lo mipsndfileinput.lo \
-	mipaudiofileinput.lo mipv4linput.lo mipfrequencygenerator.lo \
-	mipwavinput.lo mipjackinput.lo mipossinputoutput.lo \
-	miprtpcomponent.lo miprtpspeexencoder.lo miprtpdecoder.lo \
-	miprtpspeexdecoder.lo miprtpulawencoder.lo \
-	miprtpulawdecoder.lo miprtpvideoencoder.lo \
-	miprtpvideodecoder.lo mipsamplingrateconverter.lo \
+	mipjackoutput.lo mipsdlaudiooutput.lo mipopenaloutput.lo \
+	mipsndfileinput.lo mipaudiofileinput.lo mipv4linput.lo \
+	mipfrequencygenerator.lo mipwavinput.lo mipjackinput.lo \
+	mipossinputoutput.lo miprtpcomponent.lo miprtpspeexencoder.lo \
+	miprtpdecoder.lo miprtpspeexdecoder.lo miprtpulawencoder.lo \
+	miprtpulawdecoder.lo miprtpalawencoder.lo miprtpalawdecoder.lo \
+	miprtpvideoencoder.lo miprtpvideodecoder.lo \
+	miprtplpcencoder.lo miprtplpcdecoder.lo miprtpgsmencoder.lo \
+	miprtpgsmdecoder.lo mipsamplingrateconverter.lo \
 	mipsampleencoder.lo mipaudio3dbase.lo miphrirlisten.lo \
-	mipaudiosplitter.lo mipaudiodistancefade.lo mipaudiomixer.lo \
-	mipvideomixer.lo mipmediabuffer.lo mipspeexencoder.lo \
-	mipspeexdecoder.lo mipavcodecencoder.lo mipavcodecdecoder.lo \
-	mipulawencoder.lo mipulawdecoder.lo mipsignalwaiter.lo \
-	mipdirectorybrowser.lo mipwavreader.lo mipwavwriter.lo \
-	miprtpsynchronizer.lo mipspeexutil.lo mipaudiosession.lo \
-	mipvideosession.lo
+	mipaudiosplitter.lo mipaudiodistancefade.lo mipaudiofilter.lo \
+	mipaudiomixer.lo mipvideomixer.lo mipmediabuffer.lo \
+	mipspeexencoder.lo mipspeexdecoder.lo mipavcodecencoder.lo \
+	mipavcodecdecoder.lo mipulawencoder.lo mipulawdecoder.lo \
+	mipalawencoder.lo mipalawdecoder.lo mipgsmencoder.lo \
+	mipgsmdecoder.lo miplpcencoder.lo miplpcdecoder.lo \
+	mipsignalwaiter.lo mipdirectorybrowser.lo mipwavreader.lo \
+	mipwavwriter.lo miprtpsynchronizer.lo mipspeexutil.lo \
+	mipaudiosession.lo mipvideosession.lo lpccodec.lo gsm_add.lo \
+	gsm_code.lo gsm_create.lo gsm_debug.lo gsm_decode.lo \
+	gsm_decode2.lo gsm_destroy.lo gsm_encode.lo gsm_explode.lo \
+	gsm_implode.lo gsm_long_term.lo gsm_lpc.lo gsm_option.lo \
+	gsm_preprocess.lo gsm_print.lo gsm_rpe.lo gsm_short_term.lo \
+	gsm_table.lo
 libemip_la_OBJECTS = $(am_libemip_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -140,12 +183,27 @@ LTCXXCOMPILE = $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) \
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(libemip_la_SOURCES)
 DIST_SOURCES = $(am__libemip_la_SOURCES_DIST)
+RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
+	html-recursive info-recursive install-data-recursive \
+	install-exec-recursive install-info-recursive \
+	install-recursive installcheck-recursive installdirs-recursive \
+	pdf-recursive ps-recursive uninstall-info-recursive \
+	uninstall-recursive
 libemipincludeHEADERS_INSTALL = $(INSTALL_HEADER)
 HEADERS = $(libemipinclude_HEADERS)
 ETAGS = etags
 CTAGS = ctags
+DIST_SUBDIRS = $(SUBDIRS)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
@@ -177,7 +235,6 @@ EXEEXT = @EXEEXT@
 F77 = @F77@
 FFLAGS = @FFLAGS@
 FRAMEWORK_COREAUDIO = @FRAMEWORK_COREAUDIO@
-GREP = @GREP@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -215,8 +272,11 @@ MIPCONFIG_SUPPORT_ALSA = @MIPCONFIG_SUPPORT_ALSA@
 MIPCONFIG_SUPPORT_AUDIOFILE = @MIPCONFIG_SUPPORT_AUDIOFILE@
 MIPCONFIG_SUPPORT_AVCODEC = @MIPCONFIG_SUPPORT_AVCODEC@
 MIPCONFIG_SUPPORT_ESD = @MIPCONFIG_SUPPORT_ESD@
+MIPCONFIG_SUPPORT_GSM = @MIPCONFIG_SUPPORT_GSM@
 MIPCONFIG_SUPPORT_INTELIPP = @MIPCONFIG_SUPPORT_INTELIPP@
 MIPCONFIG_SUPPORT_JACK = @MIPCONFIG_SUPPORT_JACK@
+MIPCONFIG_SUPPORT_LPC = @MIPCONFIG_SUPPORT_LPC@
+MIPCONFIG_SUPPORT_OPENAL = @MIPCONFIG_SUPPORT_OPENAL@
 MIPCONFIG_SUPPORT_OSS = @MIPCONFIG_SUPPORT_OSS@
 MIPCONFIG_SUPPORT_QT = @MIPCONFIG_SUPPORT_QT@
 MIPCONFIG_SUPPORT_SDLAUDIO = @MIPCONFIG_SUPPORT_SDLAUDIO@
@@ -250,14 +310,16 @@ USER_INCLUDES = @USER_INCLUDES@
 USER_LDFLAGS = @USER_LDFLAGS@
 USE_THREADS = @USE_THREADS@
 VERSION = @VERSION@
-XMKMF = @XMKMF@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_INCLUDES = @X_INCLUDES@
 X_LDFLAGS = @X_LDFLAGS@
 X_PRE_LIBS = @X_PRE_LIBS@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_F77 = @ac_ct_F77@
+ac_ct_RANLIB = @ac_ct_RANLIB@
+ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -274,31 +336,24 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
-datarootdir = @datarootdir@
-docdir = @docdir@
-dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
 host_os = @host_os@
 host_vendor = @host_vendor@
-htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
 kde_qtver = @kde_qtver@
 libdir = @libdir@
 libexecdir = @libexecdir@
-localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
-pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
-psdir = @psdir@
 qt_includes = @qt_includes@
 qt_libraries = @qt_libraries@
 sbindir = @sbindir@
@@ -307,6 +362,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 x_includes = @x_includes@
 x_libraries = @x_libraries@
+SUBDIRS = thirdparty
 lib_LTLIBRARIES = libemip.la
 libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
 	core/mipversion.cpp core/mipdebug.cpp \
@@ -321,6 +377,7 @@ libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
 	components/output/mipvideoframestorage.cpp \
 	components/output/mipjackoutput.cpp \
 	components/output/mipsdlaudiooutput.cpp \
+	components/output/mipopenaloutput.cpp \
 	components/input/mipsndfileinput.cpp \
 	components/input/mipaudiofileinput.cpp \
 	components/input/mipv4linput.cpp \
@@ -334,14 +391,21 @@ libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
 	components/transmission/miprtpspeexdecoder.cpp \
 	components/transmission/miprtpulawencoder.cpp \
 	components/transmission/miprtpulawdecoder.cpp \
+	components/transmission/miprtpalawencoder.cpp \
+	components/transmission/miprtpalawdecoder.cpp \
 	components/transmission/miprtpvideoencoder.cpp \
 	components/transmission/miprtpvideodecoder.cpp \
+	components/transmission/miprtplpcencoder.cpp \
+	components/transmission/miprtplpcdecoder.cpp \
+	components/transmission/miprtpgsmencoder.cpp \
+	components/transmission/miprtpgsmdecoder.cpp \
 	components/transform/mipsamplingrateconverter.cpp \
 	components/transform/mipsampleencoder.cpp \
 	components/transform/mipaudio3dbase.cpp \
 	components/transform/miphrirlisten.cpp \
 	components/transform/mipaudiosplitter.cpp \
 	components/transform/mipaudiodistancefade.cpp \
+	components/transform/mipaudiofilter.cpp \
 	components/mixer/mipaudiomixer.cpp \
 	components/mixer/mipvideomixer.cpp \
 	components/mixer/mipmediabuffer.cpp \
@@ -350,11 +414,37 @@ libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
 	components/codec/mipavcodecencoder.cpp \
 	components/codec/mipavcodecdecoder.cpp \
 	components/codec/mipulawencoder.cpp \
-	components/codec/mipulawdecoder.cpp util/mipsignalwaiter.cpp \
+	components/codec/mipulawdecoder.cpp \
+	components/codec/mipalawencoder.cpp \
+	components/codec/mipalawdecoder.cpp \
+	components/codec/mipgsmencoder.cpp \
+	components/codec/mipgsmdecoder.cpp \
+	components/codec/miplpcencoder.cpp \
+	components/codec/miplpcdecoder.cpp util/mipsignalwaiter.cpp \
 	util/mipdirectorybrowser.cpp util/mipwavreader.cpp \
 	util/mipwavwriter.cpp util/miprtpsynchronizer.cpp \
 	util/mipspeexutil.cpp sessions/mipaudiosession.cpp \
-	sessions/mipvideosession.cpp
+	sessions/mipvideosession.cpp thirdparty/lpc/lpccodec.cpp \
+	thirdparty/lpc/lpccodec.h thirdparty/gsm/src/gsm_add.cpp \
+	thirdparty/gsm/src/gsm_code.cpp \
+	thirdparty/gsm/src/gsm_create.cpp \
+	thirdparty/gsm/src/gsm_debug.cpp \
+	thirdparty/gsm/src/gsm_decode.cpp \
+	thirdparty/gsm/src/gsm_decode2.cpp \
+	thirdparty/gsm/src/gsm_destroy.cpp \
+	thirdparty/gsm/src/gsm_encode.cpp \
+	thirdparty/gsm/src/gsm_explode.cpp \
+	thirdparty/gsm/src/gsm_implode.cpp \
+	thirdparty/gsm/src/gsm_long_term.cpp \
+	thirdparty/gsm/src/gsm_lpc.cpp \
+	thirdparty/gsm/src/gsm_option.cpp \
+	thirdparty/gsm/src/gsm_preprocess.cpp \
+	thirdparty/gsm/src/gsm_print.cpp \
+	thirdparty/gsm/src/gsm_rpe.cpp \
+	thirdparty/gsm/src/gsm_short_term.cpp \
+	thirdparty/gsm/src/gsm_table.cpp thirdparty/gsm/inc/config.h \
+	thirdparty/gsm/inc/gsm.h thirdparty/gsm/inc/private.h \
+	thirdparty/gsm/inc/proto.h thirdparty/gsm/inc/unproto.h
 libemipinclude_HEADERS = \
 core/mipcompat.h \
 core/miperrorbase.h \
@@ -390,6 +480,7 @@ components/output/mipwinmmoutput.h \
 components/output/mipvideoframestorage.h \
 components/output/mipjackoutput.h \
 components/output/mipsdlaudiooutput.h \
+components/output/mipopenaloutput.h \
 components/input/mipsndfileinput.h  \
 components/input/mipaudiofileinput.h  \
 components/input/mipv4linput.h \
@@ -406,9 +497,15 @@ components/transmission/miprtppacketdecoder.h \
 components/transmission/miprtpspeexdecoder.h \
 components/transmission/miprtpulawencoder.h \
 components/transmission/miprtpulawdecoder.h \
+components/transmission/miprtpalawencoder.h \
+components/transmission/miprtpalawdecoder.h \
 components/transmission/miprtpvideoencoder.h \
 components/transmission/miprtpvideodecoder.h \
 components/transmission/miprtpdummydecoder.h \
+components/transmission/miprtplpcencoder.h \
+components/transmission/miprtplpcdecoder.h \
+components/transmission/miprtpgsmencoder.h \
+components/transmission/miprtpgsmdecoder.h \
 components/transform/mipsamplingrateconverter.h \
 components/transform/mipsampleencoder.h \
 components/transform/mipaudio3dbase.h \
@@ -416,6 +513,7 @@ components/transform/miphrirbase.h \
 components/transform/miphrirlisten.h \
 components/transform/mipaudiosplitter.h \
 components/transform/mipaudiodistancefade.h \
+components/transform/mipaudiofilter.h \
 components/mixer/mipaudiomixer.h \
 components/mixer/mipvideomixer.h \
 components/mixer/mipmediabuffer.h \
@@ -425,6 +523,12 @@ components/codec/mipavcodecencoder.h \
 components/codec/mipavcodecdecoder.h \
 components/codec/mipulawencoder.h \
 components/codec/mipulawdecoder.h \
+components/codec/mipalawencoder.h \
+components/codec/mipalawdecoder.h \
+components/codec/mipgsmencoder.h \
+components/codec/mipgsmdecoder.h \
+components/codec/miplpcencoder.h \
+components/codec/miplpcdecoder.h \
 util/mipsignalwaiter.h \
 util/mipdirectorybrowser.h \
 util/mipwavreader.h \
@@ -437,6 +541,7 @@ sessions/mipvideosession.h
 
 INCLUDES = -I core/ -I util/ -I components/codec/ -I components/input/ -I components/io/ -I components/mixer/ \
 	   -I components/output/ -I components/timer/ -I components/transform/ -I components/transmission/ \
+	   -I thirdparty/lpc -I thirdparty/gsm/inc \
 	   @MIPINCLUDES@
 
 libemip_la_LDFLAGS = -release @VERSION@
@@ -451,7 +556,7 @@ components/input/mipdirectshowcapture.h \
 components/output/mipwinmmoutput.cpp \
 components/output/mipwinmmoutput.h
 
-all: all-am
+all: all-recursive
 
 .SUFFIXES:
 .SUFFIXES: .cpp .lo .o .obj
@@ -520,10 +625,32 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_add.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_code.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_create.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_debug.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_decode.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_decode2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_destroy.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_encode.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_explode.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_implode.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_long_term.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_lpc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_option.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_preprocess.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_print.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_rpe.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_short_term.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gsm_table.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lpccodec.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipalawdecoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipalawencoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipalsaoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudio3dbase.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiodistancefade.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiofileinput.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiofilter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiomixer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiosession.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiosplitter.Plo@am__quote@
@@ -536,16 +663,27 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipdirectorybrowser.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipesdoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipfrequencygenerator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipgsmdecoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipgsmencoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miphrirlisten.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipjackinput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipjackoutput.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miplpcdecoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miplpcencoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipmediabuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipmessagedumper.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipopenaloutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipossinputoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mippusheventtimer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipqtoutput.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpalawdecoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpalawencoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpcomponent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpdecoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpgsmdecoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpgsmencoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtplpcdecoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtplpcencoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpspeexdecoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpspeexencoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpsynchronizer.Plo@am__quote@
@@ -700,6 +838,13 @@ mipsdlaudiooutput.lo: components/output/mipsdlaudiooutput.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipsdlaudiooutput.lo `test -f 'components/output/mipsdlaudiooutput.cpp' || echo '$(srcdir)/'`components/output/mipsdlaudiooutput.cpp
 
+mipopenaloutput.lo: components/output/mipopenaloutput.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipopenaloutput.lo -MD -MP -MF "$(DEPDIR)/mipopenaloutput.Tpo" -c -o mipopenaloutput.lo `test -f 'components/output/mipopenaloutput.cpp' || echo '$(srcdir)/'`components/output/mipopenaloutput.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipopenaloutput.Tpo" "$(DEPDIR)/mipopenaloutput.Plo"; else rm -f "$(DEPDIR)/mipopenaloutput.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/output/mipopenaloutput.cpp' object='mipopenaloutput.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipopenaloutput.lo `test -f 'components/output/mipopenaloutput.cpp' || echo '$(srcdir)/'`components/output/mipopenaloutput.cpp
+
 mipsndfileinput.lo: components/input/mipsndfileinput.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipsndfileinput.lo -MD -MP -MF "$(DEPDIR)/mipsndfileinput.Tpo" -c -o mipsndfileinput.lo `test -f 'components/input/mipsndfileinput.cpp' || echo '$(srcdir)/'`components/input/mipsndfileinput.cpp; \
 @am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipsndfileinput.Tpo" "$(DEPDIR)/mipsndfileinput.Plo"; else rm -f "$(DEPDIR)/mipsndfileinput.Tpo"; exit 1; fi
@@ -791,6 +936,20 @@ miprtpulawdecoder.lo: components/transmission/miprtpulawdecoder.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miprtpulawdecoder.lo `test -f 'components/transmission/miprtpulawdecoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpulawdecoder.cpp
 
+miprtpalawencoder.lo: components/transmission/miprtpalawencoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miprtpalawencoder.lo -MD -MP -MF "$(DEPDIR)/miprtpalawencoder.Tpo" -c -o miprtpalawencoder.lo `test -f 'components/transmission/miprtpalawencoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpalawencoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miprtpalawencoder.Tpo" "$(DEPDIR)/miprtpalawencoder.Plo"; else rm -f "$(DEPDIR)/miprtpalawencoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transmission/miprtpalawencoder.cpp' object='miprtpalawencoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miprtpalawencoder.lo `test -f 'components/transmission/miprtpalawencoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpalawencoder.cpp
+
+miprtpalawdecoder.lo: components/transmission/miprtpalawdecoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miprtpalawdecoder.lo -MD -MP -MF "$(DEPDIR)/miprtpalawdecoder.Tpo" -c -o miprtpalawdecoder.lo `test -f 'components/transmission/miprtpalawdecoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpalawdecoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miprtpalawdecoder.Tpo" "$(DEPDIR)/miprtpalawdecoder.Plo"; else rm -f "$(DEPDIR)/miprtpalawdecoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transmission/miprtpalawdecoder.cpp' object='miprtpalawdecoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miprtpalawdecoder.lo `test -f 'components/transmission/miprtpalawdecoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpalawdecoder.cpp
+
 miprtpvideoencoder.lo: components/transmission/miprtpvideoencoder.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miprtpvideoencoder.lo -MD -MP -MF "$(DEPDIR)/miprtpvideoencoder.Tpo" -c -o miprtpvideoencoder.lo `test -f 'components/transmission/miprtpvideoencoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpvideoencoder.cpp; \
 @am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miprtpvideoencoder.Tpo" "$(DEPDIR)/miprtpvideoencoder.Plo"; else rm -f "$(DEPDIR)/miprtpvideoencoder.Tpo"; exit 1; fi
@@ -804,6 +963,34 @@ miprtpvideodecoder.lo: components/transmission/miprtpvideodecoder.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transmission/miprtpvideodecoder.cpp' object='miprtpvideodecoder.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miprtpvideodecoder.lo `test -f 'components/transmission/miprtpvideodecoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpvideodecoder.cpp
+
+miprtplpcencoder.lo: components/transmission/miprtplpcencoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miprtplpcencoder.lo -MD -MP -MF "$(DEPDIR)/miprtplpcencoder.Tpo" -c -o miprtplpcencoder.lo `test -f 'components/transmission/miprtplpcencoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtplpcencoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miprtplpcencoder.Tpo" "$(DEPDIR)/miprtplpcencoder.Plo"; else rm -f "$(DEPDIR)/miprtplpcencoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transmission/miprtplpcencoder.cpp' object='miprtplpcencoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miprtplpcencoder.lo `test -f 'components/transmission/miprtplpcencoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtplpcencoder.cpp
+
+miprtplpcdecoder.lo: components/transmission/miprtplpcdecoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miprtplpcdecoder.lo -MD -MP -MF "$(DEPDIR)/miprtplpcdecoder.Tpo" -c -o miprtplpcdecoder.lo `test -f 'components/transmission/miprtplpcdecoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtplpcdecoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miprtplpcdecoder.Tpo" "$(DEPDIR)/miprtplpcdecoder.Plo"; else rm -f "$(DEPDIR)/miprtplpcdecoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transmission/miprtplpcdecoder.cpp' object='miprtplpcdecoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miprtplpcdecoder.lo `test -f 'components/transmission/miprtplpcdecoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtplpcdecoder.cpp
+
+miprtpgsmencoder.lo: components/transmission/miprtpgsmencoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miprtpgsmencoder.lo -MD -MP -MF "$(DEPDIR)/miprtpgsmencoder.Tpo" -c -o miprtpgsmencoder.lo `test -f 'components/transmission/miprtpgsmencoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpgsmencoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miprtpgsmencoder.Tpo" "$(DEPDIR)/miprtpgsmencoder.Plo"; else rm -f "$(DEPDIR)/miprtpgsmencoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transmission/miprtpgsmencoder.cpp' object='miprtpgsmencoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miprtpgsmencoder.lo `test -f 'components/transmission/miprtpgsmencoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpgsmencoder.cpp
+
+miprtpgsmdecoder.lo: components/transmission/miprtpgsmdecoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miprtpgsmdecoder.lo -MD -MP -MF "$(DEPDIR)/miprtpgsmdecoder.Tpo" -c -o miprtpgsmdecoder.lo `test -f 'components/transmission/miprtpgsmdecoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpgsmdecoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miprtpgsmdecoder.Tpo" "$(DEPDIR)/miprtpgsmdecoder.Plo"; else rm -f "$(DEPDIR)/miprtpgsmdecoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transmission/miprtpgsmdecoder.cpp' object='miprtpgsmdecoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miprtpgsmdecoder.lo `test -f 'components/transmission/miprtpgsmdecoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpgsmdecoder.cpp
 
 mipsamplingrateconverter.lo: components/transform/mipsamplingrateconverter.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipsamplingrateconverter.lo -MD -MP -MF "$(DEPDIR)/mipsamplingrateconverter.Tpo" -c -o mipsamplingrateconverter.lo `test -f 'components/transform/mipsamplingrateconverter.cpp' || echo '$(srcdir)/'`components/transform/mipsamplingrateconverter.cpp; \
@@ -846,6 +1033,13 @@ mipaudiodistancefade.lo: components/transform/mipaudiodistancefade.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transform/mipaudiodistancefade.cpp' object='mipaudiodistancefade.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipaudiodistancefade.lo `test -f 'components/transform/mipaudiodistancefade.cpp' || echo '$(srcdir)/'`components/transform/mipaudiodistancefade.cpp
+
+mipaudiofilter.lo: components/transform/mipaudiofilter.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipaudiofilter.lo -MD -MP -MF "$(DEPDIR)/mipaudiofilter.Tpo" -c -o mipaudiofilter.lo `test -f 'components/transform/mipaudiofilter.cpp' || echo '$(srcdir)/'`components/transform/mipaudiofilter.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipaudiofilter.Tpo" "$(DEPDIR)/mipaudiofilter.Plo"; else rm -f "$(DEPDIR)/mipaudiofilter.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transform/mipaudiofilter.cpp' object='mipaudiofilter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipaudiofilter.lo `test -f 'components/transform/mipaudiofilter.cpp' || echo '$(srcdir)/'`components/transform/mipaudiofilter.cpp
 
 mipaudiomixer.lo: components/mixer/mipaudiomixer.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipaudiomixer.lo -MD -MP -MF "$(DEPDIR)/mipaudiomixer.Tpo" -c -o mipaudiomixer.lo `test -f 'components/mixer/mipaudiomixer.cpp' || echo '$(srcdir)/'`components/mixer/mipaudiomixer.cpp; \
@@ -910,6 +1104,48 @@ mipulawdecoder.lo: components/codec/mipulawdecoder.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipulawdecoder.lo `test -f 'components/codec/mipulawdecoder.cpp' || echo '$(srcdir)/'`components/codec/mipulawdecoder.cpp
 
+mipalawencoder.lo: components/codec/mipalawencoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipalawencoder.lo -MD -MP -MF "$(DEPDIR)/mipalawencoder.Tpo" -c -o mipalawencoder.lo `test -f 'components/codec/mipalawencoder.cpp' || echo '$(srcdir)/'`components/codec/mipalawencoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipalawencoder.Tpo" "$(DEPDIR)/mipalawencoder.Plo"; else rm -f "$(DEPDIR)/mipalawencoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/codec/mipalawencoder.cpp' object='mipalawencoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipalawencoder.lo `test -f 'components/codec/mipalawencoder.cpp' || echo '$(srcdir)/'`components/codec/mipalawencoder.cpp
+
+mipalawdecoder.lo: components/codec/mipalawdecoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipalawdecoder.lo -MD -MP -MF "$(DEPDIR)/mipalawdecoder.Tpo" -c -o mipalawdecoder.lo `test -f 'components/codec/mipalawdecoder.cpp' || echo '$(srcdir)/'`components/codec/mipalawdecoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipalawdecoder.Tpo" "$(DEPDIR)/mipalawdecoder.Plo"; else rm -f "$(DEPDIR)/mipalawdecoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/codec/mipalawdecoder.cpp' object='mipalawdecoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipalawdecoder.lo `test -f 'components/codec/mipalawdecoder.cpp' || echo '$(srcdir)/'`components/codec/mipalawdecoder.cpp
+
+mipgsmencoder.lo: components/codec/mipgsmencoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipgsmencoder.lo -MD -MP -MF "$(DEPDIR)/mipgsmencoder.Tpo" -c -o mipgsmencoder.lo `test -f 'components/codec/mipgsmencoder.cpp' || echo '$(srcdir)/'`components/codec/mipgsmencoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipgsmencoder.Tpo" "$(DEPDIR)/mipgsmencoder.Plo"; else rm -f "$(DEPDIR)/mipgsmencoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/codec/mipgsmencoder.cpp' object='mipgsmencoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipgsmencoder.lo `test -f 'components/codec/mipgsmencoder.cpp' || echo '$(srcdir)/'`components/codec/mipgsmencoder.cpp
+
+mipgsmdecoder.lo: components/codec/mipgsmdecoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipgsmdecoder.lo -MD -MP -MF "$(DEPDIR)/mipgsmdecoder.Tpo" -c -o mipgsmdecoder.lo `test -f 'components/codec/mipgsmdecoder.cpp' || echo '$(srcdir)/'`components/codec/mipgsmdecoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipgsmdecoder.Tpo" "$(DEPDIR)/mipgsmdecoder.Plo"; else rm -f "$(DEPDIR)/mipgsmdecoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/codec/mipgsmdecoder.cpp' object='mipgsmdecoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipgsmdecoder.lo `test -f 'components/codec/mipgsmdecoder.cpp' || echo '$(srcdir)/'`components/codec/mipgsmdecoder.cpp
+
+miplpcencoder.lo: components/codec/miplpcencoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miplpcencoder.lo -MD -MP -MF "$(DEPDIR)/miplpcencoder.Tpo" -c -o miplpcencoder.lo `test -f 'components/codec/miplpcencoder.cpp' || echo '$(srcdir)/'`components/codec/miplpcencoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miplpcencoder.Tpo" "$(DEPDIR)/miplpcencoder.Plo"; else rm -f "$(DEPDIR)/miplpcencoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/codec/miplpcencoder.cpp' object='miplpcencoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miplpcencoder.lo `test -f 'components/codec/miplpcencoder.cpp' || echo '$(srcdir)/'`components/codec/miplpcencoder.cpp
+
+miplpcdecoder.lo: components/codec/miplpcdecoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miplpcdecoder.lo -MD -MP -MF "$(DEPDIR)/miplpcdecoder.Tpo" -c -o miplpcdecoder.lo `test -f 'components/codec/miplpcdecoder.cpp' || echo '$(srcdir)/'`components/codec/miplpcdecoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miplpcdecoder.Tpo" "$(DEPDIR)/miplpcdecoder.Plo"; else rm -f "$(DEPDIR)/miplpcdecoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/codec/miplpcdecoder.cpp' object='miplpcdecoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miplpcdecoder.lo `test -f 'components/codec/miplpcdecoder.cpp' || echo '$(srcdir)/'`components/codec/miplpcdecoder.cpp
+
 mipsignalwaiter.lo: util/mipsignalwaiter.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipsignalwaiter.lo -MD -MP -MF "$(DEPDIR)/mipsignalwaiter.Tpo" -c -o mipsignalwaiter.lo `test -f 'util/mipsignalwaiter.cpp' || echo '$(srcdir)/'`util/mipsignalwaiter.cpp; \
 @am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipsignalwaiter.Tpo" "$(DEPDIR)/mipsignalwaiter.Plo"; else rm -f "$(DEPDIR)/mipsignalwaiter.Tpo"; exit 1; fi
@@ -966,6 +1202,139 @@ mipvideosession.lo: sessions/mipvideosession.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipvideosession.lo `test -f 'sessions/mipvideosession.cpp' || echo '$(srcdir)/'`sessions/mipvideosession.cpp
 
+lpccodec.lo: thirdparty/lpc/lpccodec.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT lpccodec.lo -MD -MP -MF "$(DEPDIR)/lpccodec.Tpo" -c -o lpccodec.lo `test -f 'thirdparty/lpc/lpccodec.cpp' || echo '$(srcdir)/'`thirdparty/lpc/lpccodec.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/lpccodec.Tpo" "$(DEPDIR)/lpccodec.Plo"; else rm -f "$(DEPDIR)/lpccodec.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/lpc/lpccodec.cpp' object='lpccodec.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o lpccodec.lo `test -f 'thirdparty/lpc/lpccodec.cpp' || echo '$(srcdir)/'`thirdparty/lpc/lpccodec.cpp
+
+gsm_add.lo: thirdparty/gsm/src/gsm_add.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_add.lo -MD -MP -MF "$(DEPDIR)/gsm_add.Tpo" -c -o gsm_add.lo `test -f 'thirdparty/gsm/src/gsm_add.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_add.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_add.Tpo" "$(DEPDIR)/gsm_add.Plo"; else rm -f "$(DEPDIR)/gsm_add.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_add.cpp' object='gsm_add.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_add.lo `test -f 'thirdparty/gsm/src/gsm_add.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_add.cpp
+
+gsm_code.lo: thirdparty/gsm/src/gsm_code.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_code.lo -MD -MP -MF "$(DEPDIR)/gsm_code.Tpo" -c -o gsm_code.lo `test -f 'thirdparty/gsm/src/gsm_code.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_code.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_code.Tpo" "$(DEPDIR)/gsm_code.Plo"; else rm -f "$(DEPDIR)/gsm_code.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_code.cpp' object='gsm_code.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_code.lo `test -f 'thirdparty/gsm/src/gsm_code.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_code.cpp
+
+gsm_create.lo: thirdparty/gsm/src/gsm_create.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_create.lo -MD -MP -MF "$(DEPDIR)/gsm_create.Tpo" -c -o gsm_create.lo `test -f 'thirdparty/gsm/src/gsm_create.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_create.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_create.Tpo" "$(DEPDIR)/gsm_create.Plo"; else rm -f "$(DEPDIR)/gsm_create.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_create.cpp' object='gsm_create.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_create.lo `test -f 'thirdparty/gsm/src/gsm_create.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_create.cpp
+
+gsm_debug.lo: thirdparty/gsm/src/gsm_debug.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_debug.lo -MD -MP -MF "$(DEPDIR)/gsm_debug.Tpo" -c -o gsm_debug.lo `test -f 'thirdparty/gsm/src/gsm_debug.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_debug.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_debug.Tpo" "$(DEPDIR)/gsm_debug.Plo"; else rm -f "$(DEPDIR)/gsm_debug.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_debug.cpp' object='gsm_debug.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_debug.lo `test -f 'thirdparty/gsm/src/gsm_debug.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_debug.cpp
+
+gsm_decode.lo: thirdparty/gsm/src/gsm_decode.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_decode.lo -MD -MP -MF "$(DEPDIR)/gsm_decode.Tpo" -c -o gsm_decode.lo `test -f 'thirdparty/gsm/src/gsm_decode.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_decode.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_decode.Tpo" "$(DEPDIR)/gsm_decode.Plo"; else rm -f "$(DEPDIR)/gsm_decode.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_decode.cpp' object='gsm_decode.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_decode.lo `test -f 'thirdparty/gsm/src/gsm_decode.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_decode.cpp
+
+gsm_decode2.lo: thirdparty/gsm/src/gsm_decode2.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_decode2.lo -MD -MP -MF "$(DEPDIR)/gsm_decode2.Tpo" -c -o gsm_decode2.lo `test -f 'thirdparty/gsm/src/gsm_decode2.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_decode2.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_decode2.Tpo" "$(DEPDIR)/gsm_decode2.Plo"; else rm -f "$(DEPDIR)/gsm_decode2.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_decode2.cpp' object='gsm_decode2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_decode2.lo `test -f 'thirdparty/gsm/src/gsm_decode2.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_decode2.cpp
+
+gsm_destroy.lo: thirdparty/gsm/src/gsm_destroy.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_destroy.lo -MD -MP -MF "$(DEPDIR)/gsm_destroy.Tpo" -c -o gsm_destroy.lo `test -f 'thirdparty/gsm/src/gsm_destroy.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_destroy.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_destroy.Tpo" "$(DEPDIR)/gsm_destroy.Plo"; else rm -f "$(DEPDIR)/gsm_destroy.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_destroy.cpp' object='gsm_destroy.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_destroy.lo `test -f 'thirdparty/gsm/src/gsm_destroy.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_destroy.cpp
+
+gsm_encode.lo: thirdparty/gsm/src/gsm_encode.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_encode.lo -MD -MP -MF "$(DEPDIR)/gsm_encode.Tpo" -c -o gsm_encode.lo `test -f 'thirdparty/gsm/src/gsm_encode.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_encode.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_encode.Tpo" "$(DEPDIR)/gsm_encode.Plo"; else rm -f "$(DEPDIR)/gsm_encode.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_encode.cpp' object='gsm_encode.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_encode.lo `test -f 'thirdparty/gsm/src/gsm_encode.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_encode.cpp
+
+gsm_explode.lo: thirdparty/gsm/src/gsm_explode.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_explode.lo -MD -MP -MF "$(DEPDIR)/gsm_explode.Tpo" -c -o gsm_explode.lo `test -f 'thirdparty/gsm/src/gsm_explode.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_explode.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_explode.Tpo" "$(DEPDIR)/gsm_explode.Plo"; else rm -f "$(DEPDIR)/gsm_explode.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_explode.cpp' object='gsm_explode.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_explode.lo `test -f 'thirdparty/gsm/src/gsm_explode.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_explode.cpp
+
+gsm_implode.lo: thirdparty/gsm/src/gsm_implode.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_implode.lo -MD -MP -MF "$(DEPDIR)/gsm_implode.Tpo" -c -o gsm_implode.lo `test -f 'thirdparty/gsm/src/gsm_implode.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_implode.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_implode.Tpo" "$(DEPDIR)/gsm_implode.Plo"; else rm -f "$(DEPDIR)/gsm_implode.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_implode.cpp' object='gsm_implode.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_implode.lo `test -f 'thirdparty/gsm/src/gsm_implode.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_implode.cpp
+
+gsm_long_term.lo: thirdparty/gsm/src/gsm_long_term.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_long_term.lo -MD -MP -MF "$(DEPDIR)/gsm_long_term.Tpo" -c -o gsm_long_term.lo `test -f 'thirdparty/gsm/src/gsm_long_term.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_long_term.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_long_term.Tpo" "$(DEPDIR)/gsm_long_term.Plo"; else rm -f "$(DEPDIR)/gsm_long_term.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_long_term.cpp' object='gsm_long_term.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_long_term.lo `test -f 'thirdparty/gsm/src/gsm_long_term.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_long_term.cpp
+
+gsm_lpc.lo: thirdparty/gsm/src/gsm_lpc.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_lpc.lo -MD -MP -MF "$(DEPDIR)/gsm_lpc.Tpo" -c -o gsm_lpc.lo `test -f 'thirdparty/gsm/src/gsm_lpc.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_lpc.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_lpc.Tpo" "$(DEPDIR)/gsm_lpc.Plo"; else rm -f "$(DEPDIR)/gsm_lpc.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_lpc.cpp' object='gsm_lpc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_lpc.lo `test -f 'thirdparty/gsm/src/gsm_lpc.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_lpc.cpp
+
+gsm_option.lo: thirdparty/gsm/src/gsm_option.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_option.lo -MD -MP -MF "$(DEPDIR)/gsm_option.Tpo" -c -o gsm_option.lo `test -f 'thirdparty/gsm/src/gsm_option.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_option.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_option.Tpo" "$(DEPDIR)/gsm_option.Plo"; else rm -f "$(DEPDIR)/gsm_option.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_option.cpp' object='gsm_option.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_option.lo `test -f 'thirdparty/gsm/src/gsm_option.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_option.cpp
+
+gsm_preprocess.lo: thirdparty/gsm/src/gsm_preprocess.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_preprocess.lo -MD -MP -MF "$(DEPDIR)/gsm_preprocess.Tpo" -c -o gsm_preprocess.lo `test -f 'thirdparty/gsm/src/gsm_preprocess.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_preprocess.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_preprocess.Tpo" "$(DEPDIR)/gsm_preprocess.Plo"; else rm -f "$(DEPDIR)/gsm_preprocess.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_preprocess.cpp' object='gsm_preprocess.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_preprocess.lo `test -f 'thirdparty/gsm/src/gsm_preprocess.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_preprocess.cpp
+
+gsm_print.lo: thirdparty/gsm/src/gsm_print.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_print.lo -MD -MP -MF "$(DEPDIR)/gsm_print.Tpo" -c -o gsm_print.lo `test -f 'thirdparty/gsm/src/gsm_print.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_print.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_print.Tpo" "$(DEPDIR)/gsm_print.Plo"; else rm -f "$(DEPDIR)/gsm_print.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_print.cpp' object='gsm_print.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_print.lo `test -f 'thirdparty/gsm/src/gsm_print.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_print.cpp
+
+gsm_rpe.lo: thirdparty/gsm/src/gsm_rpe.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_rpe.lo -MD -MP -MF "$(DEPDIR)/gsm_rpe.Tpo" -c -o gsm_rpe.lo `test -f 'thirdparty/gsm/src/gsm_rpe.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_rpe.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_rpe.Tpo" "$(DEPDIR)/gsm_rpe.Plo"; else rm -f "$(DEPDIR)/gsm_rpe.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_rpe.cpp' object='gsm_rpe.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_rpe.lo `test -f 'thirdparty/gsm/src/gsm_rpe.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_rpe.cpp
+
+gsm_short_term.lo: thirdparty/gsm/src/gsm_short_term.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_short_term.lo -MD -MP -MF "$(DEPDIR)/gsm_short_term.Tpo" -c -o gsm_short_term.lo `test -f 'thirdparty/gsm/src/gsm_short_term.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_short_term.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_short_term.Tpo" "$(DEPDIR)/gsm_short_term.Plo"; else rm -f "$(DEPDIR)/gsm_short_term.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_short_term.cpp' object='gsm_short_term.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_short_term.lo `test -f 'thirdparty/gsm/src/gsm_short_term.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_short_term.cpp
+
+gsm_table.lo: thirdparty/gsm/src/gsm_table.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gsm_table.lo -MD -MP -MF "$(DEPDIR)/gsm_table.Tpo" -c -o gsm_table.lo `test -f 'thirdparty/gsm/src/gsm_table.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_table.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/gsm_table.Tpo" "$(DEPDIR)/gsm_table.Plo"; else rm -f "$(DEPDIR)/gsm_table.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='thirdparty/gsm/src/gsm_table.cpp' object='gsm_table.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gsm_table.lo `test -f 'thirdparty/gsm/src/gsm_table.cpp' || echo '$(srcdir)/'`thirdparty/gsm/src/gsm_table.cpp
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -993,6 +1362,77 @@ uninstall-libemipincludeHEADERS:
 	  rm -f "$(DESTDIR)$(libemipincludedir)/$$f"; \
 	done
 
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
+$(RECURSIVE_TARGETS):
+	@failcom='exit 1'; \
+	for f in x $$MAKEFLAGS; do \
+	  case $$f in \
+	    *=* | --[!k]*);; \
+	    *k*) failcom='fail=yes';; \
+	  esac; \
+	done; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	  || eval $$failcom; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+mostlyclean-recursive clean-recursive distclean-recursive \
+maintainer-clean-recursive:
+	@failcom='exit 1'; \
+	for f in x $$MAKEFLAGS; do \
+	  case $$f in \
+	    *=* | --[!k]*);; \
+	    *k*) failcom='fail=yes';; \
+	  esac; \
+	done; \
+	dot_seen=no; \
+	case "$@" in \
+	  distclean-* | maintainer-clean-*) list='$(DIST_SUBDIRS)' ;; \
+	  *) list='$(SUBDIRS)' ;; \
+	esac; \
+	rev=''; for subdir in $$list; do \
+	  if test "$$subdir" = "."; then :; else \
+	    rev="$$subdir $$rev"; \
+	  fi; \
+	done; \
+	rev="$$rev ."; \
+	target=`echo $@ | sed s/-recursive//`; \
+	for subdir in $$rev; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	  || eval $$failcom; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
+ctags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) ctags); \
+	done
+
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
@@ -1003,10 +1443,23 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	mkid -fID $$unique
 tags: TAGS
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
+	if ($(ETAGS) --etags-include --version) >/dev/null 2>&1; then \
+	  include_option=--etags-include; \
+	  empty_fix=.; \
+	else \
+	  include_option=--include; \
+	  empty_fix=; \
+	fi; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  if test "$$subdir" = .; then :; else \
+	    test ! -f $$subdir/TAGS || \
+	      tags="$$tags $$include_option=$$here/$$subdir/TAGS"; \
+	  fi; \
+	done; \
 	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
@@ -1019,7 +1472,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 	    $$tags $$unique; \
 	fi
 ctags: CTAGS
-CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+CTAGS: ctags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
@@ -1069,22 +1522,38 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
+	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
+	  if test "$$subdir" = .; then :; else \
+	    test -d "$(distdir)/$$subdir" \
+	    || $(mkdir_p) "$(distdir)/$$subdir" \
+	    || exit 1; \
+	    distdir=`$(am__cd) $(distdir) && pwd`; \
+	    top_distdir=`$(am__cd) $(top_distdir) && pwd`; \
+	    (cd $$subdir && \
+	      $(MAKE) $(AM_MAKEFLAGS) \
+	        top_distdir="$$top_distdir" \
+	        distdir="$$distdir/$$subdir" \
+	        distdir) \
+	      || exit 1; \
+	  fi; \
+	done
 check-am: all-am
-check: check-am
+check: check-recursive
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
-installdirs:
+installdirs: installdirs-recursive
+installdirs-am:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libemipincludedir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
-install: install-am
-install-exec: install-exec-am
-install-data: install-data-am
-uninstall: uninstall-am
+install: install-recursive
+install-exec: install-exec-recursive
+install-data: install-data-recursive
+uninstall: uninstall-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 
-installcheck: installcheck-am
+installcheck: installcheck-recursive
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
 	  install_sh_PROGRAM="$(INSTALL_STRIP_PROGRAM)" INSTALL_STRIP_FLAG=-s \
@@ -1100,24 +1569,24 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean: clean-am
+clean: clean-recursive
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 	mostlyclean-am
 
-distclean: distclean-am
+distclean: distclean-recursive
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-tags
 
-dvi: dvi-am
+dvi: dvi-recursive
 
 dvi-am:
 
-html: html-am
+html: html-recursive
 
-info: info-am
+info: info-recursive
 
 info-am:
 
@@ -1125,45 +1594,50 @@ install-data-am: install-libemipincludeHEADERS
 
 install-exec-am: install-libLTLIBRARIES
 
-install-info: install-info-am
+install-info: install-info-recursive
 
 install-man:
 
 installcheck-am:
 
-maintainer-clean: maintainer-clean-am
+maintainer-clean: maintainer-clean-recursive
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
-mostlyclean: mostlyclean-am
+mostlyclean: mostlyclean-recursive
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool
 
-pdf: pdf-am
+pdf: pdf-recursive
 
 pdf-am:
 
-ps: ps-am
+ps: ps-recursive
 
 ps-am:
 
 uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES \
 	uninstall-libemipincludeHEADERS
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libLTLIBRARIES clean-libtool ctags distclean \
+uninstall-info: uninstall-info-recursive
+
+.PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am check check-am \
+	clean clean-generic clean-libLTLIBRARIES clean-libtool \
+	clean-recursive ctags ctags-recursive distclean \
 	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am \
-	install-libLTLIBRARIES install-libemipincludeHEADERS \
-	install-man install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-info-am uninstall-libLTLIBRARIES \
+	distclean-recursive distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am install-info \
+	install-info-am install-libLTLIBRARIES \
+	install-libemipincludeHEADERS install-man install-strip \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic \
+	maintainer-clean-recursive mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool mostlyclean-recursive \
+	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	uninstall-info-am uninstall-libLTLIBRARIES \
 	uninstall-libemipincludeHEADERS
 
 

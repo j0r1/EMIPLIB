@@ -32,42 +32,52 @@
 
 #include "mipconfig.h"
 
-#if defined(MIPCONFIG_SUPPORT_SPEEX) && ((defined(WIN32) || defined(_WIN32_WCE)) || \
+#if ((defined(WIN32) || defined(_WIN32_WCE)) || \
 		( !defined(WIN32) && !defined(_WIN32_WCE) && defined(MIPCONFIG_SUPPORT_OSS)))
 
 #include "mipcomponentchain.h"
 #include "miperrorbase.h"
 #include "miptime.h"
-#include "mipspeexencoder.h"
 #include <rtptransmitter.h>
 #include <string>
+#include <list>
 
 class RTPSession;
 class RTPAddress;
+class MIPComponent;
 class MIPRTPSynchronizer;
-#if (defined(WIN32) || defined(_WIN32_WCE))
-	class MIPWinMMInput;
-	class MIPWinMMOutput;
-#else
-	class MIPOSSInputOutput;
-#endif // WIN32 || _WIN32_WCE
-class MIPAudioSplitter;
-class MIPSampleEncoder;
-class MIPSpeexEncoder;
-class MIPRTPSpeexEncoder;
-class MIPRTPComponent;
-class MIPAverageTimer;
-class MIPRTPDecoder;
-class MIPRTPSpeexDecoder;
-class MIPMediaBuffer;
-class MIPSpeexDecoder;
-class MIPSamplingRateConverter;
-class MIPAudioMixer;
+class MIPRTPPacketDecoder;
 
 /** Parameters for an audio session. */
 class MIPAudioSessionParams
 {
 public:
+	/** Used to select compression/encoding type. */
+	enum CompressionType 
+	{ 
+		/** U-law encoding. */
+		ULaw, 
+		/** A-law encoding. */
+		ALaw,
+		/** LPC compression. */
+		LPC, 
+		/** GSM 06.10 compression. */
+		GSM, 
+		/** Speex compression. */
+		Speex 
+	};
+
+	/** If Speex compression is used, this is sed to select speex encoding type. */
+	enum SpeexBandWidth 
+	{ 
+ 		/** Narrow band mode (8000 Hz) */
+		NarrowBand,
+	 	/** Wide band mode (16000 Hz) */
+		WideBand,		
+ 		/** Ultra wide band mode (32000 Hz) */
+		UltraWideBand
+	};
+	
 	MIPAudioSessionParams()								
 	{ 
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
@@ -78,7 +88,17 @@ public:
 #endif // !(WIN32 || _WIN32_WCE)
 		m_portbase = 5000; 
 		m_acceptOwnPackets = false; 
-		m_speexMode = MIPSpeexEncoder::WideBand;
+		m_speexMode = WideBand;
+		m_speexIncomingPT = 96;
+		m_speexOutgoingPT = 96;
+#ifdef _WIN32_WCE
+		m_inputMultiplier = 3;
+		m_outputMultiplier = 2;
+#else
+		m_inputMultiplier = 1;
+		m_outputMultiplier = 1;
+#endif // _WIN32_WCE
+		m_compType = ULaw;
 	}
 	~MIPAudioSessionParams()							{ }
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
@@ -97,8 +117,23 @@ public:
 	/** Returns \c true if own packets will be accepted (default: \c false). */
 	bool getAcceptOwnPackets() const						{ return m_acceptOwnPackets; }
 	
+	/** Returns the requested compression/encoding type (default: U-law). */
+	CompressionType getCompressionType() const					{ return m_compType; }
+	
 	/** Returns the Speex mode (default: WideBand). */
-	MIPSpeexEncoder::SpeexBandWidth getSpeexEncoding() const			{ return m_speexMode; }
+	SpeexBandWidth getSpeexEncoding() const						{ return m_speexMode; }
+
+	/** Incoming packets with this payload type will be interpreted as Speex packets. */
+	uint8_t getSpeexIncomingPayloadType() const					{ return m_speexIncomingPT; }
+
+	/** This payload type will be set on outgoing Speex packets. */
+	uint8_t getSpeexOutgoingPayloadType() const					{ return m_speexOutgoingPT; }
+	
+	/** Returns the size of the input sampling interval, in units of 20ms. */
+	int getInputMultiplier() const							{ return m_inputMultiplier; }
+
+	/** Returns the size of the output sampling interval, in units of 20ms. */
+	int getOutputMultiplier() const							{ return m_outputMultiplier; }
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
 	/** Sets the name of the input device (not available on Win32/WinCE). */
 	void setInputDevice(const std::string &devName)					{ m_inputDevName = devName; }
@@ -115,8 +150,23 @@ public:
 	/** Sets a flag indicating if own packets should be accepted. */
 	void setAcceptOwnPackets(bool v)						{ m_acceptOwnPackets = v; }
 
+	/** Sets the compression/encoding type. */
+	void setCompressionType(CompressionType t)					{ m_compType = t; }
+
 	/** Sets the Speex encoding mode. */
-	void setSpeexEncoding(MIPSpeexEncoder::SpeexBandWidth b)			{ m_speexMode = b; }
+	void setSpeexEncoding(SpeexBandWidth b)						{ m_speexMode = b; }
+
+	/** This will interpret incoming packets with payload type \c pt as Speex packets. */
+	void setSpeexIncomingPayloadType(uint8_t pt)					{ m_speexIncomingPT = pt; }
+	
+	/** Sets the payload type for outgoing Speex packets. */
+	void setSpeexOutgoingPayloadType(uint8_t pt)					{ m_speexOutgoingPT = pt; }
+
+	/** Sets the input sampling interval to \c m * 20ms. */
+	void setInputMultiplier(int m)							{ m_inputMultiplier = m; }
+
+	/** Sets the output sampling interval to \c m * 20ms. */
+	void setOutputMultiplier(int m)							{ m_outputMultiplier = m; }
 private:
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
 	std::string m_inputDevName, m_outputDevName;
@@ -125,7 +175,10 @@ private:
 #endif // !(WIN32 || _WIN32_WCE)
 	uint16_t m_portbase;
 	bool m_acceptOwnPackets;
-	MIPSpeexEncoder::SpeexBandWidth m_speexMode;
+	SpeexBandWidth m_speexMode;
+	int m_inputMultiplier, m_outputMultiplier;
+	CompressionType m_compType;
+	uint8_t m_speexOutgoingPT, m_speexIncomingPT;
 };
 
 /** Creates a VoIP session.
@@ -258,33 +311,20 @@ private:
 
 	void zeroAll();
 	void deleteAll();
+	void storeComponent(MIPComponent *pComp);
+	void storePacketDecoder(MIPRTPPacketDecoder *pDec);
+	void addLink(MIPComponentChain *pChain, MIPComponent **pPrevComp, MIPComponent *pComp, 
+	             bool feedback = false, uint32_t mask1 = MIPMESSAGE_TYPE_ALL, uint32_t mask2 = MIPMESSAGE_TYPE_ALL);
 
 	bool m_init;
 	
 	InputChain *m_pInputChain;
 	OutputChain *m_pOutputChain;
 	IOChain *m_pIOChain;
-#if (defined(WIN32) || defined(_WIN32_WCE))
-	MIPWinMMInput *m_pInput;
-	MIPWinMMOutput *m_pOutput;
-#else
-	MIPOSSInputOutput *m_pInput;
-	MIPOSSInputOutput *m_pOutput;
-#endif // WIN32 || _WIN32_WCE
-	MIPAudioSplitter *m_pSplitter;
-	MIPSampleEncoder *m_pSampEnc;	
-	MIPSpeexEncoder *m_pSpeexEnc;
-	MIPRTPSpeexEncoder *m_pRTPEnc;
-	MIPRTPComponent *m_pRTPComp;
+	
 	RTPSession *m_pRTPSession;
-	MIPAverageTimer *m_pTimer;
-	MIPRTPDecoder *m_pRTPDec;
-	MIPRTPSpeexDecoder *m_pRTPSpeexDec;
-	MIPMediaBuffer *m_pMediaBuf;
-	MIPSpeexDecoder *m_pSpeexDec;
-	MIPSamplingRateConverter *m_pSampConv;
-	MIPAudioMixer *m_pMixer;
-	MIPSampleEncoder *m_pSampEnc2;
+	std::list<MIPComponent *> m_components;
+	std::list<MIPRTPPacketDecoder *> m_packetDecoders;
 	
 	friend class InputChain;
 	friend class OutputChain;

@@ -346,19 +346,26 @@ bool MIPWAVReader::readFrames(float *buffer, int numFrames, int *numFramesRead)
 		{
 			for (int j = 0 ; j < m_channels ; j++)
 			{
-				uint32_t x = 0;
-
-				if ((m_pFrameBuffer[byteBufPos + m_bytesPerSample - 1] & 0x80) == 0x80)
-					x = m_negStartVal;
+				if (m_bytesPerSample == 1)
+				{
+					buffer[floatBufPos] = ((float)(m_pFrameBuffer[byteBufPos])-128.0f)*m_scale;
+					byteBufPos++;
+				}
+				else
+				{
+					uint32_t x = 0;
+					
+					if ((m_pFrameBuffer[byteBufPos + m_bytesPerSample - 1] & 0x80) == 0x80)
+						x = m_negStartVal;
 	
-				int shiftNum = 0;
-				for (int k = 0 ; k < m_bytesPerSample ; k++, shiftNum += 8, byteBufPos++)
-					x |= ((uint32_t)(m_pFrameBuffer[byteBufPos])) << shiftNum;
+						int shiftNum = 0;
+					for (int k = 0 ; k < m_bytesPerSample ; k++, shiftNum += 8, byteBufPos++)
+						x |= ((uint32_t)(m_pFrameBuffer[byteBufPos])) << shiftNum;
 
-				int32_t y = *((int32_t *)(&x));
+					int32_t y = *((int32_t *)(&x));
 
-				buffer[floatBufPos] = ((float)y)*m_scale;
-				
+					buffer[floatBufPos] = ((float)y)*m_scale;
+				}		
 				floatBufPos++;
 			}
 		}
@@ -408,26 +415,31 @@ bool MIPWAVReader::readFrames(int16_t *buffer, int numFrames, int *numFramesRead
 		{
 			for (int j = 0 ; j < m_channels ; j++)
 			{
-				uint32_t x = 0;
-
-				if ((m_pFrameBuffer[byteBufPos + m_bytesPerSample - 1] & 0x80) == 0x80)
-					x = m_negStartVal;
-	
-				int shiftNum = 0;
-				for (int k = 0 ; k < m_bytesPerSample ; k++, shiftNum += 8, byteBufPos++)
-					x |= ((uint32_t)(m_pFrameBuffer[byteBufPos])) << shiftNum;
-
-				int32_t y = *((int32_t *)(&x));
-
 				if (m_bytesPerSample == 1)
-					buffer[intBufPos] = (int16_t)(y << 8);
-				else if (m_bytesPerSample == 2)
-					buffer[intBufPos] = (int16_t)y;
-				else if (m_bytesPerSample == 3)
-					buffer[intBufPos] = (int16_t)(y >> 8);
+				{
+					buffer[intBufPos] = (((int16_t)(m_pFrameBuffer[byteBufPos])-128)<<8);
+					byteBufPos++;
+				}
 				else
-					buffer[intBufPos] = (int16_t)(y >> 16);
-				
+				{		
+					uint32_t x = 0;
+
+					if ((m_pFrameBuffer[byteBufPos + m_bytesPerSample - 1] & 0x80) == 0x80)
+						x = m_negStartVal;
+		
+					int shiftNum = 0;
+					for (int k = 0 ; k < m_bytesPerSample ; k++, shiftNum += 8, byteBufPos++)
+						x |= ((uint32_t)(m_pFrameBuffer[byteBufPos])) << shiftNum;
+
+					int32_t y = *((int32_t *)(&x));
+
+					if (m_bytesPerSample == 2)
+						buffer[intBufPos] = (int16_t)y;
+					else if (m_bytesPerSample == 3)
+						buffer[intBufPos] = (int16_t)(y >> 8);
+					else
+						buffer[intBufPos] = (int16_t)(y >> 16);
+				}	
 				intBufPos++;
 			}
 		}

@@ -3,6 +3,9 @@
  */
 
 #include <mipconfig.h>
+
+#if(defined(MIPCONFIG_SUPPORT_OSS) || (defined(WIN32) || defined(_WIN32_WCE)) )
+
 #include <mipcomponentchain.h>
 #include <mipcomponent.h>
 #include <miptime.h>
@@ -185,3 +188,14 @@ int main(void)
 	return 0;
 }
 
+#else
+
+#include <iostream>
+
+int main(void)
+{
+	std::cerr << "Not all necessary components are available to run this example." << std::endl;
+	return 0;
+}
+
+#endif //

@@ -1,5 +1,5 @@
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(emiplib, 0.15.0)
+AM_INIT_AUTOMAKE(emiplib, 0.16.0)
 
 MIPCONFIG_BIGENDIAN="// Little endian system"
 MIPCONFIG_SUPPORT_SNDFILE="// No support for libsndfile"
@@ -17,6 +17,7 @@ MIPCONFIG_SUPPORT_VIDEO4LINUX="// No support for video4linux"
 MIPCONFIG_SUPPORT_OSS="// No support for OSS"
 MIPCONFIG_SUPPORT_SDLAUDIO="// No support for SDL audio"
 MIPCONFIG_SUPPORT_OPENAL="// No support for OpenAL"
+MIPCONFIG_SUPPORT_PORTAUDIO="// No support for PortAudio"
 MIPCONFIG_GPL="// No GPL components will be compiled"
 
 MIPLINKLIBS="$LDFLAGS"
@@ -278,7 +279,15 @@ dnl ---------------------------------------------------------------------------
 dnl OpenAL support
 dnl ---------------------------------------------------------------------------
 
-AC_CHECK_HEADER(AL/al.h,[MIPCONFIG_SUPPORT_OPENAL="#define MIPCONFIG_SUPPORT_OPENAL"])
+AC_CHECK_HEADER(AL/al.h,[MIPCONFIG_SUPPORT_OPENAL="#define MIPCONFIG_SUPPORT_OPENAL"
+				MIPLINKLIBS="$MIPLINKLIBS -lopenal"])
+
+dnl ---------------------------------------------------------------------------
+dnl PortAudio support
+dnl ---------------------------------------------------------------------------
+
+AC_CHECK_HEADER(portaudio.h,[MIPCONFIG_SUPPORT_PORTAUDIO="#define MIPCONFIG_SUPPORT_PORTAUDIO"
+				MIPLINKLIBS="$MIPLINKLIBS -lportaudio"])
 
 dnl ---------------------------------------------------------------------------
 dnl Check if it's a big endian or little endian system
@@ -331,6 +340,7 @@ AC_SUBST(MIPCONFIG_SUPPORT_VIDEO4LINUX)
 AC_SUBST(MIPCONFIG_SUPPORT_OSS)
 AC_SUBST(MIPCONFIG_SUPPORT_SDLAUDIO)
 AC_SUBST(MIPCONFIG_SUPPORT_OPENAL)
+AC_SUBST(MIPCONFIG_SUPPORT_PORTAUDIO)
 AC_SUBST(MIPCONFIG_GPL)
 
 AC_OUTPUT(Makefile \
@@ -341,7 +351,7 @@ AC_OUTPUT(Makefile \
 	  src/thirdparty/gsm/Makefile \
 	  src/thirdparty/gsm/doc/Makefile \
 	  examples/Makefile \
-          doc/Makefile \
+	  doc/Makefile \
           pkgconfig/Makefile \
           pkgconfig/emiplib.pc \
           pkgconfig/emiplib-uninstalled.pc \

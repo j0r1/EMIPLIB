@@ -206,6 +206,7 @@ bool MIPWinMMOutput::push(const MIPComponentChain &chain, int64_t iteration, MIP
 	}
 
 	int bufCount;
+	int loops = 1;
 
 	m_bufCountMutex.Lock();
 	bufCount = m_bufCount;
@@ -225,60 +226,67 @@ bool MIPWinMMOutput::push(const MIPComponentChain &chain, int64_t iteration, MIP
 	{
 		if ((MIPTime::getCurrentTime().getValue() - m_prevCheckTime.getValue()) > 1.0) // wait at least a second
 		{
-			if (bufCount - m_prevBufCount > 1) // getting out of sync: delay buildup
+			if (bufCount - m_prevBufCount > 2) // getting out of sync: delay buildup
 			{
 //				std::cout << "HERE" << std::endl;
 				m_flushBuffers = true;
 				return true;
+			}
+			else if (bufCount - m_prevBufCount <= 0)
+			{
+				loops = 2;
 			}
 		}
 		else
 			m_prevBufCount = bufCount;
 	}
 
-
 	size_t num = audioMessage->getNumberOfFrames() * m_channels;
 	const uint16_t *pFrames = audioMessage->getFrames();
 
-	// add the actual frame
-
-	if (m_blocksInitialized == m_numBlocks)
+	for (int i = 0 ; i < loops ; i++)
 	{
-		if (waveOutUnprepareHeader(m_device,&m_frameArray[m_blockPos],sizeof(WAVEHDR)) != MMSYSERR_NOERROR)
+		// add the actual frame, duplicating it if we're running low on buffers
+
+		if (m_blocksInitialized == m_numBlocks)
 		{
-			setErrorString(MIPWINMMOUTPUT_ERRSTR_CANTUNPREPAREHEADER);
+			if (waveOutUnprepareHeader(m_device,&m_frameArray[m_blockPos],sizeof(WAVEHDR)) != MMSYSERR_NOERROR)
+			{
+				setErrorString(MIPWINMMOUTPUT_ERRSTR_CANTUNPREPAREHEADER);
+				return false;
+			}
+		}
+
+		uint16_t *pDst = (uint16_t *)m_frameArray[m_blockPos].lpData;
+
+		memcpy(pDst, pFrames, num*sizeof(uint16_t));
+
+		m_frameArray[m_blockPos].dwFlags = 0;
+		m_frameArray[m_blockPos].dwLoops = 0;
+		m_frameArray[m_blockPos].dwUser = 0;
+		m_bufCountMutex.Lock();
+		m_bufCount++;
+		m_bufCountMutex.Unlock();
+
+		if (waveOutPrepareHeader(m_device,&m_frameArray[m_blockPos],sizeof(WAVEHDR)) != MMSYSERR_NOERROR)
+		{
+			setErrorString(MIPWINMMOUTPUT_ERRSTR_CANTPREPAREHEADER);
 			return false;
 		}
+		if (waveOutWrite(m_device,&m_frameArray[m_blockPos],sizeof(WAVEHDR)) != MMSYSERR_NOERROR)
+		{
+			setErrorString(MIPWINMMOUTPUT_ERRSTR_CANTWRITEDATA);
+			return false;
+		}
+
+		m_blockPos++;
+		if (m_blockPos == m_numBlocks)
+			m_blockPos = 0;
+		if (m_blocksInitialized != m_numBlocks)
+			m_blocksInitialized++;
+
 	}
 
-	uint16_t *pDst = (uint16_t *)m_frameArray[m_blockPos].lpData;
-
-	memcpy(pDst, pFrames, num*sizeof(uint16_t));
-
-	m_frameArray[m_blockPos].dwFlags = 0;
-	m_frameArray[m_blockPos].dwLoops = 0;
-	m_frameArray[m_blockPos].dwUser = 0;
-	m_bufCountMutex.Lock();
-	m_bufCount++;
-	m_bufCountMutex.Unlock();
-
-	if (waveOutPrepareHeader(m_device,&m_frameArray[m_blockPos],sizeof(WAVEHDR)) != MMSYSERR_NOERROR)
-	{
-		setErrorString(MIPWINMMOUTPUT_ERRSTR_CANTPREPAREHEADER);
-		return false;
-	}
-	if (waveOutWrite(m_device,&m_frameArray[m_blockPos],sizeof(WAVEHDR)) != MMSYSERR_NOERROR)
-	{
-		setErrorString(MIPWINMMOUTPUT_ERRSTR_CANTWRITEDATA);
-		return false;
-	}
-
-	m_blockPos++;
-	if (m_blockPos == m_numBlocks)
-		m_blockPos = 0;
-	if (m_blocksInitialized != m_numBlocks)
-		m_blocksInitialized++;
-	
 	return true;
 }
 

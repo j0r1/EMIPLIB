@@ -7,7 +7,8 @@ core/mipcomponentchain.cpp \
 core/mipversion.cpp \
 core/mipdebug.cpp \
 components/timer/mipaveragetimer.cpp \
-components/timer/mippusheventtimer.cpp
+components/timer/mippusheventtimer.cpp \
+components/timer/mipinterchaintimer.cpp 
 
 if MIP_USEQT
 libemip_la_SOURCES += components/output/mipqtoutput.moc
@@ -31,6 +32,7 @@ components/input/mipfrequencygenerator.cpp \
 components/input/mipwavinput.cpp \
 components/input/mipjackinput.cpp \
 components/io/mipossinputoutput.cpp \
+components/io/mippainputoutput.cpp \
 components/transmission/miprtpcomponent.cpp \
 components/transmission/miprtpspeexencoder.cpp \
 components/transmission/miprtpdecoder.cpp \
@@ -45,6 +47,8 @@ components/transmission/miprtplpcencoder.cpp \
 components/transmission/miprtplpcdecoder.cpp \
 components/transmission/miprtpgsmencoder.cpp \
 components/transmission/miprtpgsmdecoder.cpp \
+components/transmission/miprtpl16encoder.cpp \
+components/transmission/miprtpl16decoder.cpp \
 components/transform/mipsamplingrateconverter.cpp \
 components/transform/mipsampleencoder.cpp \
 components/transform/mipaudio3dbase.cpp \
@@ -73,6 +77,7 @@ util/mipwavreader.cpp \
 util/mipwavwriter.cpp \
 util/miprtpsynchronizer.cpp \
 util/mipspeexutil.cpp \
+util/mipstreambuffer.cpp \
 sessions/mipaudiosession.cpp \
 sessions/mipvideosession.cpp \
 thirdparty/lpc/lpccodec.cpp \
@@ -126,6 +131,7 @@ core/mipfeedback.h \
 core/mipversion.h \
 components/timer/mipaveragetimer.h \
 components/timer/mippusheventtimer.h \
+components/timer/mipinterchaintimer.h \
 components/output/mipmessagedumper.h \
 components/output/mipsndfileoutput.h \
 components/output/mipwavoutput.h \
@@ -145,6 +151,7 @@ components/input/mipfrequencygenerator.h \
 components/input/mipwavinput.h \
 components/input/mipjackinput.h \
 components/io/mipossinputoutput.h \
+components/io/mippainputoutput.h \
 components/transmission/miprtpcomponent.h \
 components/transmission/miprtpencoder.h \
 components/transmission/miprtpspeexencoder.h \
@@ -162,6 +169,8 @@ components/transmission/miprtplpcencoder.h \
 components/transmission/miprtplpcdecoder.h \
 components/transmission/miprtpgsmencoder.h \
 components/transmission/miprtpgsmdecoder.h \
+components/transmission/miprtpl16encoder.h \
+components/transmission/miprtpl16decoder.h \
 components/transform/mipsamplingrateconverter.h \
 components/transform/mipsampleencoder.h \
 components/transform/mipaudio3dbase.h \
@@ -192,6 +201,7 @@ util/mipwavwriter.h \
 util/miprtpsynchronizer.h \
 util/mipresample.h \
 util/mipspeexutil.h \
+util/mipstreambuffer.h \
 sessions/mipaudiosession.h \
 sessions/mipvideosession.h
 

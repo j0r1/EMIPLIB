@@ -65,7 +65,7 @@ MIPVideoSession::~MIPVideoSession()
 	deleteAll();
 }
 
-bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchronizer *pSync)
+bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchronizer *pSync, RTPSession *pRTPSession)
 {
 	if (m_init)
 	{
@@ -128,25 +128,42 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 	
 	m_pRTPEnc->setPayloadType(103);
 
-	RTPUDPv4TransmissionParams transParams;
-	RTPSessionParams sessParams;
-	int status;
-	
-	transParams.SetPortbase(pParams2->getPortbase());
-	sessParams.SetOwnTimestampUnit(1.0/90000.0);
-	sessParams.SetMaximumPacketSize(64000);
-	sessParams.SetAcceptOwnPackets(pParams2->getAcceptOwnPackets());
-
-	m_pRTPSession = newRTPSession();
-	if (m_pRTPSession == 0)
-		m_pRTPSession = new RTPSession();
-	if ((status = m_pRTPSession->Create(sessParams,&transParams)) < 0)
+	if (pRTPSession != 0)
 	{
-		setErrorString(RTPGetErrorString(status));
-		deleteAll();
-		return false;
-	}
+		int status;
+		
+		m_pRTPSession = pRTPSession;
+		m_deleteRTPSession = false;
 
+		if ((status = m_pRTPSession->SetTimestampUnit(1.0/90000.0)) < 0)
+		{
+			setErrorString(RTPGetErrorString(status));
+			deleteAll();
+			return false;		
+		}
+	}
+	else
+	{
+		RTPUDPv4TransmissionParams transParams;
+		RTPSessionParams sessParams;
+		int status;
+		
+		transParams.SetPortbase(pParams2->getPortbase());
+		sessParams.SetOwnTimestampUnit(1.0/90000.0);
+		sessParams.SetMaximumPacketSize(64000);
+		sessParams.SetAcceptOwnPackets(pParams2->getAcceptOwnPackets());
+
+		m_pRTPSession = new RTPSession();
+		m_deleteRTPSession = true;
+		
+		if ((status = m_pRTPSession->Create(sessParams,&transParams)) < 0)
+		{
+			setErrorString(RTPGetErrorString(status));
+			deleteAll();
+			return false;
+		}
+	}
+	
 	m_pRTPComp = new MIPRTPComponent();
 	if (!m_pRTPComp->init(m_pRTPSession))
 	{
@@ -278,6 +295,9 @@ bool MIPVideoSession::destroy()
 	return true;
 }
 
+// Note: since we can't be sure that the underlying RTPTransmitter
+// was compiled in a thread-safe way, we'll lock the RTP component
+
 bool MIPVideoSession::addDestination(const RTPAddress &addr)
 {
 	if (!m_init)
@@ -287,11 +307,16 @@ bool MIPVideoSession::addDestination(const RTPAddress &addr)
 	}
 	
 	int status;
+
+	m_pRTPComp->lock();
 	if ((status = m_pRTPSession->AddDestination(addr)) < 0)
 	{
+		m_pRTPComp->unlock();
 		setErrorString(RTPGetErrorString(status));
 		return false;
 	}
+	m_pRTPComp->unlock();
+
 	return true;
 }
 
@@ -304,11 +329,16 @@ bool MIPVideoSession::deleteDestination(const RTPAddress &addr)
 	}
 	
 	int status;
+	
+	m_pRTPComp->lock();
 	if ((status = m_pRTPSession->DeleteDestination(addr)) < 0)
 	{
+		m_pRTPComp->unlock();
 		setErrorString(RTPGetErrorString(status));
 		return false;
 	}
+	m_pRTPComp->unlock();
+
 	return true;
 }
 
@@ -320,7 +350,9 @@ bool MIPVideoSession::clearDestinations()
 		return false;
 	}
 	
+	m_pRTPComp->lock();
 	m_pRTPSession->ClearDestinations();
+	m_pRTPComp->unlock();
 	return true;
 }
 
@@ -329,7 +361,11 @@ bool MIPVideoSession::supportsMulticasting()
 	if (!m_init)
 		return false;
 	
-	return m_pRTPSession->SupportsMulticasting();
+	m_pRTPComp->lock();
+	bool val = m_pRTPSession->SupportsMulticasting();
+	m_pRTPComp->unlock();
+
+	return val;
 }
 
 bool MIPVideoSession::joinMulticastGroup(const RTPAddress &addr)
@@ -341,11 +377,16 @@ bool MIPVideoSession::joinMulticastGroup(const RTPAddress &addr)
 	}
 	
 	int status;
+
+	m_pRTPComp->lock();
 	if ((status = m_pRTPSession->JoinMulticastGroup(addr)) < 0)
 	{
+		m_pRTPComp->unlock();
 		setErrorString(RTPGetErrorString(status));
 		return false;
 	}
+	m_pRTPComp->unlock();
+	
 	return true;
 }
 
@@ -358,11 +399,16 @@ bool MIPVideoSession::leaveMulticastGroup(const RTPAddress &addr)
 	}
 	
 	int status;
+
+	m_pRTPComp->lock();
 	if ((status = m_pRTPSession->LeaveMulticastGroup(addr)) < 0)
 	{
+		m_pRTPComp->unlock();
 		setErrorString(RTPGetErrorString(status));
 		return false;
 	}
+	m_pRTPComp->unlock();
+	
 	return true;
 }
 
@@ -374,7 +420,10 @@ bool MIPVideoSession::leaveAllMulticastGroups()
 		return false;
 	}
 	
+	m_pRTPComp->lock();
 	m_pRTPSession->LeaveAllMulticastGroups();
+	m_pRTPComp->unlock();
+	
 	return true;
 }
 
@@ -387,11 +436,16 @@ bool MIPVideoSession::setReceiveMode(RTPTransmitter::ReceiveMode m)
 	}
 	
 	int status;
+
+	m_pRTPComp->lock();
 	if ((status = m_pRTPSession->SetReceiveMode(m)) < 0)
 	{
+		m_pRTPComp->unlock();
 		setErrorString(RTPGetErrorString(status));
 		return false;
 	}
+	m_pRTPComp->unlock();
+	
 	return true;
 }
 
@@ -404,11 +458,16 @@ bool MIPVideoSession::addToIgnoreList(const RTPAddress &addr)
 	}
 	
 	int status;
+
+	m_pRTPComp->lock();
 	if ((status = m_pRTPSession->AddToIgnoreList(addr)) < 0)
 	{
+		m_pRTPComp->unlock();
 		setErrorString(RTPGetErrorString(status));
 		return false;
 	}
+	m_pRTPComp->unlock();
+	
 	return true;
 }
 
@@ -421,11 +480,16 @@ bool MIPVideoSession::deleteFromIgnoreList(const RTPAddress &addr)
 	}
 	
 	int status;
+	
+	m_pRTPComp->lock();
 	if ((status = m_pRTPSession->DeleteFromIgnoreList(addr)) < 0)
 	{
+		m_pRTPComp->unlock();
 		setErrorString(RTPGetErrorString(status));
 		return false;
 	}
+	m_pRTPComp->unlock();
+	
 	return true;
 }
 
@@ -437,7 +501,10 @@ bool MIPVideoSession::clearIgnoreList()
 		return false;
 	}
 	
+	m_pRTPComp->lock();
 	m_pRTPSession->ClearIgnoreList();
+	m_pRTPComp->unlock();
+	
 	return true;
 }
 
@@ -450,11 +517,16 @@ bool MIPVideoSession::addToAcceptList(const RTPAddress &addr)
 	}
 	
 	int status;
+
+	m_pRTPComp->lock();
 	if ((status = m_pRTPSession->AddToAcceptList(addr)) < 0)
 	{
+		m_pRTPComp->unlock();
 		setErrorString(RTPGetErrorString(status));
 		return false;
 	}
+	m_pRTPComp->unlock();
+	
 	return true;
 }
 
@@ -467,11 +539,16 @@ bool MIPVideoSession::deleteFromAcceptList(const RTPAddress &addr)
 	}
 	
 	int status;
+
+	m_pRTPComp->lock();
 	if ((status = m_pRTPSession->DeleteFromAcceptList(addr)) < 0)
 	{
+		m_pRTPComp->unlock();
 		setErrorString(RTPGetErrorString(status));
 		return false;
 	}
+	m_pRTPComp->unlock();
+	
 	return true;
 }
 
@@ -483,7 +560,10 @@ bool MIPVideoSession::clearAcceptList()
 		return false;
 	}
 	
+	m_pRTPComp->lock();
 	m_pRTPSession->ClearAcceptList();
+	m_pRTPComp->unlock();
+	
 	return true;
 }
 
@@ -537,8 +617,11 @@ void MIPVideoSession::deleteAll()
 		delete m_pRTPComp;
 	if (m_pRTPSession)
 	{
-		m_pRTPSession->BYEDestroy(RTPTime(2,0),0,0);
-		delete m_pRTPSession;
+		if (m_deleteRTPSession)
+		{
+			m_pRTPSession->BYEDestroy(RTPTime(2,0),0,0);
+			delete m_pRTPSession;
+		}
 	}
 	if (m_pTimer2)
 		delete m_pTimer2;

@@ -3,6 +3,21 @@
                               EMIPLIB ChangeLog
 
 
+Version 0.16.0, December 2007
+ * Modified the MIPWinMMOutput component slightly. The changes should
+   help avoid running out of buffers.
+ * Fixed some compilation issues on WinCE in the lpccodec.cpp file.
+ * Added L16 RTP payload types.
+ * Improved support for user defined RTPSession instances in 
+   MIPAudioSession and MIPVideoSession.
+ * Added support for soundcard input/output using PortAudio.
+ * Added MIPStreamBuffer, a class which can be used to safely pass
+   data between threads.
+ * Added MIPInterChainTimer, which allows the timing of one chain to
+   depend on another chain.
+ * Modified MIPAudioSession to use a MIPInterChainTimer component
+   if possible. This should improve audio quality.
+
 Version 0.15.0, August 2007:
  * Changed the MIPMessage filtering somewhat. The previous implementation
    did not create the desired behaviour.

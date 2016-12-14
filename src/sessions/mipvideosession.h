@@ -169,8 +169,12 @@ public:
 	 *  Using this function, the session is initialized.
 	 *  \param pParams Session parameters.
 	 *  \param pSync RTP stream synchronizer.
-	 */
-	bool init(const MIPVideoSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0);
+	 *  \param pRTPSession Supply your own RTPSession instance with this parameter. In this case,
+	 *                     the RTPSession instance is not deleted when the video session is destroyed.
+	 *                     The session has to be initialized, but the timestamp unit will still be 
+	 *                     adjusted.
+ 	 */
+	bool init(const MIPVideoSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0, RTPSession *pRTPSession = 0);
 	
 	/** Destroys the session. */
 	bool destroy();
@@ -242,9 +246,6 @@ public:
 	 */
 	bool getVideoFrame(uint64_t sourceID, uint8_t **pData, int *pWidth, int *pHeight, MIPTime minimalTime = MIPTime(0));
 protected:
-	/** Override this to use a user defined RTPSession object. */
-	virtual RTPSession *newRTPSession()									{ return 0; }
-	
 	/** By overriding this function, you can detect when the input thread has finished.
 	 *  By overriding this function, you can detect when the input thread has finished.
 	 *  \param err Flag indicating if the thread stopped due to an error.
@@ -297,7 +298,10 @@ private:
 	MIPAVCodecEncoder *m_pAvcEnc;
 	MIPRTPVideoEncoder *m_pRTPEnc;
 	MIPRTPComponent *m_pRTPComp;
+	
 	RTPSession *m_pRTPSession;
+	bool m_deleteRTPSession;
+	
 	MIPAverageTimer *m_pTimer2;
 	MIPRTPDecoder *m_pRTPDec;
 	MIPRTPVideoDecoder *m_pRTPVideoDec;

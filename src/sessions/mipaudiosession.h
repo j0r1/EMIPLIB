@@ -33,7 +33,7 @@
 #include "mipconfig.h"
 
 #if ((defined(WIN32) || defined(_WIN32_WCE)) || \
-		( !defined(WIN32) && !defined(_WIN32_WCE) && defined(MIPCONFIG_SUPPORT_OSS)))
+		( !defined(WIN32) && !defined(_WIN32_WCE) && (defined(MIPCONFIG_SUPPORT_OSS) || defined(MIPCONFIG_SUPPORT_PORTAUDIO) )))
 
 #include "mipcomponentchain.h"
 #include "miperrorbase.h"
@@ -45,6 +45,7 @@
 class RTPSession;
 class RTPAddress;
 class MIPComponent;
+class MIPRTPComponent;
 class MIPRTPSynchronizer;
 class MIPRTPPacketDecoder;
 
@@ -64,7 +65,9 @@ public:
 		/** GSM 06.10 compression. */
 		GSM, 
 		/** Speex compression. */
-		Speex 
+		Speex,
+		/** L16 mono. */
+		L16Mono
 	};
 
 	/** If Speex compression is used, this is sed to select speex encoding type. */
@@ -99,6 +102,7 @@ public:
 		m_outputMultiplier = 1;
 #endif // _WIN32_WCE
 		m_compType = ULaw;
+		m_disableInterChainTimer = false;
 	}
 	~MIPAudioSessionParams()							{ }
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
@@ -134,6 +138,12 @@ public:
 
 	/** Returns the size of the output sampling interval, in units of 20ms. */
 	int getOutputMultiplier() const							{ return m_outputMultiplier; }
+
+	/** Returns a flag indicating if inter-chain timing is disabled.
+	 *  Returns a flag indicating if inter-chain timing is disabled. See
+	 *  setDisableInterChainTimer for more information.
+	 */
+	bool getDisableInterChainTimer() const						{ return m_disableInterChainTimer; }
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
 	/** Sets the name of the input device (not available on Win32/WinCE). */
 	void setInputDevice(const std::string &devName)					{ m_inputDevName = devName; }
@@ -167,6 +177,16 @@ public:
 
 	/** Sets the output sampling interval to \c m * 20ms. */
 	void setOutputMultiplier(int m)							{ m_outputMultiplier = m; }
+
+	/** This can be used to always disable inter-chain timing.
+	 *  This can be used to always disable inter-chain timing. If two chains
+	 *  are used, one for recording/transmission and another for reception/playback,
+	 *  it may be possible to use the timing component of the recording chain to
+	 *  drive the playback chain. By default, this is turned on (if possible). Using
+	 *  this flag, it can be turned off entirely, and a simple timing component
+	 *  will then control the output chain. 
+	 */
+	void setDisableInterChainTimer(bool f)						{ m_disableInterChainTimer = f; }
 private:
 #if ! (defined(WIN32) || defined(_WIN32_WCE))
 	std::string m_inputDevName, m_outputDevName;
@@ -179,6 +199,7 @@ private:
 	int m_inputMultiplier, m_outputMultiplier;
 	CompressionType m_compType;
 	uint8_t m_speexOutgoingPT, m_speexIncomingPT;
+	bool m_disableInterChainTimer;
 };
 
 /** Creates a VoIP session.
@@ -197,8 +218,12 @@ public:
 	 *  Using this function, the session is initialized.
 	 *  \param pParams Session parameters.
 	 *  \param pSync RTP stream synchronizer.
+	 *  \param pRTPSession Supply your own RTPSession instance with this parameter. In this case,
+	 *                     the RTPSession instance is not deleted when the audio session is destroyed.
+	 *                     The session has to be initialized, but the timestamp unit will still be 
+	 *                     adjusted.
 	 */
-	bool init(const MIPAudioSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0);
+	bool init(const MIPAudioSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0, RTPSession *pRTPSession = 0);
 
 	/** Destroys the session. */
 	bool destroy();
@@ -250,9 +275,6 @@ public:
 	/** Clears the accept list. */
 	bool clearAcceptList();
 protected:
-	/** Override this to use a user defined RTPSession object. */
-	virtual RTPSession *newRTPSession()									{ return 0; }
-	
 	/** By overriding this function, you can detect when the input thread has finished.
 	 *  By overriding this function, you can detect when the input thread has finished.
 	 *  \param err Flag indicating if the thread stopped due to an error.
@@ -322,7 +344,9 @@ private:
 	OutputChain *m_pOutputChain;
 	IOChain *m_pIOChain;
 	
+	MIPRTPComponent *m_pRTPComp;
 	RTPSession *m_pRTPSession;
+	bool m_deleteRTPSession;
 	std::list<MIPComponent *> m_components;
 	std::list<MIPRTPPacketDecoder *> m_packetDecoders;
 	

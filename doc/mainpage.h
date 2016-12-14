@@ -693,7 +693,7 @@
  * }
  * \endcode 
  *
- * 		If this example works, you should here the sound file 'soundfile.wav' being
+ * 		If this example works, you should hear the sound file 'soundfile.wav' being
  * 		played. Note that the file may sound different than expected since it is
  * 		resampled to a 8000Hz sampling rate.
  * 	
@@ -710,7 +710,7 @@
  *
  * 	Currently, two wrapper classes are available:
  * 	 - MIPAudioSession:
- * 	   This is a wrapper for a simple voice over IP session. It uses a the speex codec for
+ * 	   This is a wrapper for a simple voice over IP session. It can use several codecs for
  * 	   audio compression.
  * 	 - MIPVideoSession:
  * 	   This is a wrapper for s simple video over IP session. It uses libavcodec's H.263+

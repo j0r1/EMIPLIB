@@ -231,6 +231,14 @@
 					</File>
 				</Filter>
 				<Filter
+					Name="io"
+					>
+					<File
+						RelativePath=".\src\components\io\mippainputoutput.cpp"
+						>
+					</File>
+				</Filter>
+				<Filter
 					Name="transmission"
 					>
 					<File
@@ -289,7 +297,14 @@
 						RelativePath=".\src\components\transmission\miprtpgsmencoder.cpp"
 						>
 					</File>
-	
+					<File
+						RelativePath=".\src\components\transmission\miprtpl16encoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpl16decoder.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="transform"
@@ -348,6 +363,10 @@
 					</File>
 					<File
 						RelativePath=".\src\components\timer\mippusheventtimer.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\timer\mipinterchaintimer.cpp"
 						>
 					</File>
 				</Filter>
@@ -450,6 +469,10 @@
 				</File>
 				<File
 					RelativePath=".\src\util\mipwavwriter.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\util\mipstreambuffer.cpp"
 					>
 				</File>
 			</Filter>
@@ -636,6 +659,14 @@
 
 				</Filter>
 				<Filter
+					Name="io"
+					>
+					<File
+						RelativePath=".\src\components\io\mippainputoutput.h"
+						>
+					</File>
+				</Filter>
+				<Filter
 					Name="transmission"
 					>
 					<File
@@ -706,6 +737,14 @@
 						RelativePath=".\src\components\transmission\miprtpgsmencoder.h"
 						>
 					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpl16decoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpl16encoder.h"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="transform"
@@ -768,6 +807,10 @@
 					</File>
 					<File
 						RelativePath=".\src\components\timer\mippusheventtimer.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\timer\mipinterchaintimer.h"
 						>
 					</File>
 				</Filter>
@@ -945,6 +988,10 @@
 				</File>
 				<File
 					RelativePath=".\src\util\mipwavwriter.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\util\mipstreambuffer.h"
 					>
 				</File>
 			</Filter>

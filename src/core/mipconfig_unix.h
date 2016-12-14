@@ -44,7 +44,7 @@
 
 #define MIPCONFIG_SUPPORT_LPC
 
-// No libavcodec support
+#define MIPCONFIG_SUPPORT_AVCODEC
 
 // No support for the Intel IPP library
 
@@ -59,6 +59,8 @@
 #define MIPCONFIG_SUPPORT_SDLAUDIO
 
 // No support for OpenAL
+
+#define MIPCONFIG_SUPPORT_PORTAUDIO
 
 #endif // MIPCONFIG_UNIX_H
 

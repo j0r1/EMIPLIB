@@ -3,10 +3,10 @@
 #ifdef MIPCONFIG_SUPPORT_LPC
 
 #include "lpccodec.h"
+#include "miptime.h"
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include <time.h>
 
 #ifndef M_PI
 	#define M_PI		3.14159265358979323846
@@ -25,9 +25,9 @@
 
 #define WSCALE		1.5863	/* Energy loss due to windowing */
 
-#ifdef WIN32
+#if (defined(WIN32) || defined(_WIN32_WCE))
 	#define bcopy(src,dst,num)	memcpy(dst,src,num)
-#endif // WIN32
+#endif // WIN32 || _WIN32_WCE
 
 #define GAIN_ADJUST	0.9
 #define SILENCEFIX	/* Enable absolute silence fix */
@@ -44,7 +44,7 @@ LPCEncoder::~LPCEncoder()
 void LPCEncoder::Reset()
 {
 	vuv = 0;
-	srand(time(NULL));
+	srand(MIPTime::getCurrentTime().getSeconds());
 	lpc_init();
 }
 

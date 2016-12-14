@@ -99,11 +99,10 @@ private:
 /** An Open Sound System (OSS) input and output component.
  *  This component is an Open Sound System (OSS) soundcard input and output 
  *  component. The device  accepts two kinds of messages: MIPSYSTEMMESSAGE_WAITTIME 
- *  messages and 16 bit little endian raw audio messages (either signed or unsigned,
- *  depending on the way the device was opened). The first type of 
+ *  messages and 16 bit raw audio messages. The first type of 
  *  message uses the input part of the component, the second type is sent to the 
  *  output part of the component. Messages produced by this component are 16 bit
- *  little endian raw audio messages. A trivial echo chain would have 
+ *  raw audio messages. A trivial echo chain would have 
  *  an object of this type as start component and a connection from this object to 
  *  this object, thereby immediately playing back the captured audio.
  */

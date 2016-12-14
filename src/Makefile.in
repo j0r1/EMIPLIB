@@ -63,6 +63,7 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	core/mipcomponentchain.cpp core/mipversion.cpp \
 	core/mipdebug.cpp components/timer/mipaveragetimer.cpp \
 	components/timer/mippusheventtimer.cpp \
+	components/timer/mipinterchaintimer.cpp \
 	components/output/mipqtoutput.moc \
 	components/output/mipmessagedumper.cpp \
 	components/output/mipsndfileoutput.cpp \
@@ -81,6 +82,7 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	components/input/mipwavinput.cpp \
 	components/input/mipjackinput.cpp \
 	components/io/mipossinputoutput.cpp \
+	components/io/mippainputoutput.cpp \
 	components/transmission/miprtpcomponent.cpp \
 	components/transmission/miprtpspeexencoder.cpp \
 	components/transmission/miprtpdecoder.cpp \
@@ -95,6 +97,8 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	components/transmission/miprtplpcdecoder.cpp \
 	components/transmission/miprtpgsmencoder.cpp \
 	components/transmission/miprtpgsmdecoder.cpp \
+	components/transmission/miprtpl16encoder.cpp \
+	components/transmission/miprtpl16decoder.cpp \
 	components/transform/mipsamplingrateconverter.cpp \
 	components/transform/mipsampleencoder.cpp \
 	components/transform/mipaudio3dbase.cpp \
@@ -119,10 +123,10 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	components/codec/miplpcdecoder.cpp util/mipsignalwaiter.cpp \
 	util/mipdirectorybrowser.cpp util/mipwavreader.cpp \
 	util/mipwavwriter.cpp util/miprtpsynchronizer.cpp \
-	util/mipspeexutil.cpp sessions/mipaudiosession.cpp \
-	sessions/mipvideosession.cpp thirdparty/lpc/lpccodec.cpp \
-	thirdparty/lpc/lpccodec.h thirdparty/gsm/src/gsm_add.cpp \
-	thirdparty/gsm/src/gsm_code.cpp \
+	util/mipspeexutil.cpp util/mipstreambuffer.cpp \
+	sessions/mipaudiosession.cpp sessions/mipvideosession.cpp \
+	thirdparty/lpc/lpccodec.cpp thirdparty/lpc/lpccodec.h \
+	thirdparty/gsm/src/gsm_add.cpp thirdparty/gsm/src/gsm_code.cpp \
 	thirdparty/gsm/src/gsm_create.cpp \
 	thirdparty/gsm/src/gsm_debug.cpp \
 	thirdparty/gsm/src/gsm_decode.cpp \
@@ -144,27 +148,29 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 am__objects_1 =
 am_libemip_la_OBJECTS = mipcomponent.lo mipcomponentchain.lo \
 	mipversion.lo mipdebug.lo mipaveragetimer.lo \
-	mippusheventtimer.lo $(am__objects_1) mipmessagedumper.lo \
-	mipsndfileoutput.lo mipwavoutput.lo mipalsaoutput.lo \
-	mipesdoutput.lo mipqtoutput.lo mipvideoframestorage.lo \
-	mipjackoutput.lo mipsdlaudiooutput.lo mipopenaloutput.lo \
-	mipsndfileinput.lo mipaudiofileinput.lo mipv4linput.lo \
-	mipfrequencygenerator.lo mipwavinput.lo mipjackinput.lo \
-	mipossinputoutput.lo miprtpcomponent.lo miprtpspeexencoder.lo \
-	miprtpdecoder.lo miprtpspeexdecoder.lo miprtpulawencoder.lo \
+	mippusheventtimer.lo mipinterchaintimer.lo $(am__objects_1) \
+	mipmessagedumper.lo mipsndfileoutput.lo mipwavoutput.lo \
+	mipalsaoutput.lo mipesdoutput.lo mipqtoutput.lo \
+	mipvideoframestorage.lo mipjackoutput.lo mipsdlaudiooutput.lo \
+	mipopenaloutput.lo mipsndfileinput.lo mipaudiofileinput.lo \
+	mipv4linput.lo mipfrequencygenerator.lo mipwavinput.lo \
+	mipjackinput.lo mipossinputoutput.lo mippainputoutput.lo \
+	miprtpcomponent.lo miprtpspeexencoder.lo miprtpdecoder.lo \
+	miprtpspeexdecoder.lo miprtpulawencoder.lo \
 	miprtpulawdecoder.lo miprtpalawencoder.lo miprtpalawdecoder.lo \
 	miprtpvideoencoder.lo miprtpvideodecoder.lo \
 	miprtplpcencoder.lo miprtplpcdecoder.lo miprtpgsmencoder.lo \
-	miprtpgsmdecoder.lo mipsamplingrateconverter.lo \
-	mipsampleencoder.lo mipaudio3dbase.lo miphrirlisten.lo \
-	mipaudiosplitter.lo mipaudiodistancefade.lo mipaudiofilter.lo \
-	mipaudiomixer.lo mipvideomixer.lo mipmediabuffer.lo \
-	mipspeexencoder.lo mipspeexdecoder.lo mipavcodecencoder.lo \
-	mipavcodecdecoder.lo mipulawencoder.lo mipulawdecoder.lo \
-	mipalawencoder.lo mipalawdecoder.lo mipgsmencoder.lo \
-	mipgsmdecoder.lo miplpcencoder.lo miplpcdecoder.lo \
-	mipsignalwaiter.lo mipdirectorybrowser.lo mipwavreader.lo \
-	mipwavwriter.lo miprtpsynchronizer.lo mipspeexutil.lo \
+	miprtpgsmdecoder.lo miprtpl16encoder.lo miprtpl16decoder.lo \
+	mipsamplingrateconverter.lo mipsampleencoder.lo \
+	mipaudio3dbase.lo miphrirlisten.lo mipaudiosplitter.lo \
+	mipaudiodistancefade.lo mipaudiofilter.lo mipaudiomixer.lo \
+	mipvideomixer.lo mipmediabuffer.lo mipspeexencoder.lo \
+	mipspeexdecoder.lo mipavcodecencoder.lo mipavcodecdecoder.lo \
+	mipulawencoder.lo mipulawdecoder.lo mipalawencoder.lo \
+	mipalawdecoder.lo mipgsmencoder.lo mipgsmdecoder.lo \
+	miplpcencoder.lo miplpcdecoder.lo mipsignalwaiter.lo \
+	mipdirectorybrowser.lo mipwavreader.lo mipwavwriter.lo \
+	miprtpsynchronizer.lo mipspeexutil.lo mipstreambuffer.lo \
 	mipaudiosession.lo mipvideosession.lo lpccodec.lo gsm_add.lo \
 	gsm_code.lo gsm_create.lo gsm_debug.lo gsm_decode.lo \
 	gsm_decode2.lo gsm_destroy.lo gsm_encode.lo gsm_explode.lo \
@@ -278,6 +284,7 @@ MIPCONFIG_SUPPORT_JACK = @MIPCONFIG_SUPPORT_JACK@
 MIPCONFIG_SUPPORT_LPC = @MIPCONFIG_SUPPORT_LPC@
 MIPCONFIG_SUPPORT_OPENAL = @MIPCONFIG_SUPPORT_OPENAL@
 MIPCONFIG_SUPPORT_OSS = @MIPCONFIG_SUPPORT_OSS@
+MIPCONFIG_SUPPORT_PORTAUDIO = @MIPCONFIG_SUPPORT_PORTAUDIO@
 MIPCONFIG_SUPPORT_QT = @MIPCONFIG_SUPPORT_QT@
 MIPCONFIG_SUPPORT_SDLAUDIO = @MIPCONFIG_SUPPORT_SDLAUDIO@
 MIPCONFIG_SUPPORT_SNDFILE = @MIPCONFIG_SUPPORT_SNDFILE@
@@ -367,7 +374,8 @@ lib_LTLIBRARIES = libemip.la
 libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
 	core/mipversion.cpp core/mipdebug.cpp \
 	components/timer/mipaveragetimer.cpp \
-	components/timer/mippusheventtimer.cpp $(am__append_1) \
+	components/timer/mippusheventtimer.cpp \
+	components/timer/mipinterchaintimer.cpp $(am__append_1) \
 	components/output/mipmessagedumper.cpp \
 	components/output/mipsndfileoutput.cpp \
 	components/output/mipwavoutput.cpp \
@@ -385,6 +393,7 @@ libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
 	components/input/mipwavinput.cpp \
 	components/input/mipjackinput.cpp \
 	components/io/mipossinputoutput.cpp \
+	components/io/mippainputoutput.cpp \
 	components/transmission/miprtpcomponent.cpp \
 	components/transmission/miprtpspeexencoder.cpp \
 	components/transmission/miprtpdecoder.cpp \
@@ -399,6 +408,8 @@ libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
 	components/transmission/miprtplpcdecoder.cpp \
 	components/transmission/miprtpgsmencoder.cpp \
 	components/transmission/miprtpgsmdecoder.cpp \
+	components/transmission/miprtpl16encoder.cpp \
+	components/transmission/miprtpl16decoder.cpp \
 	components/transform/mipsamplingrateconverter.cpp \
 	components/transform/mipsampleencoder.cpp \
 	components/transform/mipaudio3dbase.cpp \
@@ -423,10 +434,10 @@ libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
 	components/codec/miplpcdecoder.cpp util/mipsignalwaiter.cpp \
 	util/mipdirectorybrowser.cpp util/mipwavreader.cpp \
 	util/mipwavwriter.cpp util/miprtpsynchronizer.cpp \
-	util/mipspeexutil.cpp sessions/mipaudiosession.cpp \
-	sessions/mipvideosession.cpp thirdparty/lpc/lpccodec.cpp \
-	thirdparty/lpc/lpccodec.h thirdparty/gsm/src/gsm_add.cpp \
-	thirdparty/gsm/src/gsm_code.cpp \
+	util/mipspeexutil.cpp util/mipstreambuffer.cpp \
+	sessions/mipaudiosession.cpp sessions/mipvideosession.cpp \
+	thirdparty/lpc/lpccodec.cpp thirdparty/lpc/lpccodec.h \
+	thirdparty/gsm/src/gsm_add.cpp thirdparty/gsm/src/gsm_code.cpp \
 	thirdparty/gsm/src/gsm_create.cpp \
 	thirdparty/gsm/src/gsm_debug.cpp \
 	thirdparty/gsm/src/gsm_decode.cpp \
@@ -470,6 +481,7 @@ core/mipfeedback.h \
 core/mipversion.h \
 components/timer/mipaveragetimer.h \
 components/timer/mippusheventtimer.h \
+components/timer/mipinterchaintimer.h \
 components/output/mipmessagedumper.h \
 components/output/mipsndfileoutput.h \
 components/output/mipwavoutput.h \
@@ -489,6 +501,7 @@ components/input/mipfrequencygenerator.h \
 components/input/mipwavinput.h \
 components/input/mipjackinput.h \
 components/io/mipossinputoutput.h \
+components/io/mippainputoutput.h \
 components/transmission/miprtpcomponent.h \
 components/transmission/miprtpencoder.h \
 components/transmission/miprtpspeexencoder.h \
@@ -506,6 +519,8 @@ components/transmission/miprtplpcencoder.h \
 components/transmission/miprtplpcdecoder.h \
 components/transmission/miprtpgsmencoder.h \
 components/transmission/miprtpgsmdecoder.h \
+components/transmission/miprtpl16encoder.h \
+components/transmission/miprtpl16decoder.h \
 components/transform/mipsamplingrateconverter.h \
 components/transform/mipsampleencoder.h \
 components/transform/mipaudio3dbase.h \
@@ -536,6 +551,7 @@ util/mipwavwriter.h \
 util/miprtpsynchronizer.h \
 util/mipresample.h \
 util/mipspeexutil.h \
+util/mipstreambuffer.h \
 sessions/mipaudiosession.h \
 sessions/mipvideosession.h
 
@@ -666,6 +682,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipgsmdecoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipgsmencoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miphrirlisten.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipinterchaintimer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipjackinput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipjackoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miplpcdecoder.Plo@am__quote@
@@ -674,6 +691,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipmessagedumper.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipopenaloutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipossinputoutput.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mippainputoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mippusheventtimer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipqtoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpalawdecoder.Plo@am__quote@
@@ -682,6 +700,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpdecoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpgsmdecoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpgsmencoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpl16decoder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpl16encoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtplpcdecoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtplpcencoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miprtpspeexdecoder.Plo@am__quote@
@@ -700,6 +720,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipspeexdecoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipspeexencoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipspeexutil.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipstreambuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipulawdecoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipulawencoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipv4linput.Plo@am__quote@
@@ -774,6 +795,13 @@ mippusheventtimer.lo: components/timer/mippusheventtimer.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/timer/mippusheventtimer.cpp' object='mippusheventtimer.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mippusheventtimer.lo `test -f 'components/timer/mippusheventtimer.cpp' || echo '$(srcdir)/'`components/timer/mippusheventtimer.cpp
+
+mipinterchaintimer.lo: components/timer/mipinterchaintimer.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipinterchaintimer.lo -MD -MP -MF "$(DEPDIR)/mipinterchaintimer.Tpo" -c -o mipinterchaintimer.lo `test -f 'components/timer/mipinterchaintimer.cpp' || echo '$(srcdir)/'`components/timer/mipinterchaintimer.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipinterchaintimer.Tpo" "$(DEPDIR)/mipinterchaintimer.Plo"; else rm -f "$(DEPDIR)/mipinterchaintimer.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/timer/mipinterchaintimer.cpp' object='mipinterchaintimer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipinterchaintimer.lo `test -f 'components/timer/mipinterchaintimer.cpp' || echo '$(srcdir)/'`components/timer/mipinterchaintimer.cpp
 
 mipmessagedumper.lo: components/output/mipmessagedumper.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipmessagedumper.lo -MD -MP -MF "$(DEPDIR)/mipmessagedumper.Tpo" -c -o mipmessagedumper.lo `test -f 'components/output/mipmessagedumper.cpp' || echo '$(srcdir)/'`components/output/mipmessagedumper.cpp; \
@@ -894,6 +922,13 @@ mipossinputoutput.lo: components/io/mipossinputoutput.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipossinputoutput.lo `test -f 'components/io/mipossinputoutput.cpp' || echo '$(srcdir)/'`components/io/mipossinputoutput.cpp
 
+mippainputoutput.lo: components/io/mippainputoutput.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mippainputoutput.lo -MD -MP -MF "$(DEPDIR)/mippainputoutput.Tpo" -c -o mippainputoutput.lo `test -f 'components/io/mippainputoutput.cpp' || echo '$(srcdir)/'`components/io/mippainputoutput.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mippainputoutput.Tpo" "$(DEPDIR)/mippainputoutput.Plo"; else rm -f "$(DEPDIR)/mippainputoutput.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/io/mippainputoutput.cpp' object='mippainputoutput.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mippainputoutput.lo `test -f 'components/io/mippainputoutput.cpp' || echo '$(srcdir)/'`components/io/mippainputoutput.cpp
+
 miprtpcomponent.lo: components/transmission/miprtpcomponent.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miprtpcomponent.lo -MD -MP -MF "$(DEPDIR)/miprtpcomponent.Tpo" -c -o miprtpcomponent.lo `test -f 'components/transmission/miprtpcomponent.cpp' || echo '$(srcdir)/'`components/transmission/miprtpcomponent.cpp; \
 @am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miprtpcomponent.Tpo" "$(DEPDIR)/miprtpcomponent.Plo"; else rm -f "$(DEPDIR)/miprtpcomponent.Tpo"; exit 1; fi
@@ -991,6 +1026,20 @@ miprtpgsmdecoder.lo: components/transmission/miprtpgsmdecoder.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transmission/miprtpgsmdecoder.cpp' object='miprtpgsmdecoder.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miprtpgsmdecoder.lo `test -f 'components/transmission/miprtpgsmdecoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpgsmdecoder.cpp
+
+miprtpl16encoder.lo: components/transmission/miprtpl16encoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miprtpl16encoder.lo -MD -MP -MF "$(DEPDIR)/miprtpl16encoder.Tpo" -c -o miprtpl16encoder.lo `test -f 'components/transmission/miprtpl16encoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpl16encoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miprtpl16encoder.Tpo" "$(DEPDIR)/miprtpl16encoder.Plo"; else rm -f "$(DEPDIR)/miprtpl16encoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transmission/miprtpl16encoder.cpp' object='miprtpl16encoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miprtpl16encoder.lo `test -f 'components/transmission/miprtpl16encoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpl16encoder.cpp
+
+miprtpl16decoder.lo: components/transmission/miprtpl16decoder.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT miprtpl16decoder.lo -MD -MP -MF "$(DEPDIR)/miprtpl16decoder.Tpo" -c -o miprtpl16decoder.lo `test -f 'components/transmission/miprtpl16decoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpl16decoder.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/miprtpl16decoder.Tpo" "$(DEPDIR)/miprtpl16decoder.Plo"; else rm -f "$(DEPDIR)/miprtpl16decoder.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/transmission/miprtpl16decoder.cpp' object='miprtpl16decoder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o miprtpl16decoder.lo `test -f 'components/transmission/miprtpl16decoder.cpp' || echo '$(srcdir)/'`components/transmission/miprtpl16decoder.cpp
 
 mipsamplingrateconverter.lo: components/transform/mipsamplingrateconverter.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipsamplingrateconverter.lo -MD -MP -MF "$(DEPDIR)/mipsamplingrateconverter.Tpo" -c -o mipsamplingrateconverter.lo `test -f 'components/transform/mipsamplingrateconverter.cpp' || echo '$(srcdir)/'`components/transform/mipsamplingrateconverter.cpp; \
@@ -1187,6 +1236,13 @@ mipspeexutil.lo: util/mipspeexutil.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='util/mipspeexutil.cpp' object='mipspeexutil.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipspeexutil.lo `test -f 'util/mipspeexutil.cpp' || echo '$(srcdir)/'`util/mipspeexutil.cpp
+
+mipstreambuffer.lo: util/mipstreambuffer.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipstreambuffer.lo -MD -MP -MF "$(DEPDIR)/mipstreambuffer.Tpo" -c -o mipstreambuffer.lo `test -f 'util/mipstreambuffer.cpp' || echo '$(srcdir)/'`util/mipstreambuffer.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipstreambuffer.Tpo" "$(DEPDIR)/mipstreambuffer.Plo"; else rm -f "$(DEPDIR)/mipstreambuffer.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='util/mipstreambuffer.cpp' object='mipstreambuffer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipstreambuffer.lo `test -f 'util/mipstreambuffer.cpp' || echo '$(srcdir)/'`util/mipstreambuffer.cpp
 
 mipaudiosession.lo: sessions/mipaudiosession.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipaudiosession.lo -MD -MP -MF "$(DEPDIR)/mipaudiosession.Tpo" -c -o mipaudiosession.lo `test -f 'sessions/mipaudiosession.cpp' || echo '$(srcdir)/'`sessions/mipaudiosession.cpp; \

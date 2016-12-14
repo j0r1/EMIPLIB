@@ -22,32 +22,32 @@
 
 */
 
+/**
+ * \file miprtpl16decoder.h
+ */
+
+#ifndef MIPRTPL16DECODER_H
+
+#define MIPRTPL16DECODER_H
+
 #include "mipconfig.h"
-#include "mipversion.h"
-#include "mipcompat.h"
+#include "miprtppacketdecoder.h"
 
-MIPVersion::MIPVersion()
+/** Decodes incoming RTP data into 44.1 kHz 16 bit signed big endian messages.
+ *  This class takes MIPRTPReceiveMessages as input and generates 
+ *  raw audio messages containing 44.1 kHz signed 16 bit big endian samples.
+ */
+class MIPRTPL16Decoder : public MIPRTPPacketDecoder
 {
-	m_major = 0;
-	m_minor = 16;
-	m_debug = 0;
-#ifdef MIPCONFIG_GPL
-	m_license = std::string("GPL");
-#else
-	m_license = std::string("LGPL");
-#endif // MIPCONFIG_GPL
-}
+public:
+	MIPRTPL16Decoder(bool stereo);
+	~MIPRTPL16Decoder();
+private:
+	bool validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit);
+	MIPMediaMessage *createNewMessage(const RTPPacket *pRTPPack);
 
-MIPVersion::~MIPVersion()
-{
-}
+	int m_channels;
+};
 
-std::string MIPVersion::getVersionString() const
-{
-	char str[16];
-	
-	MIP_SNPRINTF(str, 16, "%d.%d.%d", m_major, m_minor, m_debug);
-
-	return std::string(str);
-}
+#endif // MIPRTPL16DECODER_H
 

@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -39,6 +39,7 @@
 #include "miptime.h"
 #include <dshow.h>
 #include <Qedit.h>
+#include <list>
 
 class MIPRawYUV420PVideoMessage;
 
@@ -85,6 +86,8 @@ private:
 	bool initCaptureGraphBuilder();
 	bool getCaptureDevice(int deviceNumber);
 	bool setFormat(int w, int h, real_t rate);
+	bool listGUIDS(std::list<GUID> &guids);
+	void copyVideoFrame();
 
 	class GrabCallback : public ISampleGrabberCB
 	{
@@ -113,8 +116,8 @@ private:
 		{
 			size_t minsize = (size_t)lBufferSize;
 
-			if (minsize > m_pDSCapt->m_frameSize)
-				minsize = m_pDSCapt->m_frameSize;
+			if (minsize > m_pDSCapt->m_largeFrameSize)
+				minsize = m_pDSCapt->m_largeFrameSize;
 
 			m_pDSCapt->m_frameMutex.Lock();
 			memcpy(m_pDSCapt->m_pFullFrame, pBuffer, minsize);
@@ -142,7 +145,7 @@ private:
 	int m_height;
 	uint8_t *m_pFullFrame;
 	uint8_t *m_pMsgFrame;
-	size_t m_frameSize;
+	size_t m_largeFrameSize, m_targetFrameSize;
 	MIPRawYUV420PVideoMessage *m_pVideoMsg;
 	JMutex m_frameMutex;
 	MIPSignalWaiter m_sigWait;
@@ -150,6 +153,10 @@ private:
 	bool m_gotFrame;
 	MIPTime m_captureTime;
 	uint64_t m_sourceID;
+
+	GUID m_selectedGuid;
+	void *m_pTargetAVFrame;
+	void *m_pSrcAVFrame;
 };
 
 #endif // MIPCONFIG_SUPPORT_DIRECTSHOW

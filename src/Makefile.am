@@ -28,6 +28,7 @@ components/output/mipopenaloutput.cpp \
 components/input/mipsndfileinput.cpp \
 components/input/mipaudiofileinput.cpp \
 components/input/mipv4linput.cpp \
+components/input/mipv4l2input.cpp \
 components/input/mipfrequencygenerator.cpp \
 components/input/mipwavinput.cpp \
 components/input/mipjackinput.cpp \
@@ -56,6 +57,8 @@ components/transform/miphrirlisten.cpp \
 components/transform/mipaudiosplitter.cpp \
 components/transform/mipaudiodistancefade.cpp \
 components/transform/mipaudiofilter.cpp \
+components/transform/mipspeexechocanceller.cpp \
+components/transform/mipavcodecframeconverter.cpp \
 components/mixer/mipaudiomixer.cpp \
 components/mixer/mipvideomixer.cpp \
 components/mixer/mipmediabuffer.cpp \
@@ -71,6 +74,7 @@ components/codec/mipgsmencoder.cpp \
 components/codec/mipgsmdecoder.cpp \
 components/codec/miplpcencoder.cpp \
 components/codec/miplpcdecoder.cpp \
+components/codec/miptinyjpegdecoder.cpp \
 util/mipsignalwaiter.cpp \
 util/mipdirectorybrowser.cpp \
 util/mipwavreader.cpp \
@@ -104,7 +108,11 @@ thirdparty/gsm/inc/config.h \
 thirdparty/gsm/inc/gsm.h \
 thirdparty/gsm/inc/private.h \
 thirdparty/gsm/inc/proto.h \
-thirdparty/gsm/inc/unproto.h
+thirdparty/gsm/inc/unproto.h \
+thirdparty/tinyjpeg/tinyjpeg.c \
+thirdparty/tinyjpeg/tinyjpeg-internal.h \
+thirdparty/tinyjpeg/tinyjpeg.h \
+thirdparty/tinyjpeg/jidctflt.c
 
 libemipinclude_HEADERS = \
 core/mipcompat.h \
@@ -146,6 +154,7 @@ components/output/mipopenaloutput.h \
 components/input/mipsndfileinput.h  \
 components/input/mipaudiofileinput.h  \
 components/input/mipv4linput.h \
+components/input/mipv4l2input.h \
 components/input/mipwinmminput.h \
 components/input/mipfrequencygenerator.h \
 components/input/mipwavinput.h \
@@ -179,6 +188,8 @@ components/transform/miphrirlisten.h \
 components/transform/mipaudiosplitter.h \
 components/transform/mipaudiodistancefade.h \
 components/transform/mipaudiofilter.h \
+components/transform/mipspeexechocanceller.h \
+components/transform/mipavcodecframeconverter.h \
 components/mixer/mipaudiomixer.h \
 components/mixer/mipvideomixer.h \
 components/mixer/mipmediabuffer.h \
@@ -194,6 +205,7 @@ components/codec/mipgsmencoder.h \
 components/codec/mipgsmdecoder.h \
 components/codec/miplpcencoder.h \
 components/codec/miplpcdecoder.h \
+components/codec/miptinyjpegdecoder.h \
 util/mipsignalwaiter.h \
 util/mipdirectorybrowser.h \
 util/mipwavreader.h \
@@ -207,7 +219,7 @@ sessions/mipvideosession.h
 
 INCLUDES = -I core/ -I util/ -I components/codec/ -I components/input/ -I components/io/ -I components/mixer/ \
 	   -I components/output/ -I components/timer/ -I components/transform/ -I components/transmission/ \
-	   -I thirdparty/lpc -I thirdparty/gsm/inc \
+	   -I thirdparty/lpc -I thirdparty/gsm/inc -I thirdparty/tinyjpeg \
 	   @MIPINCLUDES@
 
 libemip_la_LDFLAGS = -release @VERSION@

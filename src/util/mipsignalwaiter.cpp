@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -33,6 +33,7 @@
 	#include <unistd.h>
 #endif // WIN32
 #include <iostream>
+#include <cstdlib>
 
 #include "mipdebug.h"
 

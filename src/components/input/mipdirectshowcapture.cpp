@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -16,7 +16,7 @@
   Lesser General Public License for more details.
 
   You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
+  License along with this library; if not, write to7 the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  
   USA
 
@@ -29,7 +29,13 @@
 #include "mipdirectshowcapture.h"
 #include "mipsystemmessage.h"
 #include "miprawvideomessage.h"
+
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
+#include <ffmpeg/avcodec.h>
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 #include <iostream>
+
+#include <stdio.h>
 
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_ALREADYOPEN								"Already a DirectShow capture device open"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATECAPTUREBUILDER				"Can't create a capture graph builder"
@@ -41,7 +47,7 @@
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATENULLRENDERER					"Can't create null renderer"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEGRABFILTER					"Can't create sample grabber filter"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEGRABIFACE						"Unable to obtain sample grabber intereface"
-#define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSELECTYUV420P						"Unable to select YUV420P encoding"
+#define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSELECTYUV420PORYUY2					"Unable to select YUV420P encoding or YUY2 encoding"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSETCALLBACK							"Can't set grab callback"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTADDCAPTUREFILTER					"Can't add capture filter to filter graph"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTADDNULLRENDERER						"Can't add null renderer to filter graph"
@@ -57,12 +63,16 @@
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTGETDEVICECAPS						"Can't get device capabilities"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_INVALIDCAPS								"Can't handle returned device capabilities"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSETCAPS								"Unable to install desired format"
+#define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTLISTGUIDS							"Unable to list the supported video formats"
+#define MIPDIRECTSHOWCAPTURE_ERRSTR_NOAVCODEC								"YUY2 format is available, but need libavcodec to convert to YUV420P"
 
 extern "C" const __declspec(selectany) GUID EMIP_MEDIASUBTYPE_I420 = 
 {0x30323449,0x0000,0x0010, {0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71}};
 
 #define HR_SUCCEEDED(x) ((x==S_OK))
 #define HR_FAILED(x)	((x!=S_OK))
+
+// TODO: remove libavcodec stuff and add frame converter in video session.
 
 MIPDirectShowCapture::MIPDirectShowCapture() : MIPComponent("MIPDirectShowCapture")
 {
@@ -99,6 +109,44 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 		return false;
 	}
 
+	std::list<GUID> guids;
+	std::list<GUID>::const_iterator guidIt;
+
+	if (!listGUIDS(guids))
+	{
+		clearNonZero();
+		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTLISTGUIDS);
+		return false;
+	}
+
+	bool haveI420 = false;
+	bool haveYUY2 = false;
+
+	for (guidIt = guids.begin() ; guidIt != guids.end() ; guidIt++)
+	{
+		if (*guidIt == EMIP_MEDIASUBTYPE_I420)
+			haveI420 = true;
+		if (*guidIt == MEDIASUBTYPE_YUY2)
+			haveYUY2 = true;
+	}
+
+	if (haveI420)
+	{
+		//std::cout << "Trying I420" << std::endl;		
+		m_selectedGuid = EMIP_MEDIASUBTYPE_I420;
+	}
+	else if (haveYUY2)
+	{
+		//std::cout << "Trying YUY2" << std::endl;		
+		m_selectedGuid = MEDIASUBTYPE_YUY2;
+	}
+	else
+	{
+		clearNonZero();
+		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSELECTYUV420PORYUY2);
+		return false;
+	}
+
 	HRESULT hr;
 
 	hr = CoCreateInstance(CLSID_NullRenderer, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter,(void **)(&m_pNullRenderer));
@@ -129,12 +177,12 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 
 	ZeroMemory(&mt, sizeof(AM_MEDIA_TYPE));
 	mt.majortype = MEDIATYPE_Video;
-	mt.subtype = EMIP_MEDIASUBTYPE_I420;
+	mt.subtype = m_selectedGuid;
 	hr = m_pGrabber->SetMediaType(&mt);
 	if (HR_FAILED(hr))
 	{
 		clearNonZero();
-		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSELECTYUV420P);
+		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSELECTYUV420PORYUY2);
 		return false;
 	}
 
@@ -207,11 +255,16 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 		return false;
 	}
 
-	m_frameSize = (size_t)((m_width*m_height*3)/2);
-	m_pFullFrame = new uint8_t [m_frameSize];
-	m_pMsgFrame = new uint8_t [m_frameSize];
-	memset(m_pMsgFrame, 0, m_frameSize);
-	memset(m_pFullFrame, 0, m_frameSize);
+	if (m_selectedGuid == EMIP_MEDIASUBTYPE_I420)
+		m_largeFrameSize = (size_t)((m_width*m_height*3)/2);
+	else
+		m_largeFrameSize = (size_t)(m_width*m_height*2);
+
+	m_targetFrameSize = (size_t)((m_width*m_height*3)/2);
+	m_pFullFrame = new uint8_t [m_largeFrameSize];
+	m_pMsgFrame = new uint8_t [m_targetFrameSize];
+	memset(m_pMsgFrame, 0, m_targetFrameSize);
+	memset(m_pFullFrame, 0, m_largeFrameSize);
 	m_pVideoMsg = new MIPRawYUV420PVideoMessage(m_width, m_height, m_pMsgFrame, false);
 
 	if (!m_sigWait.init())
@@ -236,6 +289,28 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 
 	m_sourceID = 0;
 
+	if (m_selectedGuid == MEDIASUBTYPE_YUY2)
+	{
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
+		// need libavcodec to convert
+		m_pTargetAVFrame = avcodec_alloc_frame();
+		m_pSrcAVFrame = avcodec_alloc_frame();
+
+		avpicture_fill((AVPicture *)m_pTargetAVFrame, m_pMsgFrame, PIX_FMT_YUV420P, m_width, m_height);
+		avpicture_fill((AVPicture *)m_pSrcAVFrame, m_pFullFrame, PIX_FMT_YUV422, m_width, m_height);
+#else
+		m_sigWait.destroy();
+		clearNonZero();
+		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_NOAVCODEC);
+		return false;
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+	}
+	else
+	{
+		m_pTargetAVFrame = 0;
+		m_pSrcAVFrame = 0;
+	}
+
 	return true;
 }
 
@@ -251,6 +326,13 @@ bool MIPDirectShowCapture::close()
 	clearNonZero();
 	m_sigWait.destroy();
 
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
+	if (m_pTargetAVFrame)
+		av_free(m_pTargetAVFrame);
+	if (m_pSrcAVFrame)
+		av_free(m_pSrcAVFrame);
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+
 	return true;
 }
 
@@ -265,7 +347,7 @@ bool MIPDirectShowCapture::push(const MIPComponentChain &chain, int64_t iteratio
 	if (pMsg->getMessageType() == MIPMESSAGE_TYPE_SYSTEM && pMsg->getMessageSubtype() == MIPSYSTEMMESSAGE_TYPE_ISTIME)
 	{
 		m_frameMutex.Lock();
-		memcpy(m_pMsgFrame, m_pFullFrame, m_frameSize);
+		copyVideoFrame();
 		m_pVideoMsg->setTime(m_captureTime);
 		m_pVideoMsg->setSourceID(m_sourceID);
 		m_frameMutex.Unlock();
@@ -279,7 +361,7 @@ bool MIPDirectShowCapture::push(const MIPComponentChain &chain, int64_t iteratio
 		m_frameMutex.Lock();
 		if (!m_gotFrame)
 		{
-			memcpy(m_pMsgFrame, m_pFullFrame, m_frameSize);
+			copyVideoFrame();
 			m_pVideoMsg->setTime(m_captureTime);
 			m_gotFrame = true;
 		}
@@ -293,7 +375,7 @@ bool MIPDirectShowCapture::push(const MIPComponentChain &chain, int64_t iteratio
 			m_sigWait.waitForSignal();
 
 			m_frameMutex.Lock();
-			memcpy(m_pMsgFrame, m_pFullFrame, m_frameSize);
+			copyVideoFrame();
 			m_pVideoMsg->setTime(m_captureTime);
 			m_pVideoMsg->setSourceID(m_sourceID);
 			m_gotFrame = true;
@@ -499,7 +581,7 @@ bool MIPDirectShowCapture::setFormat(int w, int h, real_t rate)
         if (HR_SUCCEEDED(hr))
         {
 			if ((pMediaType->majortype == MEDIATYPE_Video) &&
-				(pMediaType->subtype == EMIP_MEDIASUBTYPE_I420) &&
+				(pMediaType->subtype == m_selectedGuid) &&
 				(pMediaType->formattype == FORMAT_VideoInfo) &&
 				(pMediaType->cbFormat >= sizeof (VIDEOINFOHEADER)) &&
 				(pMediaType->pbFormat != 0))
@@ -528,6 +610,74 @@ bool MIPDirectShowCapture::setFormat(int w, int h, real_t rate)
 	pConfig->Release();
 	setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSETCAPS);
 	return false;
+}
+
+bool MIPDirectShowCapture::listGUIDS(std::list<GUID> &guids)
+{
+	guids.clear();
+
+	HRESULT hr;
+
+	IAMStreamConfig *pConfig = 0;
+
+	hr = m_pBuilder->FindInterface(&PIN_CATEGORY_CAPTURE, 0, m_pCaptDevice, IID_IAMStreamConfig, (void**)&pConfig);
+	if (HR_FAILED(hr))
+	{
+		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTGETDEVICECONFIG);
+		return false;
+	}
+
+	int count = 0;
+	int s = 0;
+	
+	hr = pConfig->GetNumberOfCapabilities(&count, &s);
+	if (HR_FAILED(hr))
+	{
+		pConfig->Release();
+		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTGETDEVICECAPS);
+		return false;
+	}
+
+	if (s != sizeof(VIDEO_STREAM_CONFIG_CAPS))
+	{
+		pConfig->Release();
+		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_INVALIDCAPS);
+		return false;
+	}
+
+	for (int i = 0; i < count; i++)
+	{
+        VIDEO_STREAM_CONFIG_CAPS caps;
+        AM_MEDIA_TYPE *pMediaType;
+
+        hr = pConfig->GetStreamCaps(i, &pMediaType, (BYTE*)&caps);
+        if (HR_SUCCEEDED(hr))
+        {
+			if (pMediaType->majortype == MEDIATYPE_Video)
+			{
+				GUID subType = pMediaType->subtype;
+				
+				guids.push_back(subType);
+
+//				uint8_t *pSubType = (uint8_t *)&subType;
+//
+//				printf("0x%02x%02x%02x%02x %c%c%c%c\n",(int)pSubType[0],(int)pSubType[1],(int)pSubType[2],(int)pSubType[3],
+//					                                   (char)pSubType[0],(char)pSubType[1],(char)pSubType[2],(char)pSubType[3]);
+			}
+		}
+	}
+
+	return true;
+}
+
+void MIPDirectShowCapture::copyVideoFrame()
+{
+	if (m_selectedGuid == EMIP_MEDIASUBTYPE_I420)
+		memcpy(m_pMsgFrame, m_pFullFrame, m_targetFrameSize);
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
+	else
+		img_convert((AVPicture *)m_pTargetAVFrame, PIX_FMT_YUV420P, (AVPicture *)m_pSrcAVFrame, PIX_FMT_YUV422, m_width, m_height);
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 }
 
 #endif // MIPCONFIG_SUPPORT_DIRECTSHOW

@@ -32,9 +32,9 @@
  * 		http://research.edm.uhasselt.be/emiplib/
  * 		
  * 		There is a mailing list available for EMIPLIB. To subscribe to it,
- * 		just send an e-mail with the text \c subscribe \c emiplib as the
- * 		message body (not the subject!) to \c majordomo \c [\c at] \c edm \c [\c dot] \c uhasselt \c [\c dot] be and
- * 		you'll receive additional instructions.
+ * 		just send an e-mail to 
+ * 		\c emiplib-subscribe \c [\c at] \c edm \c [\c dot] \c uhasselt \c [\c dot] be 
+ * 		and you'll receive additional instructions.
  * 
  * \section designphilosophy Design philosophy
  *

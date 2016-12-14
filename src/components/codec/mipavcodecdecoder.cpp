@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -71,7 +71,9 @@ bool MIPAVCodecDecoder::init()
 	}
 
 	m_pFrame = avcodec_alloc_frame();
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
 	m_pFrameYUV420P = avcodec_alloc_frame();
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 	avcodec_get_frame_defaults(m_pFrame);
 	
 	m_lastIteration = -1;
@@ -101,7 +103,9 @@ bool MIPAVCodecDecoder::destroy()
 
 	clearMessages();
 	av_free(m_pFrame);
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
 	av_free(m_pFrameYUV420P);
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 			
 	m_init = false;
 
@@ -160,17 +164,27 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 			return false;
 		}
 		
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
 		pInf = new DecoderInfo(width, height, pContext);
+#else
+		SwsContext *pSwsContext = sws_getContext(width, height, pContext->pix_fmt, width, height, PIX_FMT_YUV420P, SWS_FAST_BILINEAR, 0, 0, 0);
+
+		pInf = new DecoderInfo(width, height, pContext, pSwsContext);
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		m_decoderStates[sourceID] = pInf;
 	}
 	else
+	{
 		pInf = (*it).second;
 	
-	if (!(pInf->getWidth() == width && pInf->getHeight() == height))
-	{
-		return true; // ignore message
+		if (!(pInf->getWidth() == width && pInf->getHeight() == height))
+		{
+			return true; // ignore message
+		}
+
+		pInf->setLastUpdateTime(MIPTime::getCurrentTime());
 	}
-	
+
 	int framecomplete = 1;
 	int status;
 
@@ -178,11 +192,27 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 	memcpy(pTmp, pEncMsg->getImageData(), pEncMsg->getDataLength());
 	memset(pTmp + pEncMsg->getDataLength(), 0, FF_INPUT_BUFFER_PADDING_SIZE);
 	
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
 	if ((status = avcodec_decode_video(pInf->getContext(), m_pFrame, &framecomplete, pTmp, (int)pEncMsg->getDataLength())) < 0)
 	{	
 		delete [] pTmp;
 		return true; // unable to decode it, ignore
 	}
+#else
+	AVPacket avPacket;
+
+	av_init_packet(&avPacket);
+
+	avPacket.size = (int)pEncMsg->getDataLength();
+	avPacket.data = pTmp;
+
+	if ((status = avcodec_decode_video2(pInf->getContext(), m_pFrame, &framecomplete, &avPacket)) < 0)
+	{	
+		delete [] pTmp;
+		return true; // unable to decode it, ignore
+	}
+#endif
+
 	delete [] pTmp;
 
 	if (framecomplete)
@@ -190,8 +220,24 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 		size_t dataSize = (width*height*3)/2;
 		uint8_t *pData = new uint8_t [dataSize];
 
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
 		avpicture_fill((AVPicture *)m_pFrameYUV420P, pData, PIX_FMT_YUV420P, width, height);
 		img_convert((AVPicture *)m_pFrameYUV420P, PIX_FMT_YUV420P, (AVPicture*)m_pFrame, pInf->getContext()->pix_fmt, width, height);
+#else
+		SwsContext *pSwsContext = pInf->getSwsContext();
+
+		uint8_t *pDstPointers[3];
+		int dstStrides[3];
+	
+		pDstPointers[0] = pData;
+		pDstPointers[1] = pData+width*height;
+		pDstPointers[2] = pDstPointers[1]+(width*height)/4;
+		dstStrides[0] = width;
+		dstStrides[1] = width/2;
+		dstStrides[2] = width/2;
+
+		sws_scale(pSwsContext, m_pFrame->data, m_pFrame->linesize, 0, height, pDstPointers, dstStrides);
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		
 		MIPRawYUV420PVideoMessage *pNewMsg = new MIPRawYUV420PVideoMessage(width, height, pData, true);
 

@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -87,6 +87,12 @@ public:
 	 *  clear this particular entry.
 	 */
 	bool setPacketDecoder(uint8_t payloadType, MIPRTPPacketDecoder *pDec);
+
+	/** Sets the maximum amount of jitter buffering that may be done.
+	 *  Sets the maximum amount of jitter buffering that may be done. Set it to a negative
+	 *  value (default setting) to allow unconstrained jitter buffering.
+	 */
+	bool setMaximumJitterBuffering(MIPTime t)								{ m_maxJitterBuffer = t; }
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
@@ -220,6 +226,7 @@ private:
 	MIPRTPSynchronizer *m_pSynchronizer;
 	RTPSession *m_pRTPSess;
 	MIPTime m_totalComponentDelay;
+	MIPTime m_maxJitterBuffer;
 };
 
 #endif // MIPRTPDECODER_H

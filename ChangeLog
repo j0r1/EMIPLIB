@@ -3,6 +3,26 @@
                               EMIPLIB ChangeLog
 
 
+Version 0.17.0, August 2009
+ * Added a virtual function to the WAV file input components which gets
+   called when the last block of the file has been read. This allows
+   you to stop the chain at that point.
+ * Added some methods to MIPAudioMixer to allow you to ignore the
+   audio from particular sources.
+ * Added methods to MIPAudioMixer to set the internal timer to a
+   specific value.
+ * Added support for echo cancellation using the Speex routines.
+ * Modified MIPAudioMixer so that the setExtraDelay method also works
+   if the timing information in the messages is not used.
+ * Changed U-Law and A-Law decoding to a table-lookup method. This also
+   fixes a bug in the A-Law decoding as was reported by João Pedro Motondon
+   (joao.motondon@gmail.com).
+ * Support for newer ffmpeg API.
+ * Video4Linux2 based input component was added.
+ * Added a libavcodec based video frame converter.
+ * Added a component to decompress JPEG encoded video frames using the
+   TinyJPEG library.
+
 Version 0.16.1, February 2008
  * Fixed a bug in MIPInterChainTimer. Forgot to initialize a variable,
    causing the timing to fail.

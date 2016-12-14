@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -223,6 +223,8 @@ bool MIPAudioFileInput::push(const MIPComponentChain &chain, int64_t iteration, 
 				if (readNum <= 0)
 					m_eof = true;
 			}
+			
+			onLastInputFrame(); // inform that we're at the last block
 		}
 	}
 	m_pMsg->setSourceID(m_sourceID);

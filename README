@@ -1,7 +1,7 @@
 
 
                                EMIPLIB README 
-				  (0.16.1)
+				  (0.17.0)
 
 
 1. INTRODUCTION
@@ -60,9 +60,8 @@ The library home page can be found at the following location:
 http://research.edm.uhasselt.be/emiplib/
 
 There is a mailing list available for EMIPLIB. To subscribe to it, just 
-send an e-mail with the text subscribe emiplib as the message body (not 
-the  subject!) to majordomo@edm.uhasselt.be and you'll receive additional 
-instructions.
+send an e-mail to emiplib-subscribe@edm.uhasselt.be and you'll receive 
+additional instructions.
 
 If you don't like to post your question to the mailing list, you can also
 send a more private mail to emiplibinfo@edm.uhasselt.be.
@@ -77,4 +76,11 @@ src/thirdparty/gsm/COPYRIGHT.
 We would also like to thank Ron Frederick for making his LPC codec
 available to the public and for allowing us to include a derived
 version in this library.
+
+The component which converts JPEG data into an uncompressed image
+used the Tiny Jpeg Decoder by Luc Saillard. Thanks for making this
+publically available. Please see the source code in 
+src/thirdparty/tinyjpeg for more information about copyright and
+disclaimer.
+
 

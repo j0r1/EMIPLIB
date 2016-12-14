@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -93,6 +93,13 @@ public:
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
+protected:
+	/** This function is called when the last frame of the input file has been read.
+	 *  This function is called when the last frame of the input file has been read.
+	 *  In this function you could send a signal to another thread, indicating that
+	 *  the chain can be stopped for example.
+	 */
+	virtual void onLastInputFrame()								{ }
 private:
 	SNDFILE *m_pSndFile;
 	int m_sampRate;

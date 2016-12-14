@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -46,7 +46,7 @@ class MIPRTPSynchronizer;
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	class MIPDirectShowCapture;
 #else
-	class MIPV4LInput;
+	class MIPV4L2Input;
 #endif // WIN32 || _WIN32_WCE
 class MIPAVCodecEncoder;
 class MIPRTPVideoEncoder;
@@ -59,6 +59,8 @@ class MIPAVCodecDecoder;
 class MIPVideoMixer;
 class MIPQtOutput;
 class MIPVideoFrameStorage;
+class MIPTinyJPEGDecoder;
+class MIPAVCodecFrameConverter;
 
 /** Parameters for a video session. */
 class MIPVideoSessionParams
@@ -67,12 +69,13 @@ public:
 	MIPVideoSessionParams()								
 	{ 
 #if (defined(WIN32) || defined(_WIN32_WCE))
-		m_width = 160;
-		m_height = 120;
+
 		m_devNum = 0;
 #else
 		m_devName = std::string("/dev/video0"); 
 #endif // !(WIN32 || _WIN32_WCE)
+		m_width = 160;
+		m_height = 120;
 		m_frameRate = 15.0;
 		m_portbase = 5100; 
 		m_acceptOwnPackets = false;
@@ -81,18 +84,17 @@ public:
 	}
 	~MIPVideoSessionParams()							{ }
 #if (defined(WIN32) || defined(_WIN32_WCE))
-	/** Returns the width (only available on Win32; default: 160). */
-	int getWidth() const								{ return m_width; }
-	
-	/** Returns the height (only available on Win32; default: 120). */
-	int getHeight() const								{ return m_height; }
-
 	/** Returns the device number to open (only available on Win32; default: 0). */
 	int getDevice() const								{ return m_devNum; }
 #else
 	/** Returns the device name (not available on Win32; default: /dev/video0). */
 	std::string getDevice() const							{ return m_devName; }
 #endif // (WIN32 || _WIN32_WCE)
+	/** Returns the width (default: 160). */
+	int getWidth() const								{ return m_width; }
+	
+	/** Returns the height (default: 120). */
+	int getHeight() const								{ return m_height; }
 
 	/** Returns the frame rate (default: 15.0). */
 	real_t getFrameRate() const							{ return m_frameRate; }
@@ -111,18 +113,18 @@ public:
 	 */
 	bool getUseQtOutput() const							{ return m_qtoutput; }
 #if (defined(WIN32) || defined(_WIN32_WCE))
-	/** Sets the width of the video frames (only available on Win32). */
-	void setWidth(int w)								{ m_width = w; }
-	
-	/** Sets the height of the video frames (only available on Win32). */
-	void setHeight(int h)								{ m_height = h; }
-
 	/** Sets the number of the input device to use (only available on Win32). */
 	void setDevice(int n)								{ m_devNum = n; }
 #else
 	/** Sets the name of the device (not available on Win32). */
 	void setDevice(const std::string &devName)					{ m_devName = devName; }
 #endif // !(WIN32 || _WIN32_WCE)
+	/** Sets the width of the video frames. */
+	void setWidth(int w)								{ m_width = w; }
+	
+	/** Sets the height of the video frames. */
+	void setHeight(int h)								{ m_height = h; }
+
 	/** Sets the bandwidth. */
 	void setBandwidth(int b)							{ m_bandwidth = b; }
 
@@ -141,11 +143,11 @@ public:
 	void setUseQtOutput(bool f)							{ m_qtoutput = f; }
 private:
 #if (defined(WIN32) || defined(_WIN32_WCE))
-	int m_width, m_height;
 	int m_devNum;
 #else
 	std::string m_devName;
 #endif // !(WIN32 || _WIN32_WCE)
+	int m_width, m_height;
 	real_t m_frameRate;
 	uint16_t m_portbase;
 	bool m_acceptOwnPackets;
@@ -293,8 +295,10 @@ private:
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	MIPDirectShowCapture *m_pInput;
 #else
-	MIPV4LInput *m_pInput;
+	MIPV4L2Input *m_pInput;
 #endif // WIN32 || _WIN32_WCE
+	MIPTinyJPEGDecoder *m_pTinyJpegDec;
+	MIPAVCodecFrameConverter *m_pInputFrameConverter;
 	MIPAVCodecEncoder *m_pAvcEnc;
 	MIPRTPVideoEncoder *m_pRTPEnc;
 	MIPRTPComponent *m_pRTPComp;

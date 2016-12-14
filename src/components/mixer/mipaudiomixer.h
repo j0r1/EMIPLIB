@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -34,6 +34,7 @@
 #include "mipcomponent.h"
 #include "miptime.h"
 #include <list>
+#include <set>
 
 class MIPRaw16bitAudioMessage;
 class MIPRawFloatAudioMessage;
@@ -74,11 +75,26 @@ public:
 	 *  Using this function, an additional playback delay can be introduced. Note that only
 	 *  positive delays are allowed. This can be useful for inter-media synchronization, in
 	 *  case not all the component delays are known well enough to provide exact synchronization.
-	 *  Using this function, the synchronization can then be adjusted manually. If \c useTimeInfo
-	 *  was set to false in the MIPAudioMixer::init function, this call has no effect.
+	 *  Using this function, the synchronization can then be adjusted manually.
 	 */
 	bool setExtraDelay(MIPTime t);
 
+	/** Sets the internal playback time to a specific value.
+	 *  Sets the internal playback time to a specific value. This allows multiple
+	 *  audio mixers to be nicely synchronized (can come in handy when creating an
+	 *  audio mixing server).
+	 */
+	void setPlaybackTime(MIPTime t)								{ m_playTime = t; }
+
+	/** Returns the current internal playback time of this mixer. */
+	MIPTime getPlaybackTime() const								{ return m_playTime; }
+
+	/** Adds a source identifier which should be ignored. */
+	void addSourceToIgnore(uint64_t id)							{ m_sourcesToIgnore.insert(id); }
+
+	/** Clears the list of sources to ignore. */
+	void clearIgnoreList()									{ m_sourcesToIgnore.clear(); }
+	
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 	bool processFeedback(const MIPComponentChain &chain, int64_t feedbackChainID, MIPFeedback *feedback);
@@ -123,6 +139,8 @@ private:
 	
 	std::list<MIPAudioMixerBlock> m_audioBlocks;
 	std::list<MIPAudioMixerBlock>::iterator m_it;
+
+	std::set<uint64_t> m_sourcesToIgnore;
 };
 
 #endif // MIPAUDIOMIXER_H

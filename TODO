@@ -1,6 +1,8 @@
 
 EMIPLIB TODO list:
 
+ * Clean up debug info in mipdirectshowinput and add ifdefs for libavcodec
+ * Remove Video4Linux component
  * Make the video RTP encoder and decoder compliant with standards. Currently,
    a simple ad hoc encoding scheme is used. This should obviously change.
  * Add codecs for video.

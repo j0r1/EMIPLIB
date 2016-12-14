@@ -1,1 +1,1 @@
-SUBDIRS = lpc gsm
+SUBDIRS = lpc gsm tinyjpeg

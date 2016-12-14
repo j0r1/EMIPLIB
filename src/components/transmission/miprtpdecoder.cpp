@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -47,7 +47,7 @@ using namespace __gnu_cxx;
 #define MIPRTPDECODER_ERRSTR_BADMESSAGE				"Bad message"
 #define MIPRTPDECODER_ERRSTR_NOPACKETDECODERINSTALLED		"No RTP packet decoder installed for received payload type"
 
-MIPRTPDecoder::MIPRTPDecoder() : MIPComponent("MIPRTPDecoder"), m_playbackOffset(0), m_prevCleanTableTime(0)
+MIPRTPDecoder::MIPRTPDecoder() : MIPComponent("MIPRTPDecoder"), m_playbackOffset(0), m_prevCleanTableTime(0), m_maxJitterBuffer(-1)
 {
 	m_init = false;
 }
@@ -436,6 +436,10 @@ bool MIPRTPDecoder::adjustToPlaybackTime(const MIPRTPReceiveMessage *pRTPMsg, MI
 
 	//real_t offset = insertDiff - 2.0*variance;
 	real_t offset = insertDiff - 3.0*variance; // TODO: which is best
+
+	// Limit the maximum offset
+	if (m_maxJitterBuffer.getValue() > 0 && offset > m_maxJitterBuffer.getValue())
+		offset = m_maxJitterBuffer.getValue();
 
 	if (m_pSSRCInfo->getNumberOfInsertTimes() == MIPRTPDECODER_HISTLEN) // need several packets for a good estimate
 	{

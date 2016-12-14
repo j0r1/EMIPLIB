@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -30,8 +30,10 @@
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	#include "mipdirectshowcapture.h"
 #else
-	#include "mipv4linput.h"
+	#include "mipv4l2input.h"
 #endif // WIN32 || _WIN32_WCE
+#include "miptinyjpegdecoder.h"
+#include "mipavcodecframeconverter.h"
 #include "mipavcodecencoder.h"
 #include "miprtpvideoencoder.h"
 #include "miprtpcomponent.h"
@@ -44,6 +46,7 @@
 #include "mipqtoutput.h"
 #include "mipencodedvideomessage.h"
 #include "mipvideoframestorage.h"
+#include "miprawvideomessage.h"
 #include <rtpsession.h>
 #include <rtpsessionparams.h>
 #include <rtperrors.h>
@@ -96,9 +99,12 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 		return false;
 	}
 #else
+	width = pParams2->getWidth();
+	height = pParams2->getHeight();
 	std::string devName = pParams2->getDevice();
-	m_pInput = new MIPV4LInput();
-	if (!m_pInput->open(devName, 0))
+
+	m_pInput = new MIPV4L2Input();
+	if (!m_pInput->open(width, height, devName))
 	{
 		setErrorString(m_pInput->getErrorString());
 		deleteAll();
@@ -106,6 +112,32 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 	}
 	width = m_pInput->getWidth();
 	height = m_pInput->getHeight();
+
+	if (m_pInput->getCompressed())
+	{
+		m_pTinyJpegDec = new MIPTinyJPEGDecoder();
+
+		if (!m_pTinyJpegDec->init())
+		{
+			setErrorString(m_pTinyJpegDec->getErrorString());
+			deleteAll();
+			return false;
+		}
+	}
+	else
+	{
+		if (m_pInput->getFrameSubtype() == MIPRAWVIDEOMESSAGE_TYPE_YUYV)
+		{
+			m_pInputFrameConverter = new MIPAVCodecFrameConverter();
+
+			if (!m_pInputFrameConverter->init(width, height, MIPRAWVIDEOMESSAGE_TYPE_YUV420P))
+			{
+				setErrorString(m_pInputFrameConverter->getErrorString());
+				deleteAll();
+				return false;
+			}
+		}
+	}
 #endif // WIN32 || _WIN32_WCE
 
 	int bandwidth = pParams2->getBandwidth();
@@ -242,7 +274,22 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 
 	m_pInputChain->setChainStart(m_pTimer);
 	m_pInputChain->addConnection(m_pTimer, m_pInput);
-	m_pInputChain->addConnection(m_pInput, m_pAvcEnc);
+
+	if (m_pTinyJpegDec == 0)
+	{
+		if (m_pInputFrameConverter == 0)
+			m_pInputChain->addConnection(m_pInput, m_pAvcEnc);
+		else
+		{
+			m_pInputChain->addConnection(m_pInput, m_pInputFrameConverter);
+			m_pInputChain->addConnection(m_pInputFrameConverter, m_pAvcEnc);
+		}
+	}
+	else
+	{
+		m_pInputChain->addConnection(m_pInput, m_pTinyJpegDec);
+		m_pInputChain->addConnection(m_pTinyJpegDec, m_pAvcEnc);
+	}
 	m_pInputChain->addConnection(m_pAvcEnc, m_pRTPEnc);
 	m_pInputChain->addConnection(m_pRTPEnc, m_pRTPComp);
 	
@@ -572,6 +619,8 @@ void MIPVideoSession::zeroAll()
 	m_pInputChain = 0;
 	m_pOutputChain = 0;
 	m_pInput = 0;
+	m_pTinyJpegDec = 0;
+	m_pInputFrameConverter = 0;
 	m_pAvcEnc = 0;
 	m_pRTPEnc = 0;
 	m_pRTPComp = 0;
@@ -601,6 +650,10 @@ void MIPVideoSession::deleteAll()
 	}
 	if (m_pInput)
 		delete m_pInput;
+	if (m_pTinyJpegDec)
+		delete m_pTinyJpegDec;
+	if (m_pInputFrameConverter)
+		delete m_pInputFrameConverter;
 #ifdef MIPCONFIG_SUPPORT_QT
 	if (m_pQtOutput)
 		delete m_pQtOutput;

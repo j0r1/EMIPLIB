@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -41,6 +41,7 @@
  */
 
 #define MIPENCODEDVIDEOMESSAGE_TYPE_H263P							0x00000001
+#define MIPENCODEDVIDEOMESSAGE_TYPE_JPEG							0x00000002
 
 /** Container for encoded video data. */
 class MIPEncodedVideoMessage : public MIPVideoMessage

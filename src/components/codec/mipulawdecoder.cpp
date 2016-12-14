@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -35,7 +35,43 @@
 
 #define MIPULAWDECODER_BIAS					132
 
-MIPULawDecoder::MIPULawDecoder() : MIPComponent("MIPULawEncoder")
+int16_t MIPULawDecoder::m_decompressionTable[256] = 
+{
+	-32124,-31100,-30076,-29052,-28028,-27004,-25980,-24956,
+	-23932,-22908,-21884,-20860,-19836,-18812,-17788,-16764,
+	-15996,-15484,-14972,-14460,-13948,-13436,-12924,-12412,
+	-11900,-11388,-10876,-10364,-9852,-9340,-8828,-8316,
+	-7932,-7676,-7420,-7164,-6908,-6652,-6396,-6140,
+	-5884,-5628,-5372,-5116,-4860,-4604,-4348,-4092,
+	-3900,-3772,-3644,-3516,-3388,-3260,-3132,-3004,
+	-2876,-2748,-2620,-2492,-2364,-2236,-2108,-1980,
+	-1884,-1820,-1756,-1692,-1628,-1564,-1500,-1436,
+	-1372,-1308,-1244,-1180,-1116,-1052,-988,-924,
+	-876,-844,-812,-780,-748,-716,-684,-652,
+	-620,-588,-556,-524,-492,-460,-428,-396,
+	-372,-356,-340,-324,-308,-292,-276,-260,
+	-244,-228,-212,-196,-180,-164,-148,-132,
+	-120,-112,-104,-96,-88,-80,-72,-64,
+	-56,-48,-40,-32,-24,-16,-8,0,
+	32124,31100,30076,29052,28028,27004,25980,24956,
+	23932,22908,21884,20860,19836,18812,17788,16764,
+	15996,15484,14972,14460,13948,13436,12924,12412,
+	11900,11388,10876,10364,9852,9340,8828,8316,
+	7932,7676,7420,7164,6908,6652,6396,6140,
+	5884,5628,5372,5116,4860,4604,4348,4092,
+	3900,3772,3644,3516,3388,3260,3132,3004,
+	2876,2748,2620,2492,2364,2236,2108,1980,
+	1884,1820,1756,1692,1628,1564,1500,1436,
+	1372,1308,1244,1180,1116,1052,988,924,
+	876,844,812,780,748,716,684,652,
+	620,588,556,524,492,460,428,396,
+	372,356,340,324,308,292,276,260,
+	244,228,212,196,180,164,148,132,
+	120,112,104,96,88,80,72,64,
+	56,48,40,32,24,16,8,0
+};
+
+MIPULawDecoder::MIPULawDecoder() : MIPComponent("MIPULawDecoder")
 {
 	m_init = false;
 }
@@ -110,28 +146,7 @@ bool MIPULawDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIP
 	const uint8_t *pBuffer = pAudioMsg->getData();
 
 	for (int i = 0 ; i < numBytes ; i++)
-	{
-		int val = (int)(~pBuffer[i]);
-		int mant,sign,expon;
-		
-		sign = val&(1<<7);
-		mant = val&15;
-		expon = (val>>4)&7;
-
-		val = (1<<(7+expon));
-		val |= (mant<<(3+expon));
-		val -= MIPULAWDECODER_BIAS;
-		if (val < 0)
-			val = 0;
-		if (sign != 0)
-			val = -val;
-		if (val > 32767)
-			val = 32767;
-		else if (val < -32768)
-			val = -32768;
-		
-		pSamples[i] = (int16_t)val;
-	}
+		pSamples[i] = m_decompressionTable[(int)pBuffer[i]];
 	
 	MIPRaw16bitAudioMessage *pNewMsg = new MIPRaw16bitAudioMessage(sampRate, numChannels, numFrames, true, MIPRaw16bitAudioMessage::Native, (uint16_t *)pSamples, true);
 	pNewMsg->copyMediaInfoFrom(*pAudioMsg); // copy time and sourceID

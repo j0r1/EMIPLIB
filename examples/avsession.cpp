@@ -103,6 +103,8 @@ int main(void)
 	Vparams.setDevice("/dev/video0");
 	Vparams.setFrameRate(25.0);
 	Vparams.setBandwidth(bw);
+	Vparams.setWidth(320);
+	Vparams.setHeight(240);
 	
 	Aparams.setPortbase(6000);
 	Aparams.setCompressionType(MIPAudioSessionParams::Speex);

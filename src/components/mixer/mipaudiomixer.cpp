@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -25,6 +25,7 @@
 #include "mipconfig.h"
 #include "mipaudiomixer.h"
 #include "miprawaudiomessage.h"
+#include "mipsystemmessage.h"
 #include "mipfeedback.h"
 
 #include "mipdebug.h"
@@ -133,6 +134,10 @@ bool MIPAudioMixer::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 		setErrorString(MIPAUDIOMIXER_ERRSTR_NOTINIT);
 		return false;
 	}
+	
+	if (pMsg->getMessageType() == MIPMESSAGE_TYPE_SYSTEM && pMsg->getMessageSubtype() == MIPSYSTEMMESSAGE_TYPE_ISTIME) // just ignore this
+		return true;
+	
 	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_AUDIO_RAW && ((pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_FLOAT && m_floatSamples) || (!m_floatSamples && pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_S16 ) )))
 	{
 		setErrorString(MIPAUDIOMIXER_ERRSTR_BADMESSAGE);
@@ -140,6 +145,13 @@ bool MIPAudioMixer::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 	}
 
 	MIPAudioMessage *pAudioMsg = (MIPAudioMessage *)pMsg;
+	uint64_t sourceID = pAudioMsg->getSourceID();
+
+	if (m_sourcesToIgnore.find(sourceID) != m_sourcesToIgnore.end()) 
+	{
+		// This source should be ignored, nothing left to do
+		return true;
+	}
 
 	if (pAudioMsg->getSamplingRate() != m_sampRate)
 	{
@@ -170,6 +182,8 @@ bool MIPAudioMixer::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 		
 		block = offsetTime.getValue()/m_blockTime.getValue();
 	}
+	else
+		block = m_extraDelay.getValue()/m_blockTime.getValue();
 	
 	// Data is ok, process it
 
@@ -493,12 +507,6 @@ bool MIPAudioMixer::processFeedback(const MIPComponentChain &chain, int64_t feed
 
 bool MIPAudioMixer::setExtraDelay(MIPTime t)
 {
-	if (!m_useTimeInfo)
-	{
-		setErrorString(MIPAUDIOMIXER_ERRSTR_TIMINGINFOISNOTUSED);
-		return false;
-	}
-	
 	if (t.getValue() < 0)
 	{
 		setErrorString(MIPAUDIOMIXER_ERRSTR_NEGATIVEDELAY);

@@ -1,5 +1,5 @@
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(emiplib, 0.16.1)
+AM_INIT_AUTOMAKE(emiplib, 0.17.0)
 
 MIPCONFIG_BIGENDIAN="// Little endian system"
 MIPCONFIG_SUPPORT_SNDFILE="// No support for libsndfile"
@@ -10,6 +10,7 @@ MIPCONFIG_SUPPORT_SPEEX="// No speex support"
 MIPCONFIG_SUPPORT_GSM="// No GSM support"
 MIPCONFIG_SUPPORT_LPC="// No LPC support"
 MIPCONFIG_SUPPORT_AVCODEC="// No libavcodec support"
+MIPCONFIG_SUPPORT_AVCODEC_OLD="// No old libavcodec support"
 MIPCONFIG_SUPPORT_INTELIPP="// No support for the Intel IPP library"
 MIPCONFIG_SUPPORT_ESD="// No support for esd"
 MIPCONFIG_SUPPORT_JACK="// No support for JACK"
@@ -253,8 +254,11 @@ AC_ARG_ENABLE(avcodec,[  --enable-avcodec        Enable libavcodec support],
 	        fi ], [])
 
 if test $MIPAVCODEC = "yes" ; then
-	AC_CHECK_HEADER(ffmpeg/avcodec.h,[MIPCONFIG_SUPPORT_AVCODEC="#define MIPCONFIG_SUPPORT_AVCODEC"
-				MIPLINKLIBS="$MIPLINKLIBS -lavcodec -lavutil"])
+	AC_CHECK_HEADER(libavcodec/avcodec.h,[MIPCONFIG_SUPPORT_AVCODEC="#define MIPCONFIG_SUPPORT_AVCODEC"
+					      MIPLINKLIBS="$MIPLINKLIBS -lavcodec -lavutil -lswscale"],
+		[ AC_CHECK_HEADER(ffmpeg/avcodec.h,[MIPCONFIG_SUPPORT_AVCODEC="#define MIPCONFIG_SUPPORT_AVCODEC"
+					  MIPCONFIG_SUPPORT_AVCODEC_OLD="#define MIPCONFIG_SUPPORT_AVCODEC_OLD"
+				MIPLINKLIBS="$MIPLINKLIBS -lavcodec -lavutil"]) ] )
 fi
 
 dnl ---------------------------------------------------------------------------
@@ -333,6 +337,7 @@ AC_SUBST(MIPCONFIG_SUPPORT_SPEEX)
 AC_SUBST(MIPCONFIG_SUPPORT_GSM)
 AC_SUBST(MIPCONFIG_SUPPORT_LPC)
 AC_SUBST(MIPCONFIG_SUPPORT_AVCODEC)
+AC_SUBST(MIPCONFIG_SUPPORT_AVCODEC_OLD)
 AC_SUBST(MIPCONFIG_SUPPORT_INTELIPP)
 AC_SUBST(MIPCONFIG_SUPPORT_ESD)
 AC_SUBST(MIPCONFIG_SUPPORT_JACK)
@@ -350,6 +355,7 @@ AC_OUTPUT(Makefile \
 	  src/thirdparty/lpc/Makefile \
 	  src/thirdparty/gsm/Makefile \
 	  src/thirdparty/gsm/doc/Makefile \
+	  src/thirdparty/tinyjpeg/Makefile \
 	  examples/Makefile \
 	  doc/Makefile \
           pkgconfig/Makefile \

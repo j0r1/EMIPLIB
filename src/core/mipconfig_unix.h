@@ -2,8 +2,8 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006  Expertise Centre for Digital Media (EDM)
-                      (http://www.edm.uhasselt.be)
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+                      Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -30,7 +30,7 @@
 
 // Little endian system
 
-#define MIPCONFIG_SUPPORT_SNDFILE
+// No support for libsndfile
 
 #define MIPCONFIG_SUPPORT_AUDIOFILE
 
@@ -46,11 +46,13 @@
 
 #define MIPCONFIG_SUPPORT_AVCODEC
 
+// No old libavcodec support
+
 // No support for the Intel IPP library
 
 #define MIPCONFIG_SUPPORT_ESD
 
-#define MIPCONFIG_SUPPORT_JACK
+// No support for JACK
 
 #define MIPCONFIG_SUPPORT_VIDEO4LINUX
 
@@ -58,9 +60,9 @@
 
 #define MIPCONFIG_SUPPORT_SDLAUDIO
 
-#define MIPCONFIG_SUPPORT_OPENAL
+// No support for OpenAL
 
-#define MIPCONFIG_SUPPORT_PORTAUDIO
+// No support for PortAudio
 
 #endif // MIPCONFIG_UNIX_H
 

@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -35,7 +35,14 @@
 #ifdef MIPCONFIG_SUPPORT_AVCODEC
 
 #include "mipcomponent.h"
+
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
 #include <ffmpeg/avcodec.h>
+#else
+extern "C" {
+#include <libavcodec/avcodec.h>
+}
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 
 class MIPEncodedVideoMessage;
 

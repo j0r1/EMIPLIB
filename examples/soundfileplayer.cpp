@@ -22,6 +22,7 @@
 #include <string>
 #include <unistd.h>
 #include <stdio.h>
+#include <cstdlib>
 
 void checkError(bool returnValue, const MIPComponent &component)
 {

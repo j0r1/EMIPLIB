@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -36,7 +36,17 @@
 
 #include "mipcomponent.h"
 #include "miptime.h"
-#include <ffmpeg/avcodec.h>
+
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
+	#include <ffmpeg/avcodec.h>
+#else
+	extern "C" 
+	{	
+		#include <libavcodec/avcodec.h>
+		#include <libswscale/swscale.h>
+	}
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+
 #if defined(WIN32) || defined(_WIN32_WCE)
 	#include <hash_map>
 #else
@@ -76,29 +86,46 @@ private:
 	class DecoderInfo
 	{
 	public:
+#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
+		DecoderInfo(int w, int h, AVCodecContext *pContext, SwsContext *pSwsContext)
+#else
 		DecoderInfo(int w, int h, AVCodecContext *pContext)
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		{
 			m_width = w;
 			m_height = h;
 			m_pContext = pContext;
 			m_lastTime = MIPTime::getCurrentTime();
+#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
+			m_pSwsContext = pSwsContext;
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		}
 
 		~DecoderInfo()
 		{
 			avcodec_close(m_pContext);
 			av_free(m_pContext);
+#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
+			sws_freeContext(m_pSwsContext);
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		}
 
 		int getWidth() const							{ return m_width; }
 		int getHeight() const							{ return m_height; }
 		AVCodecContext *getContext()						{ return m_pContext; }
+#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
+		SwsContext *getSwsContext()						{ return m_pSwsContext; }
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 
 		MIPTime getLastUpdateTime() const					{ return m_lastTime; }
+		void setLastUpdateTime(MIPTime t)					{ m_lastTime = t; }
 	private:
 		int m_width, m_height;
 		AVCodecContext *m_pContext;
 		MIPTime m_lastTime;
+#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
+		SwsContext *m_pSwsContext;
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 	};
 	
 	bool m_init;
@@ -111,7 +138,10 @@ private:
 	
 	AVCodec *m_pCodec;
 	AVFrame *m_pFrame;
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
 	AVFrame *m_pFrameYUV420P;
+#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+
 	std::list<MIPRawYUV420PVideoMessage *> m_messages;
 	std::list<MIPRawYUV420PVideoMessage *>::const_iterator m_msgIt;
 	int64_t m_lastIteration;

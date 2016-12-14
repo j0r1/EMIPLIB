@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -33,7 +33,43 @@
 #define MIPALAWDECODER_ERRSTR_ALREADYINIT			"Already initialized"
 #define MIPALAWDECODER_ERRSTR_BADMESSAGE			"Only a-law encoded audio messages are accepted"
 
-MIPALawDecoder::MIPALawDecoder() : MIPComponent("MIPALawEncoder")
+int16_t MIPALawDecoder::m_decompressionTable[256] = 
+{
+	-5504,-5248,-6016,-5760,-4480,-4224,-4992,-4736,
+	-7552,-7296,-8064,-7808,-6528,-6272,-7040,-6784,
+	-2752,-2624,-3008,-2880,-2240,-2112,-2496,-2368,
+	-3776,-3648,-4032,-3904,-3264,-3136,-3520,-3392,
+	-22016,-20992,-24064,-23040,-17920,-16896,-19968,-18944,
+	-30208,-29184,-32256,-31232,-26112,-25088,-28160,-27136,
+	-11008,-10496,-12032,-11520,-8960,-8448,-9984,-9472,
+	-15104,-14592,-16128,-15616,-13056,-12544,-14080,-13568,
+	-344,-328,-376,-360,-280,-264,-312,-296,
+	-472,-456,-504,-488,-408,-392,-440,-424,
+	-88,-72,-120,-104,-24,-8,-56,-40,
+	-216,-200,-248,-232,-152,-136,-184,-168,
+	-1376,-1312,-1504,-1440,-1120,-1056,-1248,-1184,
+	-1888,-1824,-2016,-1952,-1632,-1568,-1760,-1696,
+	-688,-656,-752,-720,-560,-528,-624,-592,
+	-944,-912,-1008,-976,-816,-784,-880,-848,
+	5504,5248,6016,5760,4480,4224,4992,4736,
+	7552,7296,8064,7808,6528,6272,7040,6784,
+	2752,2624,3008,2880,2240,2112,2496,2368,
+	3776,3648,4032,3904,3264,3136,3520,3392,
+	22016,20992,24064,23040,17920,16896,19968,18944,
+	30208,29184,32256,31232,26112,25088,28160,27136,
+	11008,10496,12032,11520,8960,8448,9984,9472,
+	15104,14592,16128,15616,13056,12544,14080,13568,
+	344,328,376,360,280,264,312,296,
+	472,456,504,488,408,392,440,424,
+	88,72,120,104,24,8,56,40,
+	216,200,248,232,152,136,184,168,
+	1376,1312,1504,1440,1120,1056,1248,1184,
+	1888,1824,2016,1952,1632,1568,1760,1696,
+	688,656,752,720,560,528,624,592,
+	944,912,1008,976,816,784,880,848
+};
+
+MIPALawDecoder::MIPALawDecoder() : MIPComponent("MIPALawDecoder")
 {
 	m_init = false;
 }
@@ -108,33 +144,7 @@ bool MIPALawDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIP
 	const uint8_t *pBuffer = pAudioMsg->getData();
 
 	for (int i = 0 ; i < numBytes ; i++)
-	{
-		int samp, mant, seg, sign;
-		int pcm = pBuffer[i];
-
-		pcm ^= 0x55;
-		mant = pcm & 0xF;
-		seg = (pcm >> 4) & 0x7;
-        		
-		if(seg > 0)
-			mant |= 0x10;
-
-		sign = !(pcm >> 7);
-		
-		samp = ((mant << 1) + 1);
-
-		if(seg > 1)
-			samp <<= seg - 1;
-
-		samp = sign ? -samp : samp;
-
-		if (samp < -32767)
-			samp = -32767;
-		else if (samp > 32767)
-			samp = 32767;
-
-		pSamples[i] = (int16_t)samp;
-	}
+		pSamples[i] = m_decompressionTable[(int)pBuffer[i]];
 	
 	MIPRaw16bitAudioMessage *pNewMsg = new MIPRaw16bitAudioMessage(sampRate, numChannels, numFrames, true, MIPRaw16bitAudioMessage::Native, (uint16_t *)pSamples, true);
 	pNewMsg->copyMediaInfoFrom(*pAudioMsg); // copy time and sourceID

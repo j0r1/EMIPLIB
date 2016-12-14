@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2008  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -39,6 +39,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <cstdlib>
 
 #include "mipdebug.h"
 #include <iostream>
@@ -76,6 +77,8 @@ MIPV4LInput::MIPV4LInput() : MIPComponent("MIPV4LInput")
 MIPV4LInput::MIPV4LInput(const std::string &compName) : MIPComponent(compName)
 {
 	m_device = -1;
+
+	// TODO: mutex init?
 }
 
 MIPV4LInput::~MIPV4LInput()

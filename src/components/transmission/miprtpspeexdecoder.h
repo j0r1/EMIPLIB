@@ -22,28 +22,38 @@
 
 */
 
-#ifndef MIPCONFIG_WIN_H
+/**
+ * \file miprtpspeexdecoder.h
+ */
 
-#define MIPCONFIG_WIN_H
+#ifndef MIPRTPSPEEXDECODER_H
 
-// By uncommenting the following line you allow components with a GPL license
-// to be compiled. The GPL license will then apply to the whole library!
-// #define MIPCONFIG_GPL
+#define MIPRTPSPEEXDECODER_H
 
-//#define MIPCONFIG_BIGENDIAN
+#include "mipconfig.h"
 
-//#define MIPCONFIG_SUPPORT_SNDFILE
+#ifdef MIPCONFIG_SUPPORT_SPEEX
 
-//#define MIPCONFIG_SUPPORT_QT
+#include "miprtppacketdecoder.h"
+#include "mipspeexutil.h"
 
-//#define MIPCONFIG_SUPPORT_DIRECTSHOW
+/** This class decodes incoming RTP data into Speex messages.
+ *  This class takes MIPRTPReceiveMessages as input and generates 
+ *  Speex audio messages.
+ */
+class MIPRTPSpeexDecoder : public MIPRTPPacketDecoder
+{
+public:
+	MIPRTPSpeexDecoder();
+	~MIPRTPSpeexDecoder();
+private:
+	bool validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit);
+	MIPMediaMessage *createNewMessage(const RTPPacket *pRTPPack);
+	MIPSpeexUtil m_speexUtil;
+	int m_sampRate;
+};
 
-#define MIPCONFIG_SUPPORT_SPEEX
+#endif // MIPCONFIG_SUPPORT_SPEEX
 
-//#define MIPCONFIG_SUPPORT_AVCODEC
+#endif // MIPRTPSPEEXDECODER_H
 
-//#define MIPCONFIG_SUPPORT_INTELIPP
-
-//#define MIPCONFIG_SUPPORT_SDLAUDIO
-
-#endif // MIPCONFIG_WIN_H

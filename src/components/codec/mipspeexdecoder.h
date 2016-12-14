@@ -77,9 +77,18 @@ private:
 	class SpeexStateInfo
 	{
 	public:
-		enum BandWidth { NarrowBand, WideBand, UltraWideBand };
-		
-		SpeexStateInfo(BandWidth b) 
+		/** Used to select speex encoding type. */
+		enum SpeexBandWidth 
+		{	 
+ 			/** Narrow band mode (8000 Hz) */
+			NarrowBand,
+		 	/** Wide band mode (16000 Hz) */
+			WideBand,		
+	 		/** Ultra wide band mode (32000 Hz) */
+			UltraWideBand
+		};
+
+		SpeexStateInfo(SpeexBandWidth b) 
 		{ 
 			m_lastTime = MIPTime::getCurrentTime(); 
 			speex_bits_init(&m_bits); 
@@ -102,14 +111,14 @@ private:
 		SpeexBits *getBits()							{ return &m_bits; }
 		void *getState()							{ return m_pState; }
 		MIPTime getLastUpdateTime() const					{ return m_lastTime; }
-		BandWidth getBandWidth() const						{ return m_bandWidth; }
+		SpeexBandWidth getBandWidth() const					{ return m_bandWidth; }
 		int getNumberOfFrames() const						{ return m_numFrames; }
 		void setUpdateTime()							{ m_lastTime = MIPTime::getCurrentTime(); }
 	private:
 		MIPTime m_lastTime;
 		void *m_pState;
 		SpeexBits m_bits;
-		BandWidth m_bandWidth;
+		SpeexBandWidth m_bandWidth;
 		int m_numFrames;
 	};
 

@@ -31,14 +31,13 @@
 #define MIPRTPVIDEODECODER_H
 
 #include "mipconfig.h"
-#include "miprtpdecoder.h"
+#include "miprtppacketdecoder.h"
 
-/** This component decodes incoming RTP data into video messages.
- *  This component takes MIPRTPReceiveMessages as input and generates 
- *  video messages. Most of the functionality is provided by the base
- *  class MIPRTPDecoder.
+/** This class decodes incoming RTP data into video messages.
+ *  This class takes MIPRTPReceiveMessages as input and generates 
+ *  video messages. 
  */
-class MIPRTPVideoDecoder : public MIPRTPDecoder
+class MIPRTPVideoDecoder : public MIPRTPPacketDecoder
 {
 public:
 	MIPRTPVideoDecoder();

@@ -51,7 +51,7 @@ MIPSpeexEncoder::~MIPSpeexEncoder()
 	destroy();
 }
 
-bool MIPSpeexEncoder::init(SpeexBandWidth b, int quality, int complexity)
+bool MIPSpeexEncoder::init(SpeexBandWidth b, int quality, int complexity, bool vad, bool dtx)
 {
 	if (m_init)
 	{
@@ -70,7 +70,7 @@ bool MIPSpeexEncoder::init(SpeexBandWidth b, int quality, int complexity)
 		setErrorString(MIPSPEEXENCODER_ERRSTR_BADCOMPLEXITYPARAM);
 		return false;
 	}
-	
+
 	speex_bits_init(&m_bits);
 
 	if (b == NarrowBand)
@@ -89,6 +89,15 @@ bool MIPSpeexEncoder::init(SpeexBandWidth b, int quality, int complexity)
 		m_sampRate = 32000;
 	}
 	speex_encoder_ctl(m_pState,SPEEX_GET_FRAME_SIZE,&m_numFrames);
+	
+	int useVad = (vad)?1:0;
+	int useDtx = (dtx)?1:0;
+	int q = quality;
+	int c = complexity;
+	speex_encoder_ctl(m_pState,SPEEX_SET_QUALITY,&q);
+	speex_encoder_ctl(m_pState,SPEEX_SET_COMPLEXITY,&c);
+	speex_encoder_ctl(m_pState,SPEEX_SET_VAD,&useVad);
+	speex_encoder_ctl(m_pState,SPEEX_SET_DTX,&useDtx);
 	
 	m_pFloatBuffer = new float [m_numFrames];
 	m_prevIteration = -1;

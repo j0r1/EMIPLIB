@@ -106,8 +106,9 @@ int main(void)
 	
 	Aparams.setPortbase(6000);
 //	Aparams.setAcceptOwnPackets(true);
-//	Aparams.setInputDevice("/dev/sound/dsp1");
+//	Aparams.setInputDevice("/dev/dsp1");
 //	Aparams.setOutputDevice("/dev/dsp");
+//	Aparams.setSpeexEncoding(MIPSpeexEncoder::UltraWideBand);
 	
 	std::cout << "Starting audio session at portbase 6000, video session at portbase 6100" << std::endl;
 

@@ -142,6 +142,7 @@ MIPCONFIG_SUPPORT_INTELIPP = @MIPCONFIG_SUPPORT_INTELIPP@
 MIPCONFIG_SUPPORT_JACK = @MIPCONFIG_SUPPORT_JACK@
 MIPCONFIG_SUPPORT_OSS = @MIPCONFIG_SUPPORT_OSS@
 MIPCONFIG_SUPPORT_QT = @MIPCONFIG_SUPPORT_QT@
+MIPCONFIG_SUPPORT_SDLAUDIO = @MIPCONFIG_SUPPORT_SDLAUDIO@
 MIPCONFIG_SUPPORT_SNDFILE = @MIPCONFIG_SUPPORT_SNDFILE@
 MIPCONFIG_SUPPORT_SPEEX = @MIPCONFIG_SUPPORT_SPEEX@
 MIPCONFIG_SUPPORT_VIDEO4LINUX = @MIPCONFIG_SUPPORT_VIDEO4LINUX@
@@ -226,7 +227,8 @@ x_includes = @x_includes@
 x_libraries = @x_libraries@
 SUBDIRS = src examples doc pkgconfig
 EXTRA_DIST = Doxyfile emiplib.sln emiplib.vcproj emiplib_wce.sln emiplib_wce.vcproj \
-	     LICENSE.GPL LICENSE.LGPL ChangeLog copyheaderfiles.bat
+	     LICENSE.GPL LICENSE.LGPL ChangeLog copyheaderfiles.bat \
+	     emiplib_wce5.vcproj emiplib_wce5.sln
 
 all: all-recursive
 
@@ -454,6 +456,9 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
+	$(MAKE) $(AM_MAKEFLAGS) \
+	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
+	  dist-hook
 	-find $(distdir) -type d ! -perm -777 -exec chmod a+rwx {} \; -o \
 	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
 	  ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
@@ -635,7 +640,7 @@ uninstall-info: uninstall-info-recursive
 .PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am am--refresh check \
 	check-am clean clean-generic clean-libtool clean-recursive \
 	ctags ctags-recursive dist dist-all dist-bzip2 dist-gzip \
-	dist-shar dist-tarZ dist-zip distcheck distclean \
+	dist-hook dist-shar dist-tarZ dist-zip distcheck distclean \
 	distclean-generic distclean-libtool distclean-recursive \
 	distclean-tags distcleancheck distdir distuninstallcheck dvi \
 	dvi-am html html-am info info-am install install-am \
@@ -647,6 +652,9 @@ uninstall-info: uninstall-info-recursive
 	mostlyclean-libtool mostlyclean-recursive pdf pdf-am ps ps-am \
 	tags tags-recursive uninstall uninstall-am uninstall-info-am
 
+
+dist-hook:
+	rm -f $(distdir)/src/components/output/mipqtoutput.moc
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -31,7 +31,7 @@
 
 #include "mipdebug.h"
 
-MIPRTPVideoDecoder::MIPRTPVideoDecoder() : MIPRTPDecoder("MIPRTPVideoDecoder")
+MIPRTPVideoDecoder::MIPRTPVideoDecoder()
 {
 }
 
@@ -41,7 +41,7 @@ MIPRTPVideoDecoder::~MIPRTPVideoDecoder()
 
 bool MIPRTPVideoDecoder::validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit)
 {
-	if (!(pRTPPack->GetPayloadType() == 102 || pRTPPack->GetPayloadType() == 103))
+	if (!(pRTPPack->GetPayloadType() == 103))
 		return false;
 
 	size_t length;
@@ -56,50 +56,27 @@ bool MIPRTPVideoDecoder::validatePacket(const RTPPacket *pRTPPack, real_t &times
 
 MIPMediaMessage *MIPRTPVideoDecoder::createNewMessage(const RTPPacket *pRTPPack)
 {
-	if (pRTPPack->GetPayloadType() == 102)
-	{
-		size_t length = pRTPPack->GetPayloadLength()-9;
-		uint32_t width = 0;
-		uint32_t height = 0;
-		uint8_t *pData = new uint8_t [length];
-		const uint8_t *pPayload = pRTPPack->GetPayloadData();
+	size_t length = pRTPPack->GetPayloadLength()-9;
+	uint32_t width = 0;
+	uint32_t height = 0;
+	uint8_t *pData = new uint8_t [length];
+	const uint8_t *pPayload = pRTPPack->GetPayloadData();
 		
-		memcpy(pData,pPayload+9,length);
-		width = (uint32_t)pPayload[1];
-		width |= ((uint32_t)pPayload[2])<<8;
-		width |= ((uint32_t)pPayload[3])<<16;
-		width |= ((uint32_t)pPayload[4])<<24;
-		height = (uint32_t)pPayload[5];
-		height |= ((uint32_t)pPayload[6])<<8;
-		height |= ((uint32_t)pPayload[7])<<16;
-		height |= ((uint32_t)pPayload[8])<<24;
+	memcpy(pData,pPayload+9,length);
+	width = (uint32_t)pPayload[1];
+	width |= ((uint32_t)pPayload[2])<<8;
+	width |= ((uint32_t)pPayload[3])<<16;
+	width |= ((uint32_t)pPayload[4])<<24;
+	height = (uint32_t)pPayload[5];
+	height |= ((uint32_t)pPayload[6])<<8;
+	height |= ((uint32_t)pPayload[7])<<16;
+	height |= ((uint32_t)pPayload[8])<<24;
+
+	if (height < 0 || width < 0 || height > 2048 || width > 2048)
+		return 0;
+	
+	MIPEncodedVideoMessage *pVidMsg = new MIPEncodedVideoMessage(MIPENCODEDVIDEOMESSAGE_TYPE_H263P, (int)width, (int)height, pData, length, true);
 		
-		MIPRawYUV420PVideoMessage *pVidMsg = new MIPRawYUV420PVideoMessage((int)width, (int)height, pData, true);
-		
-		return pVidMsg;
-	}
-	else
-	{
-		size_t length = pRTPPack->GetPayloadLength()-9;
-		uint32_t width = 0;
-		uint32_t height = 0;
-		uint8_t *pData = new uint8_t [length];
-		const uint8_t *pPayload = pRTPPack->GetPayloadData();
-		
-		memcpy(pData,pPayload+9,length);
-		width = (uint32_t)pPayload[1];
-		width |= ((uint32_t)pPayload[2])<<8;
-		width |= ((uint32_t)pPayload[3])<<16;
-		width |= ((uint32_t)pPayload[4])<<24;
-		height = (uint32_t)pPayload[5];
-		height |= ((uint32_t)pPayload[6])<<8;
-		height |= ((uint32_t)pPayload[7])<<16;
-		height |= ((uint32_t)pPayload[8])<<24;
-		
-		MIPEncodedVideoMessage *pVidMsg = new MIPEncodedVideoMessage(MIPENCODEDVIDEOMESSAGE_TYPE_H263P, (int)width, (int)height, pData, length, true);
-		
-		return pVidMsg;
-	}
-	return 0;
+	return pVidMsg;
 }
 

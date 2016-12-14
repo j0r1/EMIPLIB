@@ -23,36 +23,43 @@
 */
 
 /**
- * \file miprtpaudiodecoder.h
+ * \file miprtpulawencoder.h
  */
 
-#ifndef MIPRTPAUDIODECODER_H
+#ifndef MIPRTPULAWENCODER_H
 
-#define MIPRTPAUDIODECODER_H
+#define MIPRTPULAWENCODER_H
 
 #include "mipconfig.h"
-#include "miprtpdecoder.h"
+#include "miprtpencoder.h"
+#include <list>
 
-/** This component decodes incoming RTP data into audio messages.
- *  This component takes MIPRTPReceiveMessages as input and generates 
- *  audio messages. Most of the functionality is provided by the base
- *  class MIPRTPDecoder.
+class MIPRTPSendMessage;
+
+/** Creates RTP packets for U-law encoded audio packets.
+ *  This component accepts incoming U-law encoded 8000Hz mono audio packets and generates 
+ *  MIPRTPSendMessage objects which can then be transferred to a MIPRTPComponent instance.
  */
-class MIPRTPAudioDecoder : public MIPRTPDecoder
+class MIPRTPULawEncoder : public MIPRTPEncoder
 {
 public:
-	MIPRTPAudioDecoder();
-	~MIPRTPAudioDecoder();
-private:
-	bool validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit);
-	MIPMediaMessage *createNewMessage(const RTPPacket *pRTPPack);
+	MIPRTPULawEncoder();
+	~MIPRTPULawEncoder();
 
-	int m_sampRate;
-	int m_bytesPerSample;
-	bool m_encoded;
-	bool m_stereo;
-	int m_encodingType;
+	/** Initializes the encoder. */
+	bool init();
+
+	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
+	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
+private:
+	void cleanUp();
+	void clearMessages();
+
+	bool m_init;
+	std::list<MIPRTPSendMessage *> m_messages;
+	std::list<MIPRTPSendMessage *>::const_iterator m_msgIt;
+	int64_t m_prevIteration;
 };
 
-#endif // MIPRTPAUDIODECODER_H
+#endif // MIPRTPULAWENCODER_H
 

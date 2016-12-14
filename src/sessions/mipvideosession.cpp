@@ -36,6 +36,7 @@
 #include "miprtpvideoencoder.h"
 #include "miprtpcomponent.h"
 #include "mipaveragetimer.h"
+#include "miprtpdecoder.h"
 #include "miprtpvideodecoder.h"
 #include "mipmediabuffer.h"
 #include "mipavcodecdecoder.h"
@@ -124,6 +125,8 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 		deleteAll();
 		return false;
 	}
+	
+	m_pRTPEnc->setPayloadType(103);
 
 	RTPUDPv4TransmissionParams transParams;
 	RTPSessionParams sessParams;
@@ -134,7 +137,9 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 	sessParams.SetMaximumPacketSize(64000);
 	sessParams.SetAcceptOwnPackets(pParams2->getAcceptOwnPackets());
 
-	m_pRTPSession = new RTPSession();
+	m_pRTPSession = newRTPSession();
+	if (m_pRTPSession == 0)
+		m_pRTPSession = new RTPSession();
 	if ((status = m_pRTPSession->Create(sessParams,&transParams)) < 0)
 	{
 		setErrorString(RTPGetErrorString(status));
@@ -152,13 +157,16 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 
 	m_pTimer2 = new MIPAverageTimer(MIPTime(1.0/frameRate));
 	
-	m_pRTPDec = new MIPRTPVideoDecoder();
+	m_pRTPDec = new MIPRTPDecoder();
 	if (!m_pRTPDec->init(true, pSync))
 	{
 		setErrorString(m_pRTPDec->getErrorString());
 		deleteAll();
 		return false;
 	}
+
+	m_pRTPVideoDec = new MIPRTPVideoDecoder();
+	m_pRTPDec->setDefaultPacketDecoder(m_pRTPVideoDec);
 
 	m_pMediaBuf = new MIPMediaBuffer();
 	if (!m_pMediaBuf->init(MIPTime(1.0/frameRate)))
@@ -490,6 +498,7 @@ void MIPVideoSession::zeroAll()
 	m_pTimer = 0;
 	m_pTimer2 = 0;
 	m_pRTPDec = 0;
+	m_pRTPVideoDec = 0;
 	m_pMediaBuf = 0;
 	m_pAvcDec = 0;
 	m_pMixer = 0;
@@ -534,6 +543,8 @@ void MIPVideoSession::deleteAll()
 		delete m_pTimer2;
 	if (m_pRTPDec)
 		delete m_pRTPDec;
+	if (m_pRTPVideoDec)
+		delete m_pRTPVideoDec;
 	if (m_pMediaBuf)
 		delete m_pMediaBuf;
 	if (m_pAvcDec)

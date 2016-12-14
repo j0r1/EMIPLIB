@@ -36,10 +36,13 @@
 
 /**
  * \def MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX
- * 	\brief Subtype for encoded audio messages containing speex data.
+ * 	\brief Subtype for encoded audio messages containing Speex data.
+ * \def MIPENCODEDAUDIOMESSAGE_TYPE_ULAW
+ * 	\brief Subtype for encoded audio messages containing u-law data.
  */
 
 #define MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX							0x00000001
+#define MIPENCODEDAUDIOMESSAGE_TYPE_ULAW							0x00000002
 
 /** Container for encoded audio data.
  */

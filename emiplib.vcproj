@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-                                AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.0\src,..\jrtplib-3.5.2\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
+				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.6.0\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -108,13 +108,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-                                AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.0\src,..\jrtplib-3.5.2\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
+				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.6.0\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, C:\Program Files\Microsoft Platform SDK\Include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="3"
+				DebugInformationFormat="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -162,11 +162,19 @@
 					Name="input"
 					>
 					<File
+						RelativePath=".\src\components\input\mipaudiofileinput.cpp"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\input\mipdirectshowcapture.cpp"
 						>
 					</File>
 					<File
 						RelativePath=".\src\components\input\mipfrequencygenerator.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\input\mipjackinput.cpp"
 						>
 					</File>
 					<File
@@ -186,11 +194,19 @@
 					Name="output"
 					>
 					<File
+						RelativePath=".\src\components\output\mipjackoutput.cpp"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\output\mipmessagedumper.cpp"
 						>
 					</File>
 					<File
 						RelativePath=".\src\components\output\mipqtoutput.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\output\mipsdlaudiooutput.cpp"
 						>
 					</File>
 					<File
@@ -210,19 +226,27 @@
 					Name="transmission"
 					>
 					<File
-						RelativePath=".\src\components\transmission\miprtpaudiodecoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpaudioencoder.cpp"
-						>
-					</File>
-					<File
 						RelativePath=".\src\components\transmission\miprtpcomponent.cpp"
 						>
 					</File>
 					<File
 						RelativePath=".\src\components\transmission\miprtpdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpspeexdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpspeexencoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpulawdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpulawencoder.cpp"
 						>
 					</File>
 					<File
@@ -305,6 +329,14 @@
 						RelativePath=".\src\components\codec\mipspeexencoder.cpp"
 						>
 					</File>
+					<File
+						RelativePath=".\src\components\codec\mipulawdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipulawencoder.cpp"
+						>
+					</File>
 				</Filter>
 			</Filter>
 			<Filter
@@ -326,6 +358,10 @@
 					RelativePath=".\src\core\mipcomponentchain.cpp"
 					>
 				</File>
+				<File
+					RelativePath=".\src\core\mipversion.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="util"
@@ -340,6 +376,10 @@
 				</File>
 				<File
 					RelativePath=".\src\util\mipsignalwaiter.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\util\mipspeexutil.cpp"
 					>
 				</File>
 				<File
@@ -372,11 +412,19 @@
 					Name="input"
 					>
 					<File
+						RelativePath=".\src\components\input\mipaudiofileinput.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\input\mipdirectshowcapture.h"
 						>
 					</File>
 					<File
 						RelativePath=".\src\components\input\mipfrequencygenerator.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\input\mipjackinput.h"
 						>
 					</File>
 					<File
@@ -396,11 +444,19 @@
 					Name="output"
 					>
 					<File
+						RelativePath=".\src\components\output\mipjackoutput.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\output\mipmessagedumper.h"
 						>
 					</File>
 					<File
 						RelativePath=".\src\components\output\mipqtoutput.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\output\mipsdlaudiooutput.h"
 						>
 					</File>
 					<File
@@ -420,19 +476,39 @@
 					Name="transmission"
 					>
 					<File
-						RelativePath=".\src\components\transmission\miprtpaudiodecoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpaudioencoder.h"
-						>
-					</File>
-					<File
 						RelativePath=".\src\components\transmission\miprtpcomponent.h"
 						>
 					</File>
 					<File
 						RelativePath=".\src\components\transmission\miprtpdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpdummydecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpencoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtppacketdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpspeexdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpspeexencoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpulawdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpulawencoder.h"
 						>
 					</File>
 					<File
@@ -453,6 +529,10 @@
 					</File>
 					<File
 						RelativePath=".\src\components\transform\mipaudiosplitter.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transform\miphrirbase.h"
 						>
 					</File>
 					<File
@@ -515,11 +595,23 @@
 						RelativePath=".\src\components\codec\mipspeexencoder.h"
 						>
 					</File>
+					<File
+						RelativePath=".\src\components\codec\mipulawdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipulawencoder.h"
+						>
+					</File>
 				</Filter>
 			</Filter>
 			<Filter
 				Name="core"
 				>
+				<File
+					RelativePath=".\src\core\mipaudiomessage.h"
+					>
+				</File>
 				<File
 					RelativePath=".\src\core\mipcompat.h"
 					>
@@ -549,11 +641,19 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\core\mipencodedvideomessage.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\core\miperrorbase.h"
 					>
 				</File>
 				<File
 					RelativePath=".\src\core\mipfeedback.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\core\mipmediamessage.h"
 					>
 				</File>
 				<File
@@ -588,6 +688,14 @@
 					RelativePath=".\src\core\miptypes_win.h"
 					>
 				</File>
+				<File
+					RelativePath=".\src\core\mipversion.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\core\mipvideomessage.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="util"
@@ -597,11 +705,19 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\util\mipresample.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\util\miprtpsynchronizer.h"
 					>
 				</File>
 				<File
 					RelativePath=".\src\util\mipsignalwaiter.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\util\mipspeexutil.h"
 					>
 				</File>
 				<File

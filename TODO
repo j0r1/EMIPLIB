@@ -3,13 +3,9 @@ EMIPLIB TODO list:
 
  * Make the RTP encoders and decoders compliant with standards. Currently,
    a simple ad hoc encoding scheme is used. This should obviously change.
- * Change the RTP encoder and decoder to make it possible to register
-   specific codecs for specific payload types.
  * Add codecs for audio and video.
  * In the MS-Windows version: change the project file to allow the file 
    mipqtoutput.moc to be generated automatically.
- * Make it possible to change the connections in a chain when it is
-   already running.
  * Improve the ALSA output component.
  * Add 8-bit sample support to the ESD output component.
  * Rewrite the audio session to allow a choice between available input 

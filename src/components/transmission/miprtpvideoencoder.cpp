@@ -32,7 +32,7 @@
 #define MIPRTPVIDEOENCODER_ERRSTR_CANTENCODE		"Can't encode this message"
 #define MIPRTPVIDEOENCODER_ERRSTR_NOTINIT		"RTP encoder not initialized"
 
-MIPRTPVideoEncoder::MIPRTPVideoEncoder() : MIPComponent("MIPRTPVideoEncoder")
+MIPRTPVideoEncoder::MIPRTPVideoEncoder() : MIPRTPEncoder("MIPRTPVideoEncoder")
 {
 	m_init = false;
 }
@@ -68,59 +68,7 @@ bool MIPRTPVideoEncoder::push(const MIPComponentChain &chain, int64_t iteration,
 		clearMessages();
 	}
 	
-	if (pMsg->getMessageType() == MIPMESSAGE_TYPE_VIDEO_RAW)
-	{
-		MIPVideoMessage *pMsg2 = (MIPVideoMessage *)pMsg;
-		uint32_t width = (uint32_t)pMsg2->getWidth();
-		uint32_t height = (uint32_t)pMsg2->getHeight();
-		uint8_t typeByte = 0;
-		size_t msgSize = 0;
-		bool marker = false;
-		
-		if (pMsg->getMessageSubtype() == MIPRAWVIDEOMESSAGE_TYPE_YUV420P)
-		{
-			msgSize = (size_t)((width*height*3)/2);
-			typeByte = 1;
-			marker = false;
-		}
-		else
-		{
-			setErrorString(MIPRTPVIDEOENCODER_ERRSTR_BADMESSAGE);
-			return false;
-		}
-		
-		msgSize += 1 + 2*sizeof(uint32_t);
-		uint8_t *pMsgData = new uint8_t [msgSize];
-	
-		MIPRawYUV420PVideoMessage *pVidMsg = (MIPRawYUV420PVideoMessage *)pMsg;
-		
-		// We'll use a timestamp unit of 1.0/90000.0
-
-		real_t tsUnit = 1.0/90000.0;
-		uint32_t tsInc = (uint32_t)((1.0/(m_frameRate*tsUnit))+0.5);
-		uint8_t payloadType = 102;
-
-		pMsgData[0] = typeByte;
-		pMsgData[1] = (uint8_t)(width&0xff);
-		pMsgData[2] = (uint8_t)((width>>8)&0xff);
-		pMsgData[3] = (uint8_t)((width>>16)&0xff);
-		pMsgData[4] = (uint8_t)((width>>24)&0xff);
-		pMsgData[5] = (uint8_t)(height&0xff);
-		pMsgData[6] = (uint8_t)((height>>8)&0xff);
-		pMsgData[7] = (uint8_t)((height>>16)&0xff);
-		pMsgData[8] = (uint8_t)((height>>24)&0xff);
-
-		memcpy(pMsgData+9,pVidMsg->getImageData(),msgSize-9);
-
-		MIPRTPSendMessage *pNewMsg;
-
-		pNewMsg = new MIPRTPSendMessage(pMsgData,msgSize,payloadType,marker,tsInc);
-		pNewMsg->setSamplingInstant(pVidMsg->getTime());
-		
-		m_messages.push_back(pNewMsg);
-		m_msgIt = m_messages.begin();
-	}
-	else if (pMsg->getMessageType() == MIPMESSAGE_TYPE_VIDEO_ENCODED)
+	if (pMsg->getMessageType() == MIPMESSAGE_TYPE_VIDEO_ENCODED)
 	{
 		MIPEncodedVideoMessage *pVidMsg = (MIPEncodedVideoMessage *)pMsg;
 		
@@ -128,7 +76,7 @@ bool MIPRTPVideoEncoder::push(const MIPComponentChain &chain, int64_t iteration,
 
 		real_t tsUnit = 1.0/90000.0;
 		uint32_t tsInc = (uint32_t)((1.0/(m_frameRate*tsUnit))+0.5);
-		uint8_t payloadType = 103;
+		uint8_t payloadType = getPayloadType();
 		uint32_t width = (uint32_t)pVidMsg->getWidth();
 		uint32_t height = (uint32_t)pVidMsg->getHeight();
 		uint8_t typeByte = 0;

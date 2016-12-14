@@ -3,6 +3,24 @@
                               EMIPLIB ChangeLog
 
 
+Version 0.12.0, July 2006:
+ * Added MIPResample template function.
+ * Added SDL audio output component.
+ * Changed the transmission system. Now, a specific RTP decoder can be
+   linked to one or more payload types.
+ * Changed the RTP Speex encoder and decoder so that they no longer
+   use the 'info' byte transmitted in the previous versions. RTP packets
+   will now only contain Speex data.
+ * Added a MIPSpeexUtil class which can be used to detect the way a Speex
+   frame was encoded (narrow band, wide band or ultra wide band).
+ * Added U-law encoder/decoder and PCMU RTP encoder/decoder.
+ * The DirectShow input component should now work better. Thanks to Andrea 
+   Fontana (advmail@katamail.com) for supplying the patches.
+ * Made it possible to change the connections in a chain while it is
+   running.
+ * Some parameters in the Speex encoder were not used. Thanks to  
+   Peter De Cleyn (peter.decleyn@ua.ac.be) for pointing this out.
+
 Version 0.11.0, April 2006:
  * Adjusted the audio session component to make it possible to select
    a specific Speex encoding mode (narrow band, wide band, ultra wide 

@@ -431,6 +431,9 @@
  * 		
  * \code
  *
+ * #include <mipconfig.h>
+ * #include <mipcomponentchain.h>
+ * #include <mipcomponent.h>
  * #include <miptime.h>
  * #include <mipaveragetimer.h>
  * #include <mipwavinput.h>
@@ -440,11 +443,13 @@
  * 	#include <mipossinputoutput.h>
  * #else
  * 	#include <mipwinmmoutput.h>
- * #endif
- * #include <mipaudiomixer.h>
- * #include <miprtpaudioencoder.h>
+ * #endif 
+ * #include <mipulawencoder.h>
+ * #include <miprtpulawencoder.h>
  * #include <miprtpcomponent.h>
- * #include <miprtpaudiodecoder.h>
+ * #include <miprtpdecoder.h>
+ * #include <miprtpulawdecoder.h>
+ * #include <mipulawdecoder.h>
  * #include <mipaudiomixer.h>
  * #include <miprawaudiomessage.h> // Needed for MIPRAWAUDIOMESSAGE_TYPE_S16LE etc
  * #include <rtpsession.h>
@@ -452,9 +457,14 @@
  * #include <rtpipv4address.h>
  * #include <rtpudpv4transmitter.h>
  * #include <rtperrors.h>
- * #include <arpa/inet.h>
- * #include <netinet/in.h>
+ * #if !(defined(WIN32) || defined(_WIN32_WCE))
+ * 	#include <arpa/inet.h>
+ * 	#include <netinet/in.h>
+ * 	#include <unistd.h>
+ * #endif // !(WIM32 || _WIN32_WCE)
  * #include <stdio.h>
+ * #include <iostream>
+ * #include <string>
  * 
  * // We'll be using an RTPSession instance from the JRTPLIB library. The following
  * // function checks the JRTPLIB error code.
@@ -500,9 +510,12 @@
  * 	MIPWAVInput sndFileInput;
  * 	MIPSamplingRateConverter sampConv, sampConv2;
  * 	MIPSampleEncoder sampEnc, sampEnc2, sampEnc3;
- * 	MIPRTPAudioEncoder rtpEnc;
+ * 	MIPULawEncoder uLawEnc;
+ * 	MIPRTPULawEncoder rtpEnc;
  * 	MIPRTPComponent rtpComp;
- * 	MIPRTPAudioDecoder rtpDec;
+ * 	MIPRTPDecoder rtpDec;
+ * 	MIPRTPULawDecoder rtpULawDec;
+ * 	MIPULawDecoder uLawDec;
  * 	MIPAudioMixer mixer;
  * #ifndef WIN32
  * 	MIPOSSInputOutput sndCardOutput;
@@ -526,11 +539,15 @@
  * 	returnValue = sampConv.init(samplingRate, numChannels);
  * 	checkError(returnValue, sampConv);
  * 
- * 	// Initialize the sample encoder: the RTP audio encoder
- * 	// expects big endian unsigned 16 bit samples.
+ * 	// Initialize the sample encoder: the RTP U-law audio encoder
+ * 	// expects native endian signed 16 bit samples.
  * 	
- * 	returnValue = sampEnc.init(MIPRAWAUDIOMESSAGE_TYPE_U16BE);
+ * 	returnValue = sampEnc.init(MIPRAWAUDIOMESSAGE_TYPE_S16);
  * 	checkError(returnValue, sampEnc);
+ * 
+ * 	// Convert samples to U-law encoding
+ * 	returnValue = uLawEnc.init();
+ * 	checkError(returnValue, uLawEnc);
  * 
  * 	// Initialize the RTP audio encoder: this component will create
  * 	// RTP messages which can be sent to the RTP component.
@@ -559,13 +576,20 @@
  * 	checkError(status);
  * 
  * 	// Tell the RTP component to use this RTPSession object.
- * 
  * 	returnValue = rtpComp.init(&rtpSession);
  * 	checkError(returnValue, rtpComp);
  * 	
- * 	// Initialize the RTP audio packet decoder.
+ * 	// Initialize the RTP audio decoder.
  * 	returnValue = rtpDec.init();
  * 	checkError(returnValue, rtpDec);
+ * 
+ * 	// Register the U-law decoder for payload type 0
+ * 	returnValue = rtpDec.setPacketDecoder(0,&rtpULawDec);
+ * 	checkError(returnValue, rtpDec);
+ * 
+ * 	// Convert U-law encoded samples to linear encoded samples
+ * 	returnValue = uLawDec.init();
+ * 	checkError(returnValue, uLawDec);
  * 
  * 	// Transform the received audio data to floating point format.
  * 	returnValue = sampEnc2.init(MIPRAWAUDIOMESSAGE_TYPE_FLOAT);
@@ -573,7 +597,6 @@
  * 
  * 	// We'll make sure that received audio frames are converted to the right
  * 	// sampling rate.
- * 
  * 	returnValue = sampConv2.init(samplingRate, numChannels);
  * 	checkError(returnValue, sampConv2);
  * 
@@ -611,7 +634,10 @@
  * 	returnValue = chain.addConnection(&sampConv, &sampEnc);
  * 	checkError(returnValue, chain);
  * 
- * 	returnValue = chain.addConnection(&sampEnc, &rtpEnc);
+ * 	returnValue = chain.addConnection(&sampEnc, &uLawEnc);
+ * 	checkError(returnValue, chain);
+ * 	
+ * 	returnValue = chain.addConnection(&uLawEnc, &rtpEnc);
  * 	checkError(returnValue, chain);
  * 
  * 	returnValue = chain.addConnection(&rtpEnc, &rtpComp);
@@ -625,9 +651,12 @@
  * 	// so we'll specify that over the links in between, feedback
  * 	// should be transferred.
  * 
- * 	returnValue = chain.addConnection(&rtpDec, &sampEnc2, true);
+ * 	returnValue = chain.addConnection(&rtpDec, &uLawDec, true);
  * 	checkError(returnValue, chain);
  * 
+ * 	returnValue = chain.addConnection(&uLawDec, &sampEnc2, true);
+ * 	checkError(returnValue, chain);
+ * 	
  * 	returnValue = chain.addConnection(&sampEnc2, &sampConv2, true);
  * 	checkError(returnValue, chain);
  * 
@@ -662,7 +691,6 @@
  * #endif
  * 	return 0;
  * }
- *
  * \endcode 
  *
  * 		If this example works, you should here the sound file 'soundfile.wav' being

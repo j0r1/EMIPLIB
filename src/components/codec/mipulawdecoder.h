@@ -23,47 +23,48 @@
 */
 
 /**
- * \file miprtpvideoencoder.h
+ * \file mipulawdecoder.h
  */
 
-#ifndef MIPRTPVIDEOENCODER_H
+#ifndef MIPULAWDECODER_H
 
-#define MIPRTPVIDEOENCODER_H
+#define MIPULAWDECODER_H
 
 #include "mipconfig.h"
-#include "miprtpencoder.h"
+#include "mipcomponent.h"
+#include "miptime.h"
+#include <speex/speex.h>
 #include <list>
 
-class MIPRTPSendMessage;
+class MIPRaw16bitAudioMessage;
 
-/** Creates RTP packets for incoming video packets.
- *  This component accepts incoming video packets and generates MIPRTPSendMessage
- *  objects which can then be transferred to a MIPRTPComponent instance.
+/** An u-law decoder.
+ *  This component accepts u-law encoded audio messages and produces message
+ *  raw audio messages using 16 bit signed native endian encoding.
  */
-class MIPRTPVideoEncoder : public MIPRTPEncoder
+class MIPULawDecoder : public MIPComponent
 {
 public:
-	MIPRTPVideoEncoder();
-	~MIPRTPVideoEncoder();
+	MIPULawDecoder();
+	~MIPULawDecoder();
 
-	/** Initializes the encoder. 
-	 *  Initializes the encoder.
-	 *  \param frameRate Frame rate of incoming video frames. 
-	 */
-	bool init(real_t frameRate);
+	/** Initialize the component. */
+	bool init();
+
+	/** Clean up the component. */
+	bool destroy();
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
-	bool pull (const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
+	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 private:
-	void cleanUp();
 	void clearMessages();
-
+	
 	bool m_init;
-	real_t m_frameRate;
-	std::list<MIPRTPSendMessage *> m_messages;
-	std::list<MIPRTPSendMessage *>::const_iterator m_msgIt;
 	int64_t m_prevIteration;
-};
 
-#endif // MIPRTPVIDEOENCODER_H
+	std::list<MIPRaw16bitAudioMessage *> m_messages;
+	std::list<MIPRaw16bitAudioMessage *>::const_iterator m_msgIt;
+};	
+
+#endif // MIPULAWDECODER_H
 

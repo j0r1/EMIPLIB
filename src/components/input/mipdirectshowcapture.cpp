@@ -41,7 +41,7 @@
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATENULLRENDERER					"Can't create null renderer"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEGRABFILTER					"Can't create sample grabber filter"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEGRABIFACE						"Unable to obtain sample grabber intereface"
-#define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSELECTYUV420P						"Unable to select YUV420P (IYUV) encoding"
+#define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSELECTYUV420P						"Unable to select YUV420P encoding"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSETCALLBACK							"Can't set grab callback"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTADDCAPTUREFILTER					"Can't add capture filter to filter graph"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTADDNULLRENDERER						"Can't add null renderer to filter graph"
@@ -57,6 +57,12 @@
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTGETDEVICECAPS						"Can't get device capabilities"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_INVALIDCAPS								"Can't handle returned device capabilities"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSETCAPS								"Unable to install desired format"
+
+extern "C" const __declspec(selectany) GUID EMIP_MEDIASUBTYPE_I420 = 
+{0x30323449,0x0000,0x0010, {0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71}};
+
+#define HR_SUCCEEDED(x) ((x==S_OK))
+#define HR_FAILED(x)	((x!=S_OK))
 
 MIPDirectShowCapture::MIPDirectShowCapture() : MIPComponent("MIPDirectShowCapture")
 {
@@ -96,7 +102,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	HRESULT hr;
 
 	hr = CoCreateInstance(CLSID_NullRenderer, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter,(void **)(&m_pNullRenderer));
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		clearNonZero();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATENULLRENDERER);
@@ -104,7 +110,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	}
 	
 	hr = CoCreateInstance(CLSID_SampleGrabber, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter,(void **)(&m_pSampGrabFilter));
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		clearNonZero();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEGRABFILTER);
@@ -112,7 +118,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	}
 
 	hr = m_pSampGrabFilter->QueryInterface(IID_ISampleGrabber, (void**)&m_pGrabber);
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		clearNonZero();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEGRABIFACE);
@@ -123,9 +129,9 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 
 	ZeroMemory(&mt, sizeof(AM_MEDIA_TYPE));
 	mt.majortype = MEDIATYPE_Video;
-	mt.subtype = MEDIASUBTYPE_IYUV;
+	mt.subtype = EMIP_MEDIASUBTYPE_I420;
 	hr = m_pGrabber->SetMediaType(&mt);
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		clearNonZero();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSELECTYUV420P);
@@ -135,7 +141,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	m_pGrabCallback = new GrabCallback(this);
 
 	hr = m_pGrabber->SetCallback(m_pGrabCallback, 1);
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		clearNonZero();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTSETCALLBACK);
@@ -143,7 +149,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	}
 
 	hr = m_pGraph->AddFilter(m_pCaptDevice, L"Capture Filter");
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		clearNonZero();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTADDCAPTUREFILTER);
@@ -157,7 +163,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	}
 
 	hr = m_pGraph->AddFilter(m_pNullRenderer, L"Null Renderer");
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		clearNonZero();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTADDNULLRENDERER);
@@ -165,7 +171,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	}
 
 	hr = m_pGraph->AddFilter(m_pSampGrabFilter, L"Sample Grabber");
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		clearNonZero();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTADDSAMPLEGRABBER);
@@ -173,7 +179,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	}
 
 	hr = m_pBuilder->RenderStream(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video, m_pCaptDevice, m_pSampGrabFilter, m_pNullRenderer);
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		clearNonZero();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTBUILDGRAPH);
@@ -181,7 +187,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	}
 
 	hr = m_pGrabber->GetConnectedMediaType(&mt);
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		clearNonZero();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTGETFRAMESIZE);
@@ -194,7 +200,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	CoTaskMemFree(mt.pbFormat);
 
 	hr = m_pGraph->QueryInterface(IID_IMediaControl, (void **)&m_pControl);
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		clearNonZero();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTGETCONTROLINTERFACE);
@@ -220,7 +226,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	m_gotFrame = false;
 
 	hr = m_pControl->Run();
-	if (FAILED(hr))
+	if (hr != S_OK && hr != S_FALSE) // Apparently S_FALSE is returned if the graph is preparing to run
 	{
 		m_sigWait.destroy();
 		clearNonZero();
@@ -373,14 +379,14 @@ bool MIPDirectShowCapture::initCaptureGraphBuilder()
     ICaptureGraphBuilder2 *pBuild = NULL;
 
     HRESULT hr = CoCreateInstance(CLSID_CaptureGraphBuilder2, NULL, CLSCTX_INPROC_SERVER, IID_ICaptureGraphBuilder2, (void**)&pBuild);
-    if (FAILED(hr))
+    if (HR_FAILED(hr))
     {
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATECAPTUREBUILDER);
 		return false;
 	}
 
     hr = CoCreateInstance(CLSID_FilterGraph, 0, CLSCTX_INPROC_SERVER, IID_IGraphBuilder, (void**)&pGraph);
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		pBuild->Release();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEMANAGER);
@@ -401,14 +407,14 @@ bool MIPDirectShowCapture::getCaptureDevice(int deviceNumber)
 	IEnumMoniker *pEnum = 0;
 
 	HRESULT hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, IID_ICreateDevEnum, (void **)(&pDevEnum));
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEDEVICEENUMERATOR);
 		return false;
 	}
 
 	hr = pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		pDevEnum->Release();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCAPTUREENUMERATOR);
@@ -429,7 +435,7 @@ bool MIPDirectShowCapture::getCaptureDevice(int deviceNumber)
 		{
 			hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&m_pCaptDevice);
 			pMoniker->Release();
-			if (SUCCEEDED(hr))
+			if (HR_SUCCEEDED(hr))
 			{
 				pEnum->Release();
 				pDevEnum->Release();
@@ -460,7 +466,7 @@ bool MIPDirectShowCapture::setFormat(int w, int h, real_t rate)
 	IAMStreamConfig *pConfig = 0;
 
 	hr = m_pBuilder->FindInterface(&PIN_CATEGORY_CAPTURE, 0, m_pCaptDevice, IID_IAMStreamConfig, (void**)&pConfig);
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTGETDEVICECONFIG);
 		return false;
@@ -470,7 +476,7 @@ bool MIPDirectShowCapture::setFormat(int w, int h, real_t rate)
 	int s = 0;
 	
 	hr = pConfig->GetNumberOfCapabilities(&count, &s);
-	if (FAILED(hr))
+	if (HR_FAILED(hr))
 	{
 		pConfig->Release();
 		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTGETDEVICECAPS);
@@ -490,10 +496,10 @@ bool MIPDirectShowCapture::setFormat(int w, int h, real_t rate)
         AM_MEDIA_TYPE *pMediaType;
 
         hr = pConfig->GetStreamCaps(i, &pMediaType, (BYTE*)&caps);
-        if (SUCCEEDED(hr))
+        if (HR_SUCCEEDED(hr))
         {
 			if ((pMediaType->majortype == MEDIATYPE_Video) &&
-				(pMediaType->subtype == MEDIASUBTYPE_IYUV) &&
+				(pMediaType->subtype == EMIP_MEDIASUBTYPE_I420) &&
 				(pMediaType->formattype == FORMAT_VideoInfo) &&
 				(pMediaType->cbFormat >= sizeof (VIDEOINFOHEADER)) &&
 				(pMediaType->pbFormat != 0))
@@ -506,7 +512,7 @@ bool MIPDirectShowCapture::setFormat(int w, int h, real_t rate)
 				pVih->AvgTimePerFrame = (REFERENCE_TIME)(10000000.0/rate);
 
 				hr = pConfig->SetFormat(pMediaType);
-				if (SUCCEEDED(hr))
+				if (HR_SUCCEEDED(hr))
 				{
 					CoTaskMemFree(pMediaType->pbFormat);
 					pConfig->Release();

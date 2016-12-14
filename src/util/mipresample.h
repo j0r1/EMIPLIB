@@ -22,6 +22,10 @@
 
 */
 
+/**
+ * \file mipresample.h
+ */
+
 #ifndef MIPRESAMPLE_H
 
 #define MIPRESAMPLE_H
@@ -31,6 +35,10 @@
 
 #define MIPRESAMPLE_MAXCHANNELS									16
 
+/** A template function for resampling audio data.
+ *  This template function allows you to resample audio data. Input and output samples are
+ *  of type \c Tio, internal calculations will be done using samples of type \c Tcalc.
+ */
 template<class Tio, class Tcalc>
 bool MIPResample(const Tio *pInputFrames, int numInputFrames, int numInputChannels,
 		 Tio *pOutputFrames, int numOutputFrames, int numOutputChannels)

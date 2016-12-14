@@ -45,6 +45,9 @@ class RTPPacket;
 class MIPRTPReceiveMessage;
 class MIPRTPSynchronizer;
 class MIPMediaMessage;
+class MIPRTPPacketDecoder;
+
+#define MIPRTPDECODER_MAXPAYLOADDECODERS							256
 
 /** A base class for RTP decoding objects.
  *  This class provides some general functions for decoding RTP packets. It analyzes
@@ -57,10 +60,8 @@ class MIPMediaMessage;
  */
 class MIPRTPDecoder : public MIPComponent
 {
-protected:
-	/** Constructor, meant to be used by subclasses. */
-	MIPRTPDecoder(const std::string &componentName);
 public:
+	MIPRTPDecoder();
 	~MIPRTPDecoder();
 
 	/** Initializes the RTP decoder.
@@ -73,25 +74,20 @@ public:
 	 */
 	bool init(bool calcStreamTime = true, MIPRTPSynchronizer *pSynchronizer = 0);
 
+	/** Installs a default RTP packet decoder (for all payload types).
+	 *  Installs a default RTP packet decoder. Use a null pointer to clear all entries.
+	 */
+	bool setDefaultPacketDecoder(MIPRTPPacketDecoder *pDec);
+
+	/** Installs an RTP packet decoder for a specific payload type. 
+	 *  Installs an RTP packet decoder for a specific payload type. Use a null pointer to
+	 *  clear this particular entry.
+	 */
+	bool setPacketDecoder(uint8_t payloadType, MIPRTPPacketDecoder *pDec);
+
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 	bool processFeedback(const MIPComponentChain &chain, int64_t feedbackChainID, MIPFeedback *feedback);
-protected:
-	
-	/** Validates an RTP packet and gives information about the timestamp unit of the packet data.
-	 *  This function validates an RTP packet and provides information about the timestamp unit
-	 *  of the packet data. It has to be implemented in a derived class. The function should return 
-	 *  true if the packet is valid and false otherwise and if possible, the timestamp unit should
-	 *  be filled in.
-	 */
-	virtual bool validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit) = 0;
-
-	/** Creates a new message from an RTP packet.
-	 *  This function has to be implemented by a derived class. Based on the validated
-	 *  RTP packet \c pRTPPack, an appropriate message should be generated. If something 
-	 *  went wrong, the function should return 0.
-	 */
-	virtual MIPMediaMessage *createNewMessage(const RTPPacket *pRTPPack) = 0;
 private:
 	void clearMessages();
 	void cleanUp();
@@ -206,6 +202,8 @@ private:
 #else
 	__gnu_cxx::hash_map<uint32_t, SSRCInfo> m_sourceTable;
 #endif // Win32
+
+	MIPRTPPacketDecoder *m_pDecoders[MIPRTPDECODER_MAXPAYLOADDECODERS];
 
 	MIPTime m_prevCleanTableTime;
 	SSRCInfo *m_pSSRCInfo;

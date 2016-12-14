@@ -18,6 +18,7 @@ components/output/mipesdoutput.cpp \
 components/output/mipqtoutput.cpp \
 components/output/mipvideoframestorage.cpp \
 components/output/mipjackoutput.cpp \
+components/output/mipsdlaudiooutput.cpp \
 components/input/mipsndfileinput.cpp \
 components/input/mipaudiofileinput.cpp \
 components/input/mipv4linput.cpp \
@@ -26,9 +27,11 @@ components/input/mipwavinput.cpp \
 components/input/mipjackinput.cpp \
 components/io/mipossinputoutput.cpp \
 components/transmission/miprtpcomponent.cpp \
-components/transmission/miprtpaudioencoder.cpp \
+components/transmission/miprtpspeexencoder.cpp \
 components/transmission/miprtpdecoder.cpp \
-components/transmission/miprtpaudiodecoder.cpp \
+components/transmission/miprtpspeexdecoder.cpp \
+components/transmission/miprtpulawencoder.cpp \
+components/transmission/miprtpulawdecoder.cpp \
 components/transmission/miprtpvideoencoder.cpp \
 components/transmission/miprtpvideodecoder.cpp \
 components/transform/mipsamplingrateconverter.cpp \
@@ -43,10 +46,13 @@ components/codec/mipspeexencoder.cpp \
 components/codec/mipspeexdecoder.cpp \
 components/codec/mipavcodecencoder.cpp \
 components/codec/mipavcodecdecoder.cpp \
+components/codec/mipulawencoder.cpp \
+components/codec/mipulawdecoder.cpp \
 util/mipsignalwaiter.cpp \
 util/mipdirectorybrowser.cpp \
 util/mipwavreader.cpp \
 util/miprtpsynchronizer.cpp \
+util/mipspeexutil.cpp \
 sessions/mipaudiosession.cpp \
 sessions/mipvideosession.cpp
 
@@ -83,6 +89,7 @@ components/output/mipqtoutput.h \
 components/output/mipwinmmoutput.h \
 components/output/mipvideoframestorage.h \
 components/output/mipjackoutput.h \
+components/output/mipsdlaudiooutput.h \
 components/input/mipsndfileinput.h  \
 components/input/mipaudiofileinput.h  \
 components/input/mipv4linput.h \
@@ -92,11 +99,16 @@ components/input/mipwavinput.h \
 components/input/mipjackinput.h \
 components/io/mipossinputoutput.h \
 components/transmission/miprtpcomponent.h \
-components/transmission/miprtpaudioencoder.h \
+components/transmission/miprtpencoder.h \
+components/transmission/miprtpspeexencoder.h \
 components/transmission/miprtpdecoder.h \
-components/transmission/miprtpaudiodecoder.h \
+components/transmission/miprtppacketdecoder.h \
+components/transmission/miprtpspeexdecoder.h \
+components/transmission/miprtpulawencoder.h \
+components/transmission/miprtpulawdecoder.h \
 components/transmission/miprtpvideoencoder.h \
 components/transmission/miprtpvideodecoder.h \
+components/transmission/miprtpdummydecoder.h \
 components/transform/mipsamplingrateconverter.h \
 components/transform/mipsampleencoder.h \
 components/transform/mipaudio3dbase.h \
@@ -110,25 +122,28 @@ components/codec/mipspeexencoder.h \
 components/codec/mipspeexdecoder.h \
 components/codec/mipavcodecencoder.h \
 components/codec/mipavcodecdecoder.h \
+components/codec/mipulawencoder.h \
+components/codec/mipulawdecoder.h \
 util/mipsignalwaiter.h \
 util/mipdirectorybrowser.h \
 util/mipwavreader.h \
 util/miprtpsynchronizer.h \
 util/mipresample.h \
+util/mipspeexutil.h \
 sessions/mipaudiosession.h \
 sessions/mipvideosession.h
 
 INCLUDES = -I core/ -I util/ -I components/codec/ -I components/input/ -I components/io/ -I components/mixer/ \
 	   -I components/output/ -I components/timer/ -I components/transform/ -I components/transmission/ \
 	   @MIPINCLUDES@
-libemip_la_LDFLAGS = -release 0.11.0
+libemip_la_LDFLAGS = -release @VERSION@
 libemipincludedir = ${includedir}/emiplib
 
 if MIP_USEQT
 components/output/mipqtoutput.cpp: components/output/mipqtoutput.moc
 	
 components/output/mipqtoutput.moc:
-	/usr/lib/qt/bin/moc -o components/output/mipqtoutput.moc components/output/mipqtoutput.cpp
+	@MOC@ -o components/output/mipqtoutput.moc components/output/mipqtoutput.cpp
 endif
 
 EXTRA_DIST = \

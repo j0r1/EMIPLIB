@@ -54,10 +54,11 @@ class MIPRTPSynchronizer;
 class MIPAudioSplitter;
 class MIPSampleEncoder;
 class MIPSpeexEncoder;
-class MIPRTPAudioEncoder;
+class MIPRTPSpeexEncoder;
 class MIPRTPComponent;
 class MIPAverageTimer;
-class MIPRTPAudioDecoder;
+class MIPRTPDecoder;
+class MIPRTPSpeexDecoder;
 class MIPMediaBuffer;
 class MIPSpeexDecoder;
 class MIPSamplingRateConverter;
@@ -186,6 +187,9 @@ public:
 	/** Clears the accept list. */
 	bool clearAcceptList();
 protected:
+	/** Override this to use a user defined RTPSession object. */
+	virtual RTPSession *newRTPSession()									{ return 0; }
+	
 	/** By overriding this function, you can detect when the input thread has finished.
 	 *  By overriding this function, you can detect when the input thread has finished.
 	 *  \param err Flag indicating if the thread stopped due to an error.
@@ -260,11 +264,12 @@ private:
 	MIPAudioSplitter *m_pSplitter;
 	MIPSampleEncoder *m_pSampEnc;	
 	MIPSpeexEncoder *m_pSpeexEnc;
-	MIPRTPAudioEncoder *m_pRTPEnc;
+	MIPRTPSpeexEncoder *m_pRTPEnc;
 	MIPRTPComponent *m_pRTPComp;
 	RTPSession *m_pRTPSession;
 	MIPAverageTimer *m_pTimer;
-	MIPRTPAudioDecoder *m_pRTPDec;
+	MIPRTPDecoder *m_pRTPDec;
+	MIPRTPSpeexDecoder *m_pRTPSpeexDec;
 	MIPMediaBuffer *m_pMediaBuf;
 	MIPSpeexDecoder *m_pSpeexDec;
 	MIPSamplingRateConverter *m_pSampConv;

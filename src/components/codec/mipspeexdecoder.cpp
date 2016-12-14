@@ -41,6 +41,7 @@ using namespace __gnu_cxx;
 #define MIPSPEEXDECODER_ERRSTR_NOTINIT					"Not initialized"
 #define MIPSPEEXDECODER_ERRSTR_ALREADYINIT				"Already initialized"
 #define MIPSPEEXDECODER_ERRSTR_BADMESSAGE				"Bad message"
+#define MIPSPEEXDECODER_ERRSTR_BADSAMPRATE				"Bad sampling rate"
 	
 MIPSpeexDecoder::MIPSpeexDecoder() : MIPComponent("MIPSpeexDecoder")
 {
@@ -136,6 +137,9 @@ void MIPSpeexDecoder::expire()
 	m_lastExpireTime = curTime;
 }
 
+// TODO: for now, we're assuming one frame per packet
+// TODO: for now, we're assuming mono sound
+
 bool MIPSpeexDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg)
 {
 	if (!m_init)
@@ -158,19 +162,20 @@ bool MIPSpeexDecoder::push(const MIPComponentChain &chain, int64_t iteration, MI
 	}
 
 	MIPEncodedAudioMessage *pEncMsg = (MIPEncodedAudioMessage *)pMsg;
-
 	int sampRate = pEncMsg->getSamplingRate();
-	if (!(sampRate == 8000 || sampRate == 16000 || sampRate == 32000))
+	SpeexStateInfo::SpeexBandWidth bw;
+	
+	if (sampRate == 8000)
+		bw = SpeexStateInfo::NarrowBand;
+	else if (sampRate == 16000)
+		bw = SpeexStateInfo::WideBand;
+	else if (sampRate == 32000)
+		bw = SpeexStateInfo::UltraWideBand;
+	else
 	{
-		// ignore message: we don't want malformed messages to stop the chain
-		return true;
+		setErrorString(MIPSPEEXDECODER_ERRSTR_BADSAMPRATE);
+		return false;
 	}
-
-	if (pEncMsg->getNumberOfChannels() != 1)
-	{
-		// ignore message: we don't want malformed messages to stop the chain
-		return true;
-	}	
 
 	uint64_t sourceID = pEncMsg->getSourceID();
 
@@ -182,29 +187,18 @@ bool MIPSpeexDecoder::push(const MIPComponentChain &chain, int64_t iteration, MI
 
 	it = m_speexStates.find(sourceID);
 	SpeexStateInfo *pSpeexInf = 0;
-	SpeexStateInfo::BandWidth b;
-
-	if (sampRate == 8000)
-		b = SpeexStateInfo::NarrowBand;
-	else if (sampRate == 16000)
-		b = SpeexStateInfo::WideBand;
-	else
-		b = SpeexStateInfo::UltraWideBand;
 
 	if (it == m_speexStates.end()) // no entry present yet, add one
 	{
-		pSpeexInf = new SpeexStateInfo(b);
+		pSpeexInf = new SpeexStateInfo(bw);
 		m_speexStates[sourceID] = pSpeexInf;
 	}
 	else
 		pSpeexInf = (*it).second;
 
-	if (pSpeexInf->getBandWidth() != b)
-	{
-		// ignore message: we don't want malformed messages to stop the chain
-		return true;
-	}
-
+	if (bw != pSpeexInf->getBandWidth())
+		return true; // bandwidth changes are not supported, ignore packet
+	
 	int numFrames = pSpeexInf->getNumberOfFrames();
 	speex_bits_read_from(pSpeexInf->getBits(), (char *)pEncMsg->getData(), (int)pEncMsg->getDataLength());
 

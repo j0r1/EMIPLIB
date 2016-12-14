@@ -37,15 +37,17 @@
 #include "mipaudiosplitter.h"
 #include "mipsampleencoder.h"
 #include "mipspeexencoder.h"
-#include "miprtpaudioencoder.h"
+#include "miprtpspeexencoder.h"
 #include "miprtpcomponent.h"
 #include "mipaveragetimer.h"
-#include "miprtpaudiodecoder.h"
+#include "miprtpdecoder.h"
+#include "miprtpspeexdecoder.h"
 #include "mipmediabuffer.h"
 #include "mipspeexdecoder.h"
 #include "mipsamplingrateconverter.h"
 #include "mipaudiomixer.h"
 #include "mipencodedaudiomessage.h"
+#include "mipmessagedumper.h"
 #include <rtpsession.h>
 #include <rtpsessionparams.h>
 #include <rtperrors.h>
@@ -89,6 +91,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	int sampRate = 16000;
 	int channels = 1;
 	bool singleThread = false;
+
 
 	if (pParams2->getSpeexEncoding() == MIPSpeexEncoder::NarrowBand)
 		sampRate = 8000;
@@ -166,6 +169,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	}
 #endif // _WIN32_WCE
 
+
 	m_pSampEnc = new MIPSampleEncoder();
 	if (!m_pSampEnc->init(MIPRAWAUDIOMESSAGE_TYPE_S16))
 	{
@@ -182,7 +186,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		return false;
 	}
 
-	m_pRTPEnc = new MIPRTPAudioEncoder();
+	m_pRTPEnc = new MIPRTPSpeexEncoder();
 	if (!m_pRTPEnc->init())
 	{
 		setErrorString(m_pRTPEnc->getErrorString());
@@ -196,10 +200,12 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	
 	transParams.SetPortbase(pParams2->getPortbase());
 	sessParams.SetOwnTimestampUnit(1.0/((double)sampRate));
-	sessParams.SetMaximumPacketSize(64000);
+	sessParams.SetMaximumPacketSize(1400);
 	sessParams.SetAcceptOwnPackets(pParams2->getAcceptOwnPackets());
 
-	m_pRTPSession = new RTPSession();
+	m_pRTPSession = newRTPSession();
+	if (m_pRTPSession == 0)
+		m_pRTPSession = new RTPSession();
 	if ((status = m_pRTPSession->Create(sessParams,&transParams)) < 0)
 	{
 		setErrorString(RTPGetErrorString(status));
@@ -218,8 +224,16 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	if (!singleThread)
 		m_pTimer = new MIPAverageTimer(outputInterval);
 	
-	m_pRTPDec = new MIPRTPAudioDecoder();
+	m_pRTPDec = new MIPRTPDecoder();
 	if (!m_pRTPDec->init(true, pSync))
+	{
+		setErrorString(m_pRTPDec->getErrorString());
+		deleteAll();
+		return false;
+	}
+
+	m_pRTPSpeexDec = new MIPRTPSpeexDecoder();
+	if (!m_pRTPDec->setDefaultPacketDecoder(m_pRTPSpeexDec))
 	{
 		setErrorString(m_pRTPDec->getErrorString());
 		deleteAll();
@@ -272,6 +286,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		deleteAll();
 		return false;
 	}
+
 
 	if (!singleThread)
 	{
@@ -332,7 +347,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		m_pIOChain->addConnection(m_pSampConv, m_pMixer, true);
 		m_pIOChain->addConnection(m_pMixer, m_pSampEnc2, true);
 		m_pIOChain->addConnection(m_pSampEnc2, m_pOutput, true);
-	
+
 		if (!m_pIOChain->start())
 		{
 			setErrorString(m_pIOChain->getErrorString());
@@ -579,6 +594,7 @@ void MIPAudioSession::zeroAll()
 	m_pRTPComp = 0;
 	m_pRTPSession = 0;
 	m_pRTPDec = 0;
+	m_pRTPSpeexDec = 0;
 	m_pMediaBuf = 0;
 	m_pSpeexDec = 0;
 	m_pSampConv = 0;
@@ -644,6 +660,8 @@ void MIPAudioSession::deleteAll()
 	}
 	if (m_pRTPDec)
 		delete m_pRTPDec;
+	if (m_pRTPSpeexDec)
+		delete m_pRTPSpeexDec;
 	if (m_pMediaBuf)
 		delete m_pMediaBuf;
 	if (m_pSpeexDec)

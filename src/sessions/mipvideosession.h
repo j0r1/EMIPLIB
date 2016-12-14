@@ -52,6 +52,7 @@ class MIPAVCodecEncoder;
 class MIPRTPVideoEncoder;
 class MIPRTPComponent;
 class MIPAverageTimer;
+class MIPRTPDecoder;
 class MIPRTPVideoDecoder;
 class MIPMediaBuffer;
 class MIPAVCodecDecoder;
@@ -130,7 +131,7 @@ public:
 	/** Sets flag if Qt output component should be used or a if video frame
 	 *  storage component should be used.
 	 */
-	void setUseQtOutput(bool f)							{ m_qtoutput = true; }
+	void setUseQtOutput(bool f)							{ m_qtoutput = f; }
 private:
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	int m_width, m_height;
@@ -233,6 +234,9 @@ public:
 	 */
 	bool getVideoFrame(uint64_t sourceID, uint8_t **pData, int *pWidth, int *pHeight, MIPTime minimalTime = MIPTime(0));
 protected:
+	/** Override this to use a user defined RTPSession object. */
+	virtual RTPSession *newRTPSession()									{ return 0; }
+	
 	/** By overriding this function, you can detect when the input thread has finished.
 	 *  By overriding this function, you can detect when the input thread has finished.
 	 *  \param err Flag indicating if the thread stopped due to an error.
@@ -287,7 +291,8 @@ private:
 	MIPRTPComponent *m_pRTPComp;
 	RTPSession *m_pRTPSession;
 	MIPAverageTimer *m_pTimer2;
-	MIPRTPVideoDecoder *m_pRTPDec;
+	MIPRTPDecoder *m_pRTPDec;
+	MIPRTPVideoDecoder *m_pRTPVideoDec;
 	MIPMediaBuffer *m_pMediaBuf;
 	MIPAVCodecDecoder *m_pAvcDec;
 	MIPVideoMixer *m_pMixer;

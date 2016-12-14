@@ -22,28 +22,30 @@
 
 */
 
-#ifndef MIPCONFIG_WIN_H
+/**
+ * \file miprtpulawdecoder.h
+ */
 
-#define MIPCONFIG_WIN_H
+#ifndef MIPRTPULAWDECODER_H
 
-// By uncommenting the following line you allow components with a GPL license
-// to be compiled. The GPL license will then apply to the whole library!
-// #define MIPCONFIG_GPL
+#define MIPRTPULAWDECODER_H
 
-//#define MIPCONFIG_BIGENDIAN
+#include "mipconfig.h"
+#include "miprtppacketdecoder.h"
 
-//#define MIPCONFIG_SUPPORT_SNDFILE
+/** Decodes incoming RTP data into U-law encoded messages.
+ *  This class takes MIPRTPReceiveMessages as input and generates 
+ *  U-law encoded audio messages.
+ */
+class MIPRTPULawDecoder : public MIPRTPPacketDecoder
+{
+public:
+	MIPRTPULawDecoder();
+	~MIPRTPULawDecoder();
+private:
+	bool validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit);
+	MIPMediaMessage *createNewMessage(const RTPPacket *pRTPPack);
+};
 
-//#define MIPCONFIG_SUPPORT_QT
+#endif // MIPRTPULAWDECODER_H
 
-//#define MIPCONFIG_SUPPORT_DIRECTSHOW
-
-#define MIPCONFIG_SUPPORT_SPEEX
-
-//#define MIPCONFIG_SUPPORT_AVCODEC
-
-//#define MIPCONFIG_SUPPORT_INTELIPP
-
-//#define MIPCONFIG_SUPPORT_SDLAUDIO
-
-#endif // MIPCONFIG_WIN_H

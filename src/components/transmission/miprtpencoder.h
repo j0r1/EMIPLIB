@@ -23,43 +23,33 @@
 */
 
 /**
- * \file miprtpaudioencoder.h
+ * \file miprtpencoder.h
  */
 
-#ifndef MIPRTPAUDIOENCODER_H
+#ifndef MIPRTPENCODER_H
 
-#define MIPRTPAUDIOENCODER_H
+#define MIPRTPENCODER_H
 
 #include "mipconfig.h"
 #include "mipcomponent.h"
-#include <list>
 
-class MIPRTPSendMessage;
-
-/** Creates RTP packets for incoming audio packets.
- *  This component accepts incoming audio packets and generates MIPRTPSendMessage
- *  objects which can then be transferred to a MIPRTPComponent instance.
+/** Base class for RTP encoders.
+ *  Base class for RTP encoders. Contains a member function to set the payload type.
  */
-class MIPRTPAudioEncoder : public MIPComponent
+class MIPRTPEncoder : public MIPComponent
 {
 public:
-	MIPRTPAudioEncoder();
-	~MIPRTPAudioEncoder();
+	MIPRTPEncoder(const std::string &compName) : MIPComponent(compName)					{ m_payloadType = 0; }
+	~MIPRTPEncoder()											{ }
 
-	/** Initializes the encoder. */
-	bool init();
+	/** Sets the payload type. */
+	void setPayloadType(uint8_t payloadType) 								{ m_payloadType = payloadType; }
 
-	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
-	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
+	/** Returns the payload type. */
+	uint8_t getPayloadType() const										{ return m_payloadType; }
 private:
-	void cleanUp();
-	void clearMessages();
-
-	bool m_init;
-	std::list<MIPRTPSendMessage *> m_messages;
-	std::list<MIPRTPSendMessage *>::const_iterator m_msgIt;
-	int64_t m_prevIteration;
+	uint8_t m_payloadType;
 };
 
-#endif // MIPRTPAUDIOENCODER_H
+#endif // MIPRTPENCODER_H
 

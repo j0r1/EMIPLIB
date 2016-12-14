@@ -206,7 +206,7 @@ bool MIPRTPComponent::processNewPackets(int64_t iteration)
 				
 				while ((pPack = m_pRTPSession->GetNextPacket()) != 0)
 				{
-					MIPRTPReceiveMessage *pRTPMsg = new MIPRTPReceiveMessage(pPack,pCName,cnameLength);
+					MIPRTPReceiveMessage *pRTPMsg = new MIPRTPReceiveMessage(pPack,pCName,cnameLength,true,m_pRTPSession);
 
 					pRTPMsg->setJitter(MIPTime(jitterSeconds));
 					if (tsUnit > 0)

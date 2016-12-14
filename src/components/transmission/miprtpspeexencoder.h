@@ -23,47 +23,48 @@
 */
 
 /**
- * \file miprtpvideoencoder.h
+ * \file miprtpspeexencoder.h
  */
 
-#ifndef MIPRTPVIDEOENCODER_H
+#ifndef MIPRTPSPEEXENCODER_H
 
-#define MIPRTPVIDEOENCODER_H
+#define MIPRTPSPEEXENCODER_H
 
 #include "mipconfig.h"
+
+#ifdef MIPCONFIG_SUPPORT_SPEEX
+
 #include "miprtpencoder.h"
 #include <list>
 
 class MIPRTPSendMessage;
 
-/** Creates RTP packets for incoming video packets.
- *  This component accepts incoming video packets and generates MIPRTPSendMessage
- *  objects which can then be transferred to a MIPRTPComponent instance.
+/** Creates RTP packets for Speex compressed audio packets.
+ *  This component accepts incoming Speex compressed audio packets and generates 
+ *  MIPRTPSendMessage objects which can then be transferred to a MIPRTPComponent instance.
  */
-class MIPRTPVideoEncoder : public MIPRTPEncoder
+class MIPRTPSpeexEncoder : public MIPRTPEncoder
 {
 public:
-	MIPRTPVideoEncoder();
-	~MIPRTPVideoEncoder();
+	MIPRTPSpeexEncoder();
+	~MIPRTPSpeexEncoder();
 
-	/** Initializes the encoder. 
-	 *  Initializes the encoder.
-	 *  \param frameRate Frame rate of incoming video frames. 
-	 */
-	bool init(real_t frameRate);
+	/** Initializes the encoder. */
+	bool init();
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
-	bool pull (const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
+	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 private:
 	void cleanUp();
 	void clearMessages();
 
 	bool m_init;
-	real_t m_frameRate;
 	std::list<MIPRTPSendMessage *> m_messages;
 	std::list<MIPRTPSendMessage *>::const_iterator m_msgIt;
 	int64_t m_prevIteration;
 };
 
-#endif // MIPRTPVIDEOENCODER_H
+#endif // MIPCONFIG_SUPPORT_SPEEX
+
+#endif // MIPRTPSPEEXENCODER_H
 

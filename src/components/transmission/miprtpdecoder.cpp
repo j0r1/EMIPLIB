@@ -29,6 +29,7 @@
 #include "mipfeedback.h"
 #include "miprtpsynchronizer.h"
 #include "mipmediamessage.h"
+#include "miprtppacketdecoder.h"
 #include <rtppacket.h>
 #include <iostream>
 
@@ -42,8 +43,9 @@ using namespace __gnu_cxx;
 
 #define MIPRTPDECODER_ERRSTR_NOTINIT				"Not initialized"
 #define MIPRTPDECODER_ERRSTR_BADMESSAGE				"Bad message"
+#define MIPRTPDECODER_ERRSTR_NOPACKETDECODERINSTALLED		"No RTP packet decoder installed for received payload type"
 
-MIPRTPDecoder::MIPRTPDecoder(const std::string &componentName) : MIPComponent(componentName), m_playbackOffset(0), m_prevCleanTableTime(0)
+MIPRTPDecoder::MIPRTPDecoder() : MIPComponent("MIPRTPDecoder"), m_playbackOffset(0), m_prevCleanTableTime(0)
 {
 	m_init = false;
 }
@@ -65,8 +67,34 @@ bool MIPRTPDecoder::init(bool calcStreamTime, MIPRTPSynchronizer *pSynchronizer)
 	m_calcStreamTime = calcStreamTime;
 	m_pSynchronizer = pSynchronizer;
 	m_totalComponentDelay = MIPTime(0);
+
+	for (int i = 0 ; i < MIPRTPDECODER_MAXPAYLOADDECODERS ; i++)
+		m_pDecoders[i] = 0;
 		
 	m_init = true;
+	return true;
+}
+
+bool MIPRTPDecoder::setDefaultPacketDecoder(MIPRTPPacketDecoder *pDec)
+{
+	if (!m_init)
+	{
+		setErrorString(MIPRTPDECODER_ERRSTR_NOTINIT);
+		return false;
+	}
+	for (int i = 0 ; i < MIPRTPDECODER_MAXPAYLOADDECODERS ; i++)
+		m_pDecoders[i] = pDec;
+	return true;
+}
+
+bool MIPRTPDecoder::setPacketDecoder(uint8_t payloadType, MIPRTPPacketDecoder *pDec)
+{
+	if (!m_init)
+	{
+		setErrorString(MIPRTPDECODER_ERRSTR_NOTINIT);
+		return false;
+	}
+	m_pDecoders[(int)payloadType] = pDec;
 	return true;
 }
 
@@ -100,10 +128,17 @@ bool MIPRTPDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 	MIPRTPReceiveMessage *pRTPMsg = (MIPRTPReceiveMessage *)pMsg;
 	const RTPPacket *pRTPPack = pRTPMsg->getPacket();
 	real_t timestampUnit = pRTPMsg->getTimestampUnit();
+	MIPRTPPacketDecoder *pDecoder = m_pDecoders[(int)(pRTPPack->GetPayloadType())];
 
+	if (pDecoder == 0)
+	{
+		setErrorString(MIPRTPDECODER_ERRSTR_NOPACKETDECODERINSTALLED);
+		return false;
+	}
+	
 	//std::cerr << "Got packet " << pRTPPack->GetExtendedSequenceNumber() << " from source " << pRTPPack->GetSSRC() << std::endl;
 	
-	if (!validatePacket(pRTPPack, timestampUnit))
+	if (!pDecoder->validatePacket(pRTPPack, timestampUnit))
 	{
 		// packet type not understood, ignore packet
 		return true;
@@ -154,7 +189,7 @@ bool MIPRTPDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 		}
 	}
 	
-	MIPMediaMessage *pNewMsg = createNewMessage(pRTPPack);
+	MIPMediaMessage *pNewMsg = pDecoder->createNewMessage(pRTPPack);
 
 	if (pNewMsg == 0)
 	{
@@ -357,7 +392,8 @@ bool MIPRTPDecoder::adjustToPlaybackTime(const MIPRTPReceiveMessage *pRTPMsg, MI
 //	if (jitter > variance)
 //		variance = jitter;
 
-	real_t offset = insertDiff - 2.0*variance;
+	//real_t offset = insertDiff - 2.0*variance;
+	real_t offset = insertDiff - 3.0*variance; // TODO: which is best
 
 	if (m_pSSRCInfo->getNumberOfInsertTimes() == MIPRTPDECODER_HISTLEN) // need several packets for a good estimate
 	{
@@ -389,7 +425,7 @@ bool MIPRTPDecoder::adjustToPlaybackTime(const MIPRTPReceiveMessage *pRTPMsg, MI
 				}
 			}
 		}
-		else // perhaps we kan decrease the buffering somewhat, but we'll only make gradual adjustments every 2 seconds
+		else // perhaps we kan decrease the buffering somewhat, but we'll only make gradual adjustments every 5 seconds
 		{
 			MIPTime curTime = MIPTime::getCurrentTime();
 			real_t delay;
@@ -398,15 +434,15 @@ bool MIPRTPDecoder::adjustToPlaybackTime(const MIPRTPReceiveMessage *pRTPMsg, MI
 			if (ins < 0)
 				ins = 0;
 	
-			delay = 120.0/(1.0+100.0*ins);
-			if (delay < 1.0)
-				delay = 1.0;
+			delay = 500.0/(1.0+100.0*ins);
+			if (delay < 5.0)
+				delay = 5.0;
 			else if (delay > 60.0)
 				delay = 60.0;
 	
 			if ((curTime.getValue() - m_pSSRCInfo->getLastOffsetAdjustTime().getValue()) > delay)
 			{
-				//std::cout << "Delay: " << MIPTime(delay).getString() << std::endl;
+//				std::cout << "Delay: " << MIPTime(delay).getString() << std::endl;
 				
 				// we'll use 5 msec boundary
 		
@@ -443,7 +479,7 @@ bool MIPRTPDecoder::adjustToPlaybackTime(const MIPRTPReceiveMessage *pRTPMsg, MI
 	MIPTime x = streamTime;
 	x -= m_playbackOffset;
 	insertOffset = x;
-	
+
 	return true;
 }
 

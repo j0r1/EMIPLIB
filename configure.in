@@ -1,5 +1,5 @@
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(emiplib, 0.11.0)
+AM_INIT_AUTOMAKE(emiplib, 0.12.0)
 
 MIPCONFIG_BIGENDIAN="// Little endian system"
 MIPCONFIG_SUPPORT_SNDFILE="// No support for libsndfile"
@@ -13,6 +13,7 @@ MIPCONFIG_SUPPORT_ESD="// No support for esd"
 MIPCONFIG_SUPPORT_JACK="// No support for JACK"
 MIPCONFIG_SUPPORT_VIDEO4LINUX="// No support for video4linux"
 MIPCONFIG_SUPPORT_OSS="// No support for OSS"
+MIPCONFIG_SUPPORT_SDLAUDIO="// No support for SDL audio"
 MIPCONFIG_GPL="// No GPL components will be compiled"
 
 MIPLINKLIBS="$LDFLAGS"
@@ -226,6 +227,13 @@ dnl ---------------------------------------------------------------------------
 AC_CHECK_HEADER(sys/soundcard.h,[MIPCONFIG_SUPPORT_OSS="#define MIPCONFIG_SUPPORT_OSS"])
 
 dnl ---------------------------------------------------------------------------
+dnl SDL audio stuff
+dnl ---------------------------------------------------------------------------
+
+AC_CHECK_HEADER(SDL/SDL_audio.h,[MIPCONFIG_SUPPORT_SDLAUDIO="#define MIPCONFIG_SUPPORT_SDLAUDIO"
+				 MIPLINKLIBS="$MIPLINKLIBS -lSDL"])
+
+dnl ---------------------------------------------------------------------------
 dnl video4linux stuff
 dnl ---------------------------------------------------------------------------
 
@@ -292,6 +300,7 @@ AC_SUBST(MIPCONFIG_SUPPORT_ESD)
 AC_SUBST(MIPCONFIG_SUPPORT_JACK)
 AC_SUBST(MIPCONFIG_SUPPORT_VIDEO4LINUX)
 AC_SUBST(MIPCONFIG_SUPPORT_OSS)
+AC_SUBST(MIPCONFIG_SUPPORT_SDLAUDIO)
 AC_SUBST(MIPCONFIG_GPL)
 
 AC_OUTPUT(Makefile \

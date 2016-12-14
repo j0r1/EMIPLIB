@@ -101,10 +101,18 @@ public:
 	                  uint32_t allowedMessageTypes = MIPMESSAGE_TYPE_ALL, 
 	                  uint32_t allowedSubmessageTypes = MIPMESSAGE_TYPE_ALL);
 
+	/** Removes a connection previously added by the addConnection function. */
+	bool deleteConnection(MIPComponent *pPullComponent, MIPComponent *pPushCompontent, bool feedback = false,
+	                  uint32_t allowedMessageTypes = MIPMESSAGE_TYPE_ALL, 
+	                  uint32_t allowedSubmessageTypes = MIPMESSAGE_TYPE_ALL);
+
 	/** Returns the name of the component chain.
 	 *  Returns the name of the component chain, as was specified in the constructor.
 	 */
 	std::string getName() const									{ return m_chainName; }
+	
+	/** Rebuilds a running chain. */
+	bool rebuild();
 protected:
 	/** Function called when the background thread exits.
 	 *  This function is called when the background thread exits. This can happen if the 
@@ -117,10 +125,6 @@ protected:
 	virtual void onThreadExit(bool error, const std::string &errorComponent,
 	                          const std::string &errorDescription)					{ }
 private:
-	void *Thread();
-	bool orderConnections();
-	bool buildFeedbackList();
-
 	class MIPConnection
 	{
 	public:
@@ -131,19 +135,28 @@ private:
 		void setMark(bool v)									{ m_marked = v; }
 		uint64_t getMask() const								{ return m_mask; }
 		bool giveFeedback() const								{ return m_feedback; }
+		bool operator==(const MIPConnection &c)	const						{ if (m_pPull == c.m_pPull && m_pPush == c.m_pPush && m_mask == c.m_mask && m_feedback == c.m_feedback) return true; return false; }
 	private:
 		MIPComponent *m_pPull, *m_pPush;
 		uint64_t m_mask;
 		bool m_marked;
 		bool m_feedback;
 	};
+
+	void *Thread();
+	bool orderConnections(std::list<MIPConnection> &orderedConnections);
+	bool buildFeedbackList(std::list<MIPComponent *> &feedbackChain);
+	void copyConnectionInfo(const std::list<MIPConnection> &orderedList, const std::list<MIPComponent *> &feedbackChain);
 	
 	std::string m_chainName;
-	std::list<MIPConnection> m_connections;
+	std::list<MIPConnection> m_inputConnections;
+	std::list<MIPConnection> m_orderedConnections;
 	std::list<MIPComponent *> m_feedbackChain;
-	MIPComponent *m_pChainStart;	
+	MIPComponent *m_pInputChainStart;	
+	MIPComponent *m_pInternalChainStart;
 
 	JMutex m_loopMutex;
+	JMutex m_chainMutex;
 	bool m_stopLoop;
 };
 

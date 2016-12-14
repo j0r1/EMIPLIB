@@ -33,6 +33,7 @@
 #include "mipconfig.h"
 #include "mipmessage.h"
 #include "miptime.h"
+#include <rtpsession.h>
 #include <rtppacket.h>
 #include <string.h>
 
@@ -115,16 +116,20 @@ public:
 	 *  \param cnameLength The length of the CNAME of the source of this packet.
 	 *  \param deletePacket Flag indicating if pPack should be deleted when this
 	 *                      message is destroyed.
+	 *  \param pSess Pointer to the RTPSession instance from which the RTPPacket
+	 *               originated. If not null, this RTPSession's DeletePacket
+	 *               member function will be used to deallocate the RTPPacket
+	 *               memmory.
 	 */
-	MIPRTPReceiveMessage(RTPPacket *pPack, const uint8_t *pCName, size_t cnameLength, bool deletePacket = true) : MIPMessage(MIPMESSAGE_TYPE_RTP, MIPRTPMESSAGE_TYPE_RECEIVE), m_jitter(0)
-													{ m_deletePacket = deletePacket; m_pPack = pPack; if (cnameLength > MIPRTPMESSAGE_MAXCNAMELENGTH) m_cnameLength = MIPRTPMESSAGE_MAXCNAMELENGTH; else m_cnameLength = cnameLength; if (cnameLength > 0) memcpy(m_cname,pCName,m_cnameLength); m_tsUnit = -1; m_timingInfoSet = false; m_sourceID = 0; }
-	~MIPRTPReceiveMessage()										{ if (m_deletePacket) delete m_pPack; }
+	MIPRTPReceiveMessage(RTPPacket *pPack, const uint8_t *pCName, size_t cnameLength, bool deletePacket = true, RTPSession *pSess = 0) : MIPMessage(MIPMESSAGE_TYPE_RTP, MIPRTPMESSAGE_TYPE_RECEIVE), m_jitter(0)
+													{ m_deletePacket = deletePacket; m_pPack = pPack; if (cnameLength > MIPRTPMESSAGE_MAXCNAMELENGTH) m_cnameLength = MIPRTPMESSAGE_MAXCNAMELENGTH; else m_cnameLength = cnameLength; if (cnameLength > 0) memcpy(m_cname,pCName,m_cnameLength); m_tsUnit = -1; m_timingInfoSet = false; m_sourceID = 0; m_pSession = pSess; }
+	~MIPRTPReceiveMessage()										{ if (m_deletePacket) { if (m_pSession) m_pSession->DeletePacket(m_pPack); else delete m_pPack; } }
 
 	/** Returns the received packet. */
 	const RTPPacket *getPacket() const								{ return m_pPack; }
 
 	/** Returns a pointer to the CNAME data of the sender of this packet. */
-	const uint8_t *getCName() const								{ return m_cname; }
+	const uint8_t *getCName() const									{ return m_cname; }
 
 	/** Returns the length of the CNAME data of the sender of this packet. */
 	size_t getCNameLength() const									{ return m_cnameLength; }
@@ -157,6 +162,7 @@ public:
 	uint64_t getSourceID() const									{ return m_sourceID; }
 private:
 	RTPPacket *m_pPack;
+	RTPSession *m_pSession;
 	uint8_t m_cname[MIPRTPMESSAGE_MAXCNAMELENGTH];
 	size_t m_cnameLength;
 	bool m_deletePacket;

@@ -22,28 +22,33 @@
 
 */
 
-#ifndef MIPCONFIG_WIN_H
+/**
+ * \file miprtpdummydecoder.h
+ */
 
-#define MIPCONFIG_WIN_H
+#ifndef MIPRTPDUMMYDECODER_H
 
-// By uncommenting the following line you allow components with a GPL license
-// to be compiled. The GPL license will then apply to the whole library!
-// #define MIPCONFIG_GPL
+#define MIPRTPDUMMYDECODER_H
 
-//#define MIPCONFIG_BIGENDIAN
+#include "mipconfig.h"
+#include "miprtppacketdecoder.h"
 
-//#define MIPCONFIG_SUPPORT_SNDFILE
+/** Dummy RTP packet decoder.
+ *  Dummy RTP packet decoder. If an RTP packet is received with an unsupported
+ *  payload type, the MIPRTPDecoder::push function will return an error and the
+ *  background thread of the component chain will stop. To avoid this from
+ *  happening, a dummy RTP packet decoder can be installed as default packet
+ *  decoder.
+ */
+class MIPRTPDummyDecoder : public MIPRTPPacketDecoder
+{
+public:
+	MIPRTPDummyDecoder()											{ }
+	~MIPRTPDummyDecoder()											{ }
+private:
+	bool validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit)					{ return false; }
+	MIPMediaMessage *createNewMessage(const RTPPacket *pRTPPack)						{ return 0; }
+};
 
-//#define MIPCONFIG_SUPPORT_QT
+#endif // MIPRTPDUMMYDECODER_H
 
-//#define MIPCONFIG_SUPPORT_DIRECTSHOW
-
-#define MIPCONFIG_SUPPORT_SPEEX
-
-//#define MIPCONFIG_SUPPORT_AVCODEC
-
-//#define MIPCONFIG_SUPPORT_INTELIPP
-
-//#define MIPCONFIG_SUPPORT_SDLAUDIO
-
-#endif // MIPCONFIG_WIN_H

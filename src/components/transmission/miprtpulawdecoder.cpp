@@ -22,28 +22,43 @@
 
 */
 
-#ifndef MIPCONFIG_WIN_H
+#include "mipconfig.h"
+#include "miprtpulawdecoder.h"
+#include "miprawaudiomessage.h"
+#include "mipencodedaudiomessage.h"
+#include "miprtpmessage.h"
+#include <rtppacket.h>
 
-#define MIPCONFIG_WIN_H
+#include "mipdebug.h"
 
-// By uncommenting the following line you allow components with a GPL license
-// to be compiled. The GPL license will then apply to the whole library!
-// #define MIPCONFIG_GPL
+MIPRTPULawDecoder::MIPRTPULawDecoder()
+{
+}
 
-//#define MIPCONFIG_BIGENDIAN
+MIPRTPULawDecoder::~MIPRTPULawDecoder()
+{
+}
 
-//#define MIPCONFIG_SUPPORT_SNDFILE
+bool MIPRTPULawDecoder::validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit)
+{
+	size_t length;
+	
+	length = (size_t)pRTPPack->GetPayloadLength();
+	if (length < 1)
+		return false;
+	
+	timestampUnit = 1.0/8000.0;
+	return true;
+}
 
-//#define MIPCONFIG_SUPPORT_QT
+MIPMediaMessage *MIPRTPULawDecoder::createNewMessage(const RTPPacket *pRTPPack)
+{
+	size_t length = pRTPPack->GetPayloadLength();
+	uint8_t *pData = new uint8_t [length];
+	
+	memcpy(pData, pRTPPack->GetPayloadData(), length);
+	MIPEncodedAudioMessage *pEncMsg = new MIPEncodedAudioMessage(MIPENCODEDAUDIOMESSAGE_TYPE_ULAW, 8000, 1, (int)length, pData, length, true);
 
-//#define MIPCONFIG_SUPPORT_DIRECTSHOW
+	return pEncMsg;
+}
 
-#define MIPCONFIG_SUPPORT_SPEEX
-
-//#define MIPCONFIG_SUPPORT_AVCODEC
-
-//#define MIPCONFIG_SUPPORT_INTELIPP
-
-//#define MIPCONFIG_SUPPORT_SDLAUDIO
-
-#endif // MIPCONFIG_WIN_H

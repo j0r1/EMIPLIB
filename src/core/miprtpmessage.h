@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -119,7 +119,7 @@ public:
 	 *  \param pSess Pointer to the RTPSession instance from which the RTPPacket
 	 *               originated. If not null, this RTPSession's DeletePacket
 	 *               member function will be used to deallocate the RTPPacket
-	 *               memmory.
+	 *               memory.
 	 */
 	MIPRTPReceiveMessage(RTPPacket *pPack, const uint8_t *pCName, size_t cnameLength, bool deletePacket = true, RTPSession *pSess = 0) : MIPMessage(MIPMESSAGE_TYPE_RTP, MIPRTPMESSAGE_TYPE_RECEIVE), m_jitter(0)
 													{ m_deletePacket = deletePacket; m_pPack = pPack; if (cnameLength > MIPRTPMESSAGE_MAXCNAMELENGTH) m_cnameLength = MIPRTPMESSAGE_MAXCNAMELENGTH; else m_cnameLength = cnameLength; if (cnameLength > 0) memcpy(m_cname,pCName,m_cnameLength); m_tsUnit = -1; m_timingInfoSet = false; m_sourceID = 0; m_pSession = pSess; }

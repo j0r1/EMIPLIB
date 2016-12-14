@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -49,11 +49,14 @@ class MIPRTPSynchronizer;
 	class MIPV4L2Input;
 #endif // WIN32 || _WIN32_WCE
 class MIPAVCodecEncoder;
+class MIPRTPH263Encoder;
 class MIPRTPVideoEncoder;
 class MIPRTPComponent;
 class MIPAverageTimer;
 class MIPRTPDecoder;
+class MIPRTPH263Decoder;
 class MIPRTPVideoDecoder;
+class MIPRTPDummyDecoder;
 class MIPMediaBuffer;
 class MIPAVCodecDecoder;
 class MIPVideoMixer;
@@ -61,11 +64,27 @@ class MIPQtOutput;
 class MIPVideoFrameStorage;
 class MIPTinyJPEGDecoder;
 class MIPAVCodecFrameConverter;
+class MIPComponentAlias;
 
 /** Parameters for a video session. */
 class MIPVideoSessionParams
 {
 public:
+	/** Specifies the type of session that will be used. */
+	enum SessionType 
+	{ 
+		InputOutput, 	/**< Both video capture and playback will take place. */
+		OutputOnly 	/**< Received video will be shown, but no frames will be captured locally. */
+	};
+	
+	/** Specifies the encoding/compression of outgoing video frames. */
+	enum EncodingType 
+	{ 
+		H263, 		/**< H.263 compression is used, in an RTP format based on RFC 4629. */
+		IntH263, 	/**< H.263 compression is used, but stored in RTP packets using an internal format, not compatible with other software. */
+		IntYUV420 	/**< Raw YUV420P frames will be sent, using an internal format for storage into RTP packets. */
+	};
+
 	MIPVideoSessionParams()								
 	{ 
 #if (defined(WIN32) || defined(_WIN32_WCE))
@@ -81,6 +100,14 @@ public:
 		m_acceptOwnPackets = false;
 		m_bandwidth = 200000;
 		m_qtoutput = true;
+		m_type = InputOutput;
+		m_outH263PayloadType = 34;
+		m_inH263PayloadType = 34;
+		m_outIntPayloadType = 103;
+		m_inIntPayloadType = 103;
+		m_encType = H263;
+		m_waitForKeyframe = true;
+		m_maxPayloadSize = 64000;
 	}
 	~MIPVideoSessionParams()							{ }
 #if (defined(WIN32) || defined(_WIN32_WCE))
@@ -112,6 +139,45 @@ public:
 	 *  video frame storage component will be used (default: \c true).
 	 */
 	bool getUseQtOutput() const							{ return m_qtoutput; }
+
+	/** Returns the type of session that will be created (default: MIPVideoSessionParams::InputOutput). */
+	SessionType getSessionType() const						{ return m_type; }
+
+	/** Returns the payload type that should used to interpret incoming packets
+	 *  as H.263 encoded video, stored in RTP packets in the standard way (default: 34).
+	 */
+	uint8_t getIncomingH263PayloadType() const					{ return m_inH263PayloadType; }
+
+	/** Returns the payload type that will be set on outgoing RTP packets if they
+	 *  contain H.263 video stored in the standard way (default: 34).
+	 */
+	uint8_t getOutgoingH263PayloadType() const					{ return m_outH263PayloadType; }
+
+	/** Returns the payload type that should used to interpret incoming packets
+	 *  as video packets using an internal encoding format (default: 103).
+	 */
+	uint8_t getIncomingInternalPayloadType() const					{ return m_inIntPayloadType; }
+
+	/** Returns the payload type that will be set on outgoing RTP packets if they
+	 *  contain video stored in the non-standard, internal format (default: 103).
+	 */
+	uint8_t getOutgoingInternalPayloadType() const					{ return m_outIntPayloadType; }
+
+	/** Returns the encoding that outgoing video frames will have 
+	 *  (default: MIPVideoSessionParams::H263).
+	 */
+	EncodingType getEncodingType() const						{ return m_encType; }
+
+	/** Returns \c true if video frames should only be shown after a keyframe
+	 *  has been received (default: \c true).
+	 */
+	bool getWaitForKeyframe() const							{ return m_waitForKeyframe; }
+
+	/** Returns the maximum payload size a single RTP packet may have, before
+	 *  splitting data over multiple packets (default: 64000).
+	 */
+	int getMaximumPayloadSize() const						{ return m_maxPayloadSize; }
+
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	/** Sets the number of the input device to use (only available on Win32). */
 	void setDevice(int n)								{ m_devNum = n; }
@@ -141,6 +207,42 @@ public:
 	 *  storage component should be used.
 	 */
 	void setUseQtOutput(bool f)							{ m_qtoutput = f; }
+
+	/** Sets the current session type. */
+	void setSessionType(SessionType s)						{ m_type = s; }
+
+	/** Sets the payload type that will be used to interpret RTP packets as
+	 *  standard H.263 encoded video.
+	 */
+	void setIncomingH263PayloadType(uint8_t pt)					{ m_inH263PayloadType = pt; }
+
+	/** Sets the payload type that will be used for outgoing messages when
+	 *  sending H.263 data in the standard way.
+	 */
+	void setOutgoingH263PayloadType(uint8_t pt)					{ m_outH263PayloadType = pt; }
+
+	/** Sets the payload type that will be used to interpret RTP packets as
+	 *  video frames which use an internal RTP format.
+	 */
+	void setIncomingInternalPayloadType(uint8_t pt)					{ m_inIntPayloadType = pt; }
+
+	/** Sets the payload type that will be used for outgoing messages when
+	 *  sending video frames using the non-standard, internal payload format.
+	 */
+	void setOutgoingInternalPayloadType(uint8_t pt)					{ m_outIntPayloadType = pt; }
+
+	/** Sets the current encoding type. */
+	void setEncodingType(EncodingType t)						{ m_encType = t; }
+
+	/** If set to \c true, video frames will only be shown after a keyframe
+	 *  has been received.
+	 */
+	void setWaitForKeyframe(bool w)							{ m_waitForKeyframe = w; }
+
+	/** Sets the maximum size the payload of an RTP packet may have before
+	 *  splitting it over multiple RTP packets.
+	 */
+	void setMaximumPayloadSize(int s)						{ m_maxPayloadSize = s; }
 private:
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	int m_devNum;
@@ -153,6 +255,14 @@ private:
 	bool m_acceptOwnPackets;
 	int m_bandwidth;
 	bool m_qtoutput;
+	SessionType m_type;
+	uint8_t m_inH263PayloadType;
+	uint8_t m_outH263PayloadType;
+	uint8_t m_inIntPayloadType;
+	uint8_t m_outIntPayloadType;
+	EncodingType m_encType; 
+	bool m_waitForKeyframe;
+	int m_maxPayloadSize;
 };
 
 /** Creates a video over IP session.
@@ -299,8 +409,10 @@ private:
 #endif // WIN32 || _WIN32_WCE
 	MIPTinyJPEGDecoder *m_pTinyJpegDec;
 	MIPAVCodecFrameConverter *m_pInputFrameConverter;
+	MIPAVCodecFrameConverter *m_pOutputFrameConverter;
 	MIPAVCodecEncoder *m_pAvcEnc;
-	MIPRTPVideoEncoder *m_pRTPEnc;
+	MIPRTPH263Encoder *m_pRTPH263Enc;
+	MIPRTPVideoEncoder *m_pRTPIntVideoEnc;
 	MIPRTPComponent *m_pRTPComp;
 	
 	RTPSession *m_pRTPSession;
@@ -308,8 +420,11 @@ private:
 	
 	MIPAverageTimer *m_pTimer2;
 	MIPRTPDecoder *m_pRTPDec;
-	MIPRTPVideoDecoder *m_pRTPVideoDec;
+	MIPRTPH263Decoder *m_pRTPH263Dec;
+	MIPRTPVideoDecoder *m_pRTPIntVideoDec;
+	MIPRTPDummyDecoder *m_pRTPDummyDec;
 	MIPMediaBuffer *m_pMediaBuf;
+	MIPComponentAlias *m_pBufferAlias;
 	MIPAVCodecDecoder *m_pAvcDec;
 	MIPVideoMixer *m_pMixer;
 	MIPQtOutput *m_pQtOutput;

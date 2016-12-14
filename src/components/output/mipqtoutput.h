@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -44,7 +44,8 @@ class MIPQtOutputWidget;
 
 /** A Qt-based video output component.
  *  This component is a Qt-based video output component. The component shows all incoming video
- *  frames: one window is created for each source.
+ *  frames: one window is created for each source. Input video frames can be in either YUV420P
+ *  or 32-bit RGB format.
  */
 class MIPQtOutput : public MIPComponent, private JThread
 {

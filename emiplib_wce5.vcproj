@@ -40,7 +40,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.1\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, src\thirdparty\lpc, src\thirdparty\gsm\inc"
+				AdditionalIncludeDirectories="..\speex-1.2rc1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.1\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, src\thirdparty\lpc, src\thirdparty\gsm\inc"
 				PreprocessorDefinitions="_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;DEBUG;_LIB;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
@@ -116,7 +116,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="2"
-				AdditionalIncludeDirectories="..\speex-1.1.11.1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.1\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, src\thirdparty\lpc, src\thirdparty\gsm\inc"
+				AdditionalIncludeDirectories="..\speex-1.2rc1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.1\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, src\thirdparty\lpc, src\thirdparty\gsm\inc"
 				PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;_LIB;$(ARCHFAM);$(_ARCHFAM_);_UNICODE;UNICODE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -221,6 +221,10 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\components\output\mipopenaloutput.cpp"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\output\mipqtoutput.cpp"
 						>
 					</File>
@@ -244,10 +248,6 @@
 						RelativePath=".\src\components\output\mipwinmmoutput.cpp"
 						>
 					</File>
-					<File
-						RelativePath=".\src\components\output\mipopenaloutput.cpp"
-						>
-					</File>
 				</Filter>
 				<Filter
 					Name="io"
@@ -269,7 +269,15 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\components\transform\mipaudiofilter.cpp"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\transform\mipaudiosplitter.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transform\mipavcodecframeconverter.cpp"
 						>
 					</File>
 					<File
@@ -285,7 +293,7 @@
 						>
 					</File>
 					<File
-						RelativePath=".\src\components\transform\mipaudiofilter.cpp"
+						RelativePath=".\src\components\transform\mipspeexechocanceller.cpp"
 						>
 					</File>
 				</Filter>
@@ -293,11 +301,51 @@
 					Name="transmission"
 					>
 					<File
+						RelativePath=".\src\components\transmission\miprtpalawdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpalawencoder.cpp"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\transmission\miprtpcomponent.cpp"
 						>
 					</File>
 					<File
 						RelativePath=".\src\components\transmission\miprtpdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpgsmdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpgsmencoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtph263decoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtph263encoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpl16decoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpl16encoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtplpcdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtplpcencoder.cpp"
 						>
 					</File>
 					<File
@@ -322,38 +370,6 @@
 					</File>
 					<File
 						RelativePath=".\src\components\transmission\miprtpvideoencoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpalawdecoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpalawencoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtplpcdecoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtplpcencoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpgsmdecoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpgsmencoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpl16decoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpl16encoder.cpp"
 						>
 					</File>
 				</Filter>
@@ -381,11 +397,11 @@
 						>
 					</File>
 					<File
-						RelativePath=".\src\components\timer\mippusheventtimer.cpp"
+						RelativePath=".\src\components\timer\mipinterchaintimer.cpp"
 						>
 					</File>
 					<File
-						RelativePath=".\src\components\timer\mipinterchaintimer.cpp"
+						RelativePath=".\src\components\timer\mippusheventtimer.cpp"
 						>
 					</File>
 				</Filter>
@@ -393,11 +409,35 @@
 					Name="codec"
 					>
 					<File
+						RelativePath=".\src\components\codec\mipalawdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipalawencoder.cpp"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\codec\mipavcodecdecoder.cpp"
 						>
 					</File>
 					<File
 						RelativePath=".\src\components\codec\mipavcodecencoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipgsmdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipgsmencoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\miplpcdecoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\miplpcencoder.cpp"
 						>
 					</File>
 					<File
@@ -416,30 +456,6 @@
 						RelativePath=".\src\components\codec\mipulawencoder.cpp"
 						>
 					</File>
-					<File
-						RelativePath=".\src\components\codec\mipalawdecoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\codec\mipalawencoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\codec\miplpcdecoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\codec\miplpcencoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\codec\mipgsmdecoder.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\codec\mipgsmencoder.cpp"
-						>
-					</File>
 				</Filter>
 			</Filter>
 			<Filter
@@ -454,11 +470,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\src\core\mipversion.cpp"
+					RelativePath=".\src\core\mipdebug.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\core\mipdebug.cpp"
+					RelativePath=".\src\core\mipversion.cpp"
 					>
 				</File>
 			</Filter>
@@ -467,6 +483,10 @@
 				>
 				<File
 					RelativePath=".\src\util\mipdirectorybrowser.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\util\miprtppacketgrouper.cpp"
 					>
 				</File>
 				<File
@@ -482,15 +502,15 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\util\mipstreambuffer.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\src\util\mipwavreader.cpp"
 					>
 				</File>
 				<File
 					RelativePath=".\src\util\mipwavwriter.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\util\mipstreambuffer.cpp"
 					>
 				</File>
 			</Filter>
@@ -511,7 +531,7 @@
 				>
 				<Filter
 					Name="lpc"
-				>
+					>
 					<File
 						RelativePath=".\src\thirdparty\lpc\lpccodec.cpp"
 						>
@@ -519,7 +539,7 @@
 				</Filter>
 				<Filter
 					Name="gsm"
-				>
+					>
 					<File
 						RelativePath=".\src\thirdparty\gsm\src\gsm_add.cpp"
 						>
@@ -647,6 +667,10 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\components\output\mipopenaloutput.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\output\mipqtoutput.h"
 						>
 					</File>
@@ -670,10 +694,6 @@
 						RelativePath=".\src\components\output\mipwinmmoutput.h"
 						>
 					</File>
-					<File
-						RelativePath=".\src\components\output\mipopenaloutput.h"
-						>
-					</File>
 				</Filter>
 				<Filter
 					Name="io"
@@ -695,7 +715,15 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\components\transform\mipaudiofilter.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\transform\mipaudiosplitter.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transform\mipavcodecframeconverter.h"
 						>
 					</File>
 					<File
@@ -715,13 +743,21 @@
 						>
 					</File>
 					<File
-						RelativePath=".\src\components\transform\mipaudiofilter.h"
+						RelativePath=".\src\components\transform\mipspeexechocanceller.h"
 						>
 					</File>
 				</Filter>
 				<Filter
 					Name="transmission"
 					>
+					<File
+						RelativePath=".\src\components\transmission\miprtpalawdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpalawencoder.h"
+						>
+					</File>
 					<File
 						RelativePath=".\src\components\transmission\miprtpcomponent.h"
 						>
@@ -736,6 +772,38 @@
 					</File>
 					<File
 						RelativePath=".\src\components\transmission\miprtpencoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpgsmdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpgsmencoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtph263decoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtph263encoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpl16decoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtpl16encoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtplpcdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtplpcencoder.h"
 						>
 					</File>
 					<File
@@ -766,38 +834,6 @@
 						RelativePath=".\src\components\transmission\miprtpvideoencoder.h"
 						>
 					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpalawdecoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpalawencoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtplpcdecoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtplpcencoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpgsmdecoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpgsmencoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpl16decoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\transmission\miprtpl16encoder.h"
-						>
-					</File>
 				</Filter>
 				<Filter
 					Name="mixer"
@@ -823,11 +859,11 @@
 						>
 					</File>
 					<File
-						RelativePath=".\src\components\timer\mippusheventtimer.h"
+						RelativePath=".\src\components\timer\mipinterchaintimer.h"
 						>
 					</File>
 					<File
-						RelativePath=".\src\components\timer\mipinterchaintimer.h"
+						RelativePath=".\src\components\timer\mippusheventtimer.h"
 						>
 					</File>
 				</Filter>
@@ -835,11 +871,35 @@
 					Name="codec"
 					>
 					<File
+						RelativePath=".\src\components\codec\mipalawdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipalawencoder.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\codec\mipavcodecdecoder.h"
 						>
 					</File>
 					<File
 						RelativePath=".\src\components\codec\mipavcodecencoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipgsmdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\mipgsmencoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\miplpcdecoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\codec\miplpcencoder.h"
 						>
 					</File>
 					<File
@@ -858,30 +918,6 @@
 						RelativePath=".\src\components\codec\mipulawencoder.h"
 						>
 					</File>
-					<File
-						RelativePath=".\src\components\codec\mipalawdecoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\codec\mipalawencoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\codec\miplpcdecoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\codec\miplpcencoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\codec\mipgsmdecoder.h"
-						>
-					</File>
-					<File
-						RelativePath=".\src\components\codec\mipgsmencoder.h"
-						>
-					</File>
 				</Filter>
 			</Filter>
 			<Filter
@@ -897,6 +933,10 @@
 				</File>
 				<File
 					RelativePath=".\src\core\mipcomponent.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\core\mipcomponentalias.h"
 					>
 				</File>
 				<File
@@ -988,6 +1028,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\util\miprtppacketgrouper.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\util\miprtpsynchronizer.h"
 					>
 				</File>
@@ -1000,15 +1044,15 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\util\mipstreambuffer.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\util\mipwavreader.h"
 					>
 				</File>
 				<File
 					RelativePath=".\src\util\mipwavwriter.h"
-					>
-				</File>
-				<File
-					RelativePath=".\src\util\mipstreambuffer.h"
 					>
 				</File>
 			</Filter>
@@ -1029,7 +1073,7 @@
 				>
 				<Filter
 					Name="lpc"
-				>
+					>
 					<File
 						RelativePath=".\src\thirdparty\lpc\lpccodec.h"
 						>
@@ -1037,7 +1081,7 @@
 				</Filter>
 				<Filter
 					Name="gsm"
-				>
+					>
 					<File
 						RelativePath=".\src\thirdparty\gsm\inc\config.h"
 						>

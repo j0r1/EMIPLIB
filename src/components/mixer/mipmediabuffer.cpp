@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -26,6 +26,8 @@
 #include "mipmediabuffer.h"
 #include "mipmediamessage.h"
 #include "mipfeedback.h"
+
+//#include <iostream> 
 
 #include "mipdebug.h"
 
@@ -112,6 +114,7 @@ bool MIPMediaBuffer::push(const MIPComponentChain &chain, int64_t iteration, MIP
 
 bool MIPMediaBuffer::pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg)
 {
+	//std::cout << "I " << iteration << " MIPMediaBuffer::pull" << (void *)this << std::endl;
 	if (!m_init)
 	{
 		setErrorString(MIPMEDIABUFFER_ERRSTR_NOTINIT);
@@ -151,6 +154,8 @@ bool MIPMediaBuffer::processFeedback(const MIPComponentChain &chain, int64_t fee
 	{
 		m_gotPlaybackTime = true;
 		m_playbackTime = feedback->getPlaybackStreamTime();
+
+//		std::cout << "MIPMediaBuffer " << ((void *)this) << " setting playbacktime to " << m_playbackTime.getValue() << std::endl;
 	}
 	
 	return true;
@@ -183,6 +188,9 @@ void MIPMediaBuffer::buildOutputMessages()
 	
 		MIPTime compareTime = m_playbackTime;
 		compareTime += m_interval;
+
+		//std::cout << "           compareTime = " << compareTime.getValue() << std::endl;
+		//std::cout << "           m_playbackTime = " << m_playbackTime.getValue() << std::endl;
 		
 		it = m_buffers.begin();
 		while (it != m_buffers.end())
@@ -193,6 +201,8 @@ void MIPMediaBuffer::buildOutputMessages()
 			{
 				insertInOutput(*it);
 				it = m_buffers.erase(it);
+
+				//std::cout << "          Passing message with time " <<  t.getValue() << std::endl;
 			}
 			else
 				it++;

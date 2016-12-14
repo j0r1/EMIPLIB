@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -101,8 +101,8 @@ private:
 	void clearMessages();
 	void cleanUp();
 	void cleanUpSourceTable();
-	bool lookUpStreamTime(const MIPRTPReceiveMessage *pRTPPack, real_t timestampUnit, MIPTime &streamTime, bool &shouldSync);
-	bool adjustToPlaybackTime(const MIPRTPReceiveMessage *pRTPMsg, MIPTime &streamTime, MIPTime &insertOffset);
+	bool lookUpStreamTime(uint32_t ssrc, uint32_t timestamp, const uint8_t *pCName, size_t cnameLength, real_t timestampUnit, MIPTime &streamTime, bool &shouldSync);
+	bool adjustToPlaybackTime(MIPTime jitterValue, MIPTime &streamTime, MIPTime &insertOffset);
 
 	bool m_init;	
 	int64_t m_prevIteration;

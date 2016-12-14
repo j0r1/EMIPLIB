@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -48,7 +48,6 @@ class MIPMediaMessage;
  *  To see why this component is useful, consider the following part of a component
  *  chain:
  *  \image html nobufferchain.png
- *  \image latex nobufferchain.eps
  *
  *  In the example above, it is assumed that feedback information flows from the mixer
  *  to the RTP decoder. The way the example works is as follows: an RTP component
@@ -73,7 +72,6 @@ class MIPMediaMessage;
  *  The solution to the problem is to place a MIPMediaBuffer instance in the chain,
  *  in the following way:
  *  \image html bufferchain.png
- *  \image latex bufferchain.eps
  *
  *  As explained above, the MIPMediaBuffer instance will store incoming messages. At
  *  each iteration, it will inspect which messages will be needed by the mixer during

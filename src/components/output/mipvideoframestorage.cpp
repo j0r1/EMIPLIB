@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -26,6 +26,8 @@
 #include "mipvideoframestorage.h"
 #include "miprawvideomessage.h"
 #include <string.h>
+
+#include "mipdebug.h"
 
 #define MIPVIDEOFRAMESTORAGE_ERRSTR_NOTINIT					"Not initialized"
 #define MIPVIDEOFRAMESTORAGE_ERRSTR_ALREADYINIT					"Already initialized"

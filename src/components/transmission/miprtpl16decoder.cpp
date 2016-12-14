@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -65,7 +65,7 @@ bool MIPRTPL16Decoder::validatePacket(const RTPPacket *pRTPPack, real_t &timesta
 	return true;
 }
 
-MIPMediaMessage *MIPRTPL16Decoder::createNewMessage(const RTPPacket *pRTPPack)
+void MIPRTPL16Decoder::createNewMessages(const RTPPacket *pRTPPack, std::list<MIPMediaMessage *> &messages, std::list<uint32_t> &timestamps)
 {
 	size_t length = pRTPPack->GetPayloadLength();
 	size_t numSamples = length/2; // 2 bytes per sample
@@ -76,6 +76,7 @@ MIPMediaMessage *MIPRTPL16Decoder::createNewMessage(const RTPPacket *pRTPPack)
 
 	MIPRaw16bitAudioMessage *pRawMsg = new MIPRaw16bitAudioMessage(44100, m_channels, numSamples/m_channels, true, MIPRaw16bitAudioMessage::BigEndian, pFrames, true);
 
-	return pRawMsg;
+	messages.push_back(pRawMsg);
+	timestamps.push_back(pRTPPack->GetTimestamp());
 }
 

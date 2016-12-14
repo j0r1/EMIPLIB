@@ -21,7 +21,7 @@
 			IntermediateDirectory="Debug"
 			ConfigurationType="4"
 			UseOfMFC="0"
-			CharacterSet="1"
+			CharacterSet="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.2rc1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.1\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, src\thirdparty\lpc, src\thirdparty\gsm\inc,src\thirdparty\tinyjpeg, C:\Program Files\Microsoft Platform SDK\Include"
+				AdditionalIncludeDirectories="..\qt\include, ..\avcodec, ..\speex-1.2rc1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.1\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, src\thirdparty\lpc, src\thirdparty\gsm\inc,src\thirdparty\tinyjpeg, &quot;C:\Program Files\Microsoft Platform SDK\Include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -88,7 +88,7 @@
 			IntermediateDirectory="Release"
 			ConfigurationType="4"
 			UseOfMFC="0"
-			CharacterSet="1"
+			CharacterSet="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -108,7 +108,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\avcodec\include, ..\speex-1.2rc1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.1\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, src\thirdparty\lpc, src\thirdparty\gsm\inc,src\thirdparty\tinyjpeg, C:\Program Files\Microsoft Platform SDK\Include"
+				AdditionalIncludeDirectories="..\qt\include, ..\avcodec, ..\speex-1.2rc1\include, ..\jthread-1.2.1\src,..\jrtplib-3.7.1\src,src\core,src\util, src\components\input, src\components\output, src\components\timer, src\components\mixer, src\components\transform, src\components\transmission, src\components\codec, src\thirdparty\lpc, src\thirdparty\gsm\inc,src\thirdparty\tinyjpeg, &quot;C:\Program Files\Microsoft Platform SDK\Include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -263,6 +263,14 @@
 					</File>
 					<File
 						RelativePath=".\src\components\transmission\miprtpgsmencoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtph263decoder.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtph263encoder.cpp"
 						>
 					</File>
 					<File
@@ -460,6 +468,10 @@
 				>
 				<File
 					RelativePath=".\src\util\mipdirectorybrowser.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\util\miprtppacketgrouper.cpp"
 					>
 				</File>
 				<File
@@ -724,6 +736,14 @@
 						>
 					</File>
 					<File
+						RelativePath=".\src\components\transmission\miprtph263decoder.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\components\transmission\miprtph263encoder.h"
+						>
+					</File>
+					<File
 						RelativePath=".\src\components\transmission\miprtpl16decoder.h"
 						>
 					</File>
@@ -917,6 +937,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\core\mipcomponentalias.h"
+					>
+				</File>
+				<File
 					RelativePath=".\src\core\mipcomponentchain.h"
 					>
 				</File>
@@ -1002,6 +1026,10 @@
 				</File>
 				<File
 					RelativePath=".\src\util\mipresample.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\util\miprtppacketgrouper.h"
 					>
 				</File>
 				<File

@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -26,10 +26,12 @@
 #include "mipversion.h"
 #include "mipcompat.h"
 
+#include "mipdebug.h"
+
 MIPVersion::MIPVersion()
 {
-	m_major = 0;
-	m_minor = 17;
+	m_major = 1;
+	m_minor = 0;
 	m_debug = 0;
 #ifdef MIPCONFIG_GPL
 	m_license = std::string("GPL");

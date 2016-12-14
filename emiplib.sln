@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") ="emiplib","emiplib.vcproj", "{A5BE1C20-46AE-43E3-8639-3F2CDA32972B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "emiplib", "emiplib.vcproj", "{A5BE1C20-46AE-43E3-8639-3F2CDA32972B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

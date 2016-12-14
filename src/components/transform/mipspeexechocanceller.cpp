@@ -30,6 +30,8 @@
 #include <speex/speex_echo.h>
 #include <cmath>
 
+#include "mipdebug.h"
+
 #define MIPSPEEXECHOCANCELLER_ERRSTR_ALREADYINITIALIZED		"Already initialized"
 #define MIPSPEEXECHOCANCELLER_ERRSTR_NOTINITIALIZED		"Component wasn't initialized"
 #define MIPSPEEXECHOCANCELLER_ERRSTR_COULDNTCREATESTATE		"Couldn't create Speex echo state object"

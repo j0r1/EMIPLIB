@@ -25,6 +25,7 @@ components/output/mipvideoframestorage.cpp \
 components/output/mipjackoutput.cpp \
 components/output/mipsdlaudiooutput.cpp \
 components/output/mipopenaloutput.cpp \
+components/output/mipaudiotrackoutput.cpp \
 components/input/mipsndfileinput.cpp \
 components/input/mipaudiofileinput.cpp \
 components/input/mipv4linput.cpp \
@@ -32,6 +33,7 @@ components/input/mipv4l2input.cpp \
 components/input/mipfrequencygenerator.cpp \
 components/input/mipwavinput.cpp \
 components/input/mipjackinput.cpp \
+components/input/mipaudiorecorderinput.cpp \
 components/io/mipossinputoutput.cpp \
 components/io/mippainputoutput.cpp \
 components/transmission/miprtpcomponent.cpp \
@@ -44,6 +46,8 @@ components/transmission/miprtpalawencoder.cpp \
 components/transmission/miprtpalawdecoder.cpp \
 components/transmission/miprtpvideoencoder.cpp \
 components/transmission/miprtpvideodecoder.cpp \
+components/transmission/miprtph263encoder.cpp \
+components/transmission/miprtph263decoder.cpp \
 components/transmission/miprtplpcencoder.cpp \
 components/transmission/miprtplpcdecoder.cpp \
 components/transmission/miprtpgsmencoder.cpp \
@@ -82,6 +86,7 @@ util/mipwavwriter.cpp \
 util/miprtpsynchronizer.cpp \
 util/mipspeexutil.cpp \
 util/mipstreambuffer.cpp \
+util/miprtppacketgrouper.cpp \
 sessions/mipaudiosession.cpp \
 sessions/mipvideosession.cpp \
 thirdparty/lpc/lpccodec.cpp \
@@ -118,6 +123,7 @@ libemipinclude_HEADERS = \
 core/mipcompat.h \
 core/miperrorbase.h \
 core/mipcomponent.h \
+core/mipcomponentalias.h \
 core/mipcomponentchain.h \
 core/mipconfig.h \
 core/mipdebug.h \
@@ -151,6 +157,7 @@ components/output/mipvideoframestorage.h \
 components/output/mipjackoutput.h \
 components/output/mipsdlaudiooutput.h \
 components/output/mipopenaloutput.h \
+components/output/mipaudiotrackoutput.h \
 components/input/mipsndfileinput.h  \
 components/input/mipaudiofileinput.h  \
 components/input/mipv4linput.h \
@@ -159,6 +166,7 @@ components/input/mipwinmminput.h \
 components/input/mipfrequencygenerator.h \
 components/input/mipwavinput.h \
 components/input/mipjackinput.h \
+components/input/mipaudiorecorderinput.h \
 components/io/mipossinputoutput.h \
 components/io/mippainputoutput.h \
 components/transmission/miprtpcomponent.h \
@@ -173,6 +181,8 @@ components/transmission/miprtpalawencoder.h \
 components/transmission/miprtpalawdecoder.h \
 components/transmission/miprtpvideoencoder.h \
 components/transmission/miprtpvideodecoder.h \
+components/transmission/miprtph263encoder.h \
+components/transmission/miprtph263decoder.h \
 components/transmission/miprtpdummydecoder.h \
 components/transmission/miprtplpcencoder.h \
 components/transmission/miprtplpcdecoder.h \
@@ -214,6 +224,7 @@ util/miprtpsynchronizer.h \
 util/mipresample.h \
 util/mipspeexutil.h \
 util/mipstreambuffer.h \
+util/miprtppacketgrouper.h \
 sessions/mipaudiosession.h \
 sessions/mipvideosession.h
 

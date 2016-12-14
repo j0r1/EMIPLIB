@@ -1,5 +1,5 @@
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(emiplib, 0.17.0)
+AM_INIT_AUTOMAKE(emiplib, 1.0.0)
 
 MIPCONFIG_BIGENDIAN="// Little endian system"
 MIPCONFIG_SUPPORT_SNDFILE="// No support for libsndfile"
@@ -19,6 +19,8 @@ MIPCONFIG_SUPPORT_OSS="// No support for OSS"
 MIPCONFIG_SUPPORT_SDLAUDIO="// No support for SDL audio"
 MIPCONFIG_SUPPORT_OPENAL="// No support for OpenAL"
 MIPCONFIG_SUPPORT_PORTAUDIO="// No support for PortAudio"
+MIPCONFIG_SUPPORT_AUDIOTRACK="// No support for AudioTrack output"
+MIPCONFIG_SUPPORT_AUDIORECORDER="// No support for AudioRecorder input"
 MIPCONFIG_GPL="// No GPL components will be compiled"
 
 MIPLINKLIBS="$LDFLAGS"
@@ -26,6 +28,7 @@ MIPINCLUDES="$CPPFLAGS"
 MIPGPL="no"
 MIPQT="no"
 MIPAVCODEC="no"
+MIPANDROID="no"
 
 if test "BLA$CXXFLAGS" = "BLA" ; then
 	dnl CXXFLAGS="-g -Werror -Wall"
@@ -222,8 +225,10 @@ dnl ---------------------------------------------------------------------------
 dnl Speex stuff
 dnl ---------------------------------------------------------------------------
 
-AC_CHECK_HEADER(speex/speex.h,[MIPCONFIG_SUPPORT_SPEEX="#define MIPCONFIG_SUPPORT_SPEEX"
-			       MIPLINKLIBS="$MIPLINKLIBS -lspeex"])
+AC_CHECK_HEADER(speex/speex.h,[
+	MIPCONFIG_SUPPORT_SPEEX="#define MIPCONFIG_SUPPORT_SPEEX"
+	MIPLINKLIBS="$MIPLINKLIBS -lspeex"
+	AC_CHECK_HEADER(speex/speex_echo.h,[MIPLINKLIBS="$MIPLINKLIBS -lspeexdsp"] ) ] )
 
 dnl ---------------------------------------------------------------------------
 dnl OSS stuff
@@ -294,6 +299,19 @@ AC_CHECK_HEADER(portaudio.h,[MIPCONFIG_SUPPORT_PORTAUDIO="#define MIPCONFIG_SUPP
 				MIPLINKLIBS="$MIPLINKLIBS -lportaudio"])
 
 dnl ---------------------------------------------------------------------------
+dnl Android check
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(android,[  --enable-android        Enable Android IO components],
+	      [ if test $enableval = "yes" ; then
+	       		MIPANDROID="yes"
+	        fi ], [])
+
+if test $MIPANDROID = "yes" ; then
+	MIPCONFIG_SUPPORT_AUDIOTRACK="#define MIPCONFIG_SUPPORT_AUDIOTRACK"
+	MIPCONFIG_SUPPORT_AUDIORECORDER="#define MIPCONFIG_SUPPORT_AUDIORECORDER"
+fi
+
+dnl ---------------------------------------------------------------------------
 dnl Check if it's a big endian or little endian system
 dnl Note that we must be careful when a cross-compiler is being used...
 dnl ---------------------------------------------------------------------------
@@ -346,6 +364,8 @@ AC_SUBST(MIPCONFIG_SUPPORT_OSS)
 AC_SUBST(MIPCONFIG_SUPPORT_SDLAUDIO)
 AC_SUBST(MIPCONFIG_SUPPORT_OPENAL)
 AC_SUBST(MIPCONFIG_SUPPORT_PORTAUDIO)
+AC_SUBST(MIPCONFIG_SUPPORT_AUDIOTRACK)
+AC_SUBST(MIPCONFIG_SUPPORT_AUDIORECORDER)
 AC_SUBST(MIPCONFIG_GPL)
 
 AC_OUTPUT(Makefile \

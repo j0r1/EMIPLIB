@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -32,10 +32,18 @@
 
 #include "mipconfig.h"
 #include "miprtppacketdecoder.h"
+#include "miprtppacketgrouper.h"
+#include "miptime.h"
+#if defined(WIN32) || defined(_WIN32_WCE)
+	#include <hash_map>
+#else
+	#include <ext/hash_map>
+#endif // Win32
 
 /** This class decodes incoming RTP data into video messages.
  *  This class takes MIPRTPReceiveMessages as input and generates 
- *  video messages. 
+ *  video messages. The RTP messages themselves should use the
+ *  internal format provided by MIPRTPVideoEncoder.
  */
 class MIPRTPVideoDecoder : public MIPRTPPacketDecoder
 {
@@ -44,7 +52,45 @@ public:
 	~MIPRTPVideoDecoder();
 private:
 	bool validatePacket(const RTPPacket *pRTPPack, real_t &timestampUnit);
-	MIPMediaMessage *createNewMessage(const RTPPacket *pRTPPack);
+	void createNewMessages(const RTPPacket *pRTPPack, std::list<MIPMediaMessage *> &messages, std::list<uint32_t> &timestamps);
+
+	void expireGroupers();
+
+	class PacketGrouper
+	{
+	public:
+		PacketGrouper(MIPRTPPacketGrouper *pPacketGrouper)
+		{
+			m_pGrouper = pPacketGrouper;
+			m_lastAccesstime = MIPTime::getCurrentTime();
+		}
+
+		~PacketGrouper()
+		{
+			delete m_pGrouper;
+		}
+
+		MIPRTPPacketGrouper *getGrouper()
+		{
+			m_lastAccesstime = MIPTime::getCurrentTime();
+			return m_pGrouper;
+		}
+
+		MIPTime getLastAccessTime() const
+		{
+			return m_lastAccesstime;
+		}
+	private:
+		MIPTime m_lastAccesstime;
+		MIPRTPPacketGrouper *m_pGrouper;
+	};
+
+#if defined(WIN32) || defined(_WIN32_WCE)
+	stdext::hash_map<uint32_t, PacketGrouper *> m_packetGroupers;
+#else
+	__gnu_cxx::hash_map<uint32_t, PacketGrouper * > m_packetGroupers;
+#endif // Win32
+	MIPTime m_lastCheckTime;
 };
 
 #endif // MIPRTPVIDEODECODER_H

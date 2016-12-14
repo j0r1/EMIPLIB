@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -32,6 +32,7 @@
 
 #include "mipconfig.h"
 #include "miptypes.h"
+#include <list>
 
 class RTPPacket;
 class MIPMediaMessage;
@@ -53,10 +54,14 @@ public:
 
 	/** Creates a new message from an RTP packet.
 	 *  This function has to be implemented by a derived class. Based on the validated
-	 *  RTP packet \c pRTPPack, an appropriate message should be generated. If something 
-	 *  went wrong, the function should return 0.
+	 *  RTP packet \c pRTPPack, one or more appropriate messages should be generated.
+	 *  \param pRTPPack The RTP packet which should be processed.
+	 *  \param messages A list in which the resulting messages should be stored.
+	 *  \param timestamps A list containing the RTP timestamp for each message in the
+	 *                    'messages' list.
 	 */
-	virtual MIPMediaMessage *createNewMessage(const RTPPacket *pRTPPack) = 0;
+	virtual void createNewMessages(const RTPPacket *pRTPPack, std::list<MIPMediaMessage *> &messages, 
+			               std::list<uint32_t> &timestamps) = 0;
 };
 
 #endif // MIPRTPPACKETDECODER_H

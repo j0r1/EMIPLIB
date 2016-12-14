@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -41,7 +41,7 @@
 #include <Qedit.h>
 #include <list>
 
-class MIPRawYUV420PVideoMessage;
+class MIPVideoMessage;
 
 /** A DirectShow input component.
  *  This component is a DirectShow input component, e.g. for a webcam. It accepts
@@ -77,6 +77,9 @@ public:
 
 	/** Returns the source ID which will be stored in generated messages. */
 	uint64_t getSourceID() const										{ return m_sourceID; }
+
+	/** Returns the message subtype of the frames produced by this component (for uncompressed frames). */
+	uint32_t getFrameSubtype() const							{ return m_subType; }
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
@@ -146,7 +149,7 @@ private:
 	uint8_t *m_pFullFrame;
 	uint8_t *m_pMsgFrame;
 	size_t m_largeFrameSize, m_targetFrameSize;
-	MIPRawYUV420PVideoMessage *m_pVideoMsg;
+	MIPVideoMessage *m_pVideoMsg;
 	JMutex m_frameMutex;
 	MIPSignalWaiter m_sigWait;
 	bool m_gotMsg;
@@ -155,8 +158,7 @@ private:
 	uint64_t m_sourceID;
 
 	GUID m_selectedGuid;
-	void *m_pTargetAVFrame;
-	void *m_pSrcAVFrame;
+	uint32_t m_subType;
 };
 
 #endif // MIPCONFIG_SUPPORT_DIRECTSHOW

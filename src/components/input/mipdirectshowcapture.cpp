@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -30,12 +30,9 @@
 #include "mipsystemmessage.h"
 #include "miprawvideomessage.h"
 
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-#include <ffmpeg/avcodec.h>
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 #include <iostream>
 
-#include <stdio.h>
+#include "mipdebug.h"
 
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_ALREADYOPEN								"Already a DirectShow capture device open"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATECAPTUREBUILDER				"Can't create a capture graph builder"
@@ -71,8 +68,6 @@ extern "C" const __declspec(selectany) GUID EMIP_MEDIASUBTYPE_I420 =
 
 #define HR_SUCCEEDED(x) ((x==S_OK))
 #define HR_FAILED(x)	((x!=S_OK))
-
-// TODO: remove libavcodec stuff and add frame converter in video session.
 
 MIPDirectShowCapture::MIPDirectShowCapture() : MIPComponent("MIPDirectShowCapture")
 {
@@ -134,11 +129,13 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	{
 		//std::cout << "Trying I420" << std::endl;		
 		m_selectedGuid = EMIP_MEDIASUBTYPE_I420;
+		m_subType = MIPRAWVIDEOMESSAGE_TYPE_YUV420P;
 	}
 	else if (haveYUY2)
 	{
 		//std::cout << "Trying YUY2" << std::endl;		
 		m_selectedGuid = MEDIASUBTYPE_YUY2;
+		m_subType = MIPRAWVIDEOMESSAGE_TYPE_YUYV;
 	}
 	else
 	{
@@ -260,12 +257,15 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 	else
 		m_largeFrameSize = (size_t)(m_width*m_height*2);
 
-	m_targetFrameSize = (size_t)((m_width*m_height*3)/2);
 	m_pFullFrame = new uint8_t [m_largeFrameSize];
-	m_pMsgFrame = new uint8_t [m_targetFrameSize];
-	memset(m_pMsgFrame, 0, m_targetFrameSize);
+	m_pMsgFrame = new uint8_t [m_largeFrameSize];
+	memset(m_pMsgFrame, 0, m_largeFrameSize);
 	memset(m_pFullFrame, 0, m_largeFrameSize);
-	m_pVideoMsg = new MIPRawYUV420PVideoMessage(m_width, m_height, m_pMsgFrame, false);
+
+	if (m_subType == MIPRAWVIDEOMESSAGE_TYPE_YUV420P)
+		m_pVideoMsg = new MIPRawYUV420PVideoMessage(m_width, m_height, m_pMsgFrame, false);
+	else // MIPRAWVIDEOMESSAGE_TYPE_YUYV
+		m_pVideoMsg = new MIPRawYUYVVideoMessage(m_width, m_height, m_pMsgFrame, false);
 
 	if (!m_sigWait.init())
 	{
@@ -289,28 +289,6 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int dev
 
 	m_sourceID = 0;
 
-	if (m_selectedGuid == MEDIASUBTYPE_YUY2)
-	{
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-		// need libavcodec to convert
-		m_pTargetAVFrame = avcodec_alloc_frame();
-		m_pSrcAVFrame = avcodec_alloc_frame();
-
-		avpicture_fill((AVPicture *)m_pTargetAVFrame, m_pMsgFrame, PIX_FMT_YUV420P, m_width, m_height);
-		avpicture_fill((AVPicture *)m_pSrcAVFrame, m_pFullFrame, PIX_FMT_YUV422, m_width, m_height);
-#else
-		m_sigWait.destroy();
-		clearNonZero();
-		setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_NOAVCODEC);
-		return false;
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
-	}
-	else
-	{
-		m_pTargetAVFrame = 0;
-		m_pSrcAVFrame = 0;
-	}
-
 	return true;
 }
 
@@ -325,13 +303,6 @@ bool MIPDirectShowCapture::close()
 	m_pControl->Stop();
 	clearNonZero();
 	m_sigWait.destroy();
-
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	if (m_pTargetAVFrame)
-		av_free(m_pTargetAVFrame);
-	if (m_pSrcAVFrame)
-		av_free(m_pSrcAVFrame);
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 
 	return true;
 }
@@ -672,12 +643,7 @@ bool MIPDirectShowCapture::listGUIDS(std::list<GUID> &guids)
 
 void MIPDirectShowCapture::copyVideoFrame()
 {
-	if (m_selectedGuid == EMIP_MEDIASUBTYPE_I420)
-		memcpy(m_pMsgFrame, m_pFullFrame, m_targetFrameSize);
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	else
-		img_convert((AVPicture *)m_pTargetAVFrame, PIX_FMT_YUV420P, (AVPicture *)m_pSrcAVFrame, PIX_FMT_YUV422, m_width, m_height);
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+	memcpy(m_pMsgFrame, m_pFullFrame, m_largeFrameSize);
 }
 
 #endif // MIPCONFIG_SUPPORT_DIRECTSHOW

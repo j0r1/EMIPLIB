@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -92,7 +92,7 @@ public:
 	
 		m_width = -1;
 		m_height = -1;
-		m_resize = false;
+		//m_resize = false;
 		m_pImgData = 0;
 		m_converted = false;
 
@@ -119,58 +119,63 @@ public:
 		if (m_pImgData && !m_converted)
 		{
 			m_converted = true;
-			if ((m_width&1) == 0 && (m_height&1) == 0)
+			if (m_tmpImg.isNull())
 			{
-				const uint8_t *pValues = m_pImgData;
-				size_t totalNum = m_width*m_height;
-				const uint8_t *pY = pValues;
-				const uint8_t *pU = pValues+totalNum;
-				const uint8_t *pV = pValues+totalNum+totalNum/4;
-				
-				int indexY = 0;
-				int indexU = 0;
-				int indexV = 0;
-				
-				for (int y = 0 ; y < m_height ; y += 2)
+				if ((m_width&1) == 0 && (m_height&1) == 0)
 				{
-					for (int x = 0 ; x < m_width ; x += 2)
+					const uint8_t *pValues = m_pImgData;
+					size_t totalNum = m_width*m_height;
+					const uint8_t *pY = pValues;
+					const uint8_t *pU = pValues+totalNum;
+					const uint8_t *pV = pValues+totalNum+totalNum/4;
+					
+					int indexY = 0;
+					int indexU = 0;
+					int indexV = 0;
+					
+					for (int y = 0 ; y < m_height ; y += 2)
 					{
-						uint8_t Y0 = pY[indexY + 0];
-						uint8_t Y1 = pY[indexY + 1];
-						uint8_t Y2 = pY[indexY + m_width];
-						uint8_t Y3 = pY[indexY + m_width + 1];
-						uint8_t U = pU[indexU];
-						uint8_t V = pV[indexV];
-						
-						uint8_t R,G,B;
-						
-						YUVTORGB(Y0,U,V,R,G,B);
-						m_img.setPixel(x, y, qRgb(R, G, B));
-						YUVTORGB(Y1,U,V,R,G,B);
-						m_img.setPixel(x + 1, y, qRgb(R, G, B));
-						YUVTORGB(Y2,U,V,R,G,B);
-						m_img.setPixel(x, y + 1, qRgb(R, G, B));
-						YUVTORGB(Y3,U,V,R,G,B);
-						m_img.setPixel(x + 1, y + 1, qRgb(R, G, B));
-						
-						indexY += 2;
-						indexU++;
-						indexV++;
-						
+						for (int x = 0 ; x < m_width ; x += 2)
+						{
+							uint8_t Y0 = pY[indexY + 0];
+							uint8_t Y1 = pY[indexY + 1];
+							uint8_t Y2 = pY[indexY + m_width];
+							uint8_t Y3 = pY[indexY + m_width + 1];
+							uint8_t U = pU[indexU];
+							uint8_t V = pV[indexV];
+							
+							uint8_t R,G,B;
+							
+							YUVTORGB(Y0,U,V,R,G,B);
+							m_img.setPixel(x, y, qRgb(R, G, B));
+							YUVTORGB(Y1,U,V,R,G,B);
+							m_img.setPixel(x + 1, y, qRgb(R, G, B));
+							YUVTORGB(Y2,U,V,R,G,B);
+							m_img.setPixel(x, y + 1, qRgb(R, G, B));
+							YUVTORGB(Y3,U,V,R,G,B);
+							m_img.setPixel(x + 1, y + 1, qRgb(R, G, B));
+							
+							indexY += 2;
+							indexU++;
+							indexV++;
+							
+						}
+						indexY += m_width;
 					}
-					indexY += m_width;
+				}
+				else
+				{
+					for (int y = 0 ; y < m_height ; y++)
+					{
+						for (int x = 0 ; x < m_width ; x++)
+						{
+							m_img.setPixel(x,y,qRgb(0,0,0));
+						}
+					}
 				}
 			}
 			else
-			{
-				for (int y = 0 ; y < m_height ; y++)
-				{
-					for (int x = 0 ; x < m_width ; x++)
-					{
-						m_img.setPixel(x,y,qRgb(0,0,0));
-					}
-				}
-			}
+				m_img = m_tmpImg.swapRGB();
 		}
 		m_frameMutex.Unlock();
 
@@ -181,23 +186,45 @@ public:
 		p.end();
 	}
 
-	void processRawVideoMessage(MIPRawYUV420PVideoMessage *pMsg)
+	void processRawVideoMessage(MIPVideoMessage *pVidMsg)
 	{
 		m_frameMutex.Lock();
 		if (m_width < 0) // first time
 		{
-			m_width = pMsg->getWidth();
-			m_height = pMsg->getHeight();
-			m_img.create(m_width,m_height,32);
-			m_pImgData = new uint8_t[m_width*m_height*3/2];
-			m_resize = true;
+			m_width = pVidMsg->getWidth();
+			m_height = pVidMsg->getHeight();
+
+			if (pVidMsg->getMessageSubtype() == MIPRAWVIDEOMESSAGE_TYPE_YUV420P)
+			{
+				m_img.create(m_width,m_height,32);
+				m_pImgData = new uint8_t[m_width*m_height*3/2];
+			}
+			else // 32 bit rgb
+			{
+				m_pImgData = new uint8_t[m_width*m_height*4];
+				m_tmpImg = QImage((uchar *)m_pImgData, m_width, m_height, 32, 0, 0, QImage::LittleEndian);
+			}
+			//m_resize = true;
 		}
 		else
 		{
-			m_resize = false;
+			//m_resize = false;
 		}
-		m_converted = false;
-		memcpy(m_pImgData,pMsg->getImageData(),m_width*m_height*3/2);
+
+		if (pVidMsg->getMessageSubtype() == MIPRAWVIDEOMESSAGE_TYPE_YUV420P)
+		{
+			MIPRawYUV420PVideoMessage *pMsg = (MIPRawYUV420PVideoMessage *)pVidMsg;
+
+			memcpy(m_pImgData,pMsg->getImageData(),m_width*m_height*3/2);
+			m_converted = false;
+		}
+		else // 32 bit rgb
+		{
+			MIPRawRGBVideoMessage *pMsg = (MIPRawRGBVideoMessage *)pVidMsg;
+
+			memcpy(m_pImgData,pMsg->getImageData(),m_width*m_height*4);
+			m_converted = false;
+		}
 		m_frameMutex.Unlock();
 	}
 	
@@ -210,8 +237,8 @@ private:
 	JMutex m_frameMutex;
 	int m_width;
 	int m_height;
-	QImage m_img;
-	bool m_resize;
+	QImage m_img, m_tmpImg;
+	//bool m_resize;
 	uint8_t *m_pImgData;
 	bool m_converted;
 };
@@ -341,13 +368,14 @@ bool MIPQtOutput::push(const MIPComponentChain &chain, int64_t iteration, MIPMes
 		return false;
 	}
 	
-	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_VIDEO_RAW && pMsg->getMessageSubtype() == MIPRAWVIDEOMESSAGE_TYPE_YUV420P)) 
+	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_VIDEO_RAW && 
+	     (pMsg->getMessageSubtype() == MIPRAWVIDEOMESSAGE_TYPE_YUV420P || pMsg->getMessageSubtype() == MIPRAWVIDEOMESSAGE_TYPE_RGB32))) 
 	{
 		setErrorString(MIPQTOUTPUT_ERRSTR_BADMESSAGE);
 		return false;
 	}
 
-	MIPRawYUV420PVideoMessage *pVideoMsg = (MIPRawYUV420PVideoMessage *)pMsg;
+	MIPVideoMessage *pVideoMsg = (MIPVideoMessage *)pMsg;
 	uint64_t id = pVideoMsg->getSourceID();
 	
 	m_lock.Lock();

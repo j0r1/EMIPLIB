@@ -15,6 +15,7 @@ copy %1\src\components\input\mipwinmminput.h %1\include\
 copy %1\src\components\input\mipwavinput.h %1\include\
 copy %1\src\components\input\mipaudiofileinput.h %1\include\
 copy %1\src\components\input\mipv4l2input.h %1\include\
+copy %1\src\components\input\mipaudiorecorderinput.h %1\include\
 copy %1\src\components\output\mipsdlaudiooutput.h %1\include\
 copy %1\src\components\output\mipjackoutput.h %1\include\
 copy %1\src\components\output\mipesdoutput.h %1\include\
@@ -26,6 +27,7 @@ copy %1\src\components\output\mipqtoutput.h %1\include\
 copy %1\src\components\output\mipwinmmoutput.h %1\include\
 copy %1\src\components\output\mipwavoutput.h %1\include\
 copy %1\src\components\output\mipopenaloutput.h %1\include\
+copy %1\src\components\output\mipaudiotrackoutput.h %1\include\
 copy %1\src\components\timer\mipaveragetimer.h %1\include\
 copy %1\src\components\timer\mipinterchaintimer.h %1\include\
 copy %1\src\components\timer\mippusheventtimer.h %1\include\
@@ -39,12 +41,14 @@ copy %1\src\components\transmission\miprtpulawdecoder.h %1\include\
 copy %1\src\components\transmission\miprtpcomponent.h %1\include\
 copy %1\src\components\transmission\miprtpdecoder.h %1\include\
 copy %1\src\components\transmission\miprtpvideoencoder.h %1\include\
+copy %1\src\components\transmission\miprtph263encoder.h %1\include\
 copy %1\src\components\transmission\miprtpulawencoder.h %1\include\
 copy %1\src\components\transmission\miprtpspeexdecoder.h %1\include\
 copy %1\src\components\transmission\miprtpencoder.h %1\include\
 copy %1\src\components\transmission\miprtpdummydecoder.h %1\include\
 copy %1\src\components\transmission\miprtpspeexencoder.h %1\include\
 copy %1\src\components\transmission\miprtpvideodecoder.h %1\include\
+copy %1\src\components\transmission\miprtph263decoder.h %1\include\
 copy %1\src\components\transmission\miprtpalawdecoder.h %1\include\
 copy %1\src\components\transmission\miprtpalawencoder.h %1\include\
 copy %1\src\components\transmission\miprtplpcdecoder.h %1\include\
@@ -92,9 +96,9 @@ copy %1\src\core\mipsystemmessage.h %1\include\
 copy %1\src\core\mipcomponentchain.h %1\include\
 copy %1\src\core\miptime.h %1\include\
 copy %1\src\core\mipcomponent.h %1\include\
+copy %1\src\core\mipcomponentalias.h %1\include\
 copy %1\src\core\miptypes.h %1\include\
 copy %1\src\core\mipconfig.h %1\include\
-copy %1\src\core\mipconfig_unix.h %1\include\
 copy %1\src\core\mipaudiomessage.h %1\include\
 copy %1\src\core\miptypes_unix.h %1\include\
 copy %1\src\core\miprtpmessage.h %1\include\
@@ -110,3 +114,5 @@ copy %1\src\util\mipsignalwaiter.h %1\include\
 copy %1\src\util\mipwavreader.h %1\include\
 copy %1\src\util\mipspeexutil.h %1\include\
 copy %1\src\util\mipwavwriter.h %1\include\
+copy %1\src\util\miprtppacketgrouper.h %1\include\
+

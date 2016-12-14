@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -27,6 +27,8 @@
 #include "miprawaudiomessage.h"
 #include "mipsystemmessage.h"
 #include "mipfeedback.h"
+
+//#include <iostream> 
 
 #include "mipdebug.h"
 
@@ -129,6 +131,8 @@ bool MIPAudioMixer::destroy()
 
 bool MIPAudioMixer::push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg)
 {
+	//std::cout << "I " << iteration << "  MIPAudioMixer::push time is " << m_playTime.getValue() << std::endl;
+
 	if (!m_init)
 	{
 		setErrorString(MIPAUDIOMIXER_ERRSTR_NOTINIT);
@@ -170,7 +174,14 @@ bool MIPAudioMixer::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 	{
 		MIPTime msgTime = pAudioMsg->getTime();
 		if (msgTime < m_playTime) // frames are too old to be played. Ignore
+		{
+			//std::cout << "           Ignoring frame! " << msgTime.getValue() << " < " << m_playTime.getValue() << std::endl << std::endl;
+
+
 			return true;
+		}
+//		else
+			//std::cout << "           Accepting message with time " << msgTime.getValue() << " >= " << m_playTime.getValue() << std::endl << std::endl;
 		
 		MIPTime offsetTime = msgTime;
 		offsetTime -= m_playTime;
@@ -249,6 +260,8 @@ bool MIPAudioMixer::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 
 bool MIPAudioMixer::pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg)
 {
+	//std::cout << "I " << iteration << " MIPAudioMixer::pull " << m_playTime.getValue() << std::endl;
+
 	if (!m_init)
 	{
 		setErrorString(MIPAUDIOMIXER_ERRSTR_NOTINIT);
@@ -341,6 +354,8 @@ bool MIPAudioMixer::pull(const MIPComponentChain &chain, int64_t iteration, MIPM
 			*pMsg = m_pMsgInt;
 		}
 	}
+	//std::cout << "I " << iteration << " MIPAudioMixer::pull leaving " << m_playTime.getValue() << std::endl;
+
 	return true;
 }
 

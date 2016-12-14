@@ -97,23 +97,30 @@ int main(void)
 	std::cin >> bandWidth;
 
 	int bw = atoi(bandWidth.c_str());
+	int audioPort = 6000;
+	int videoPort = 6100;
 	
-	Vparams.setPortbase(6100);
+	Vparams.setPortbase(videoPort);
 	Vparams.setAcceptOwnPackets(true);
-	Vparams.setDevice("/dev/video0");
+//	Vparams.setDevice("/dev/video0");
 	Vparams.setFrameRate(25.0);
 	Vparams.setBandwidth(bw);
 	Vparams.setWidth(320);
 	Vparams.setHeight(240);
+//	Vparams.setUseQtOutput(false);
+//	Vparams.setEncodingType(MIPVideoSessionParams::IntYUV420);
+//	Vparams.setSessionType(MIPVideoSessionParams::OutputOnly);
 	
-	Aparams.setPortbase(6000);
+	Aparams.setPortbase(audioPort);
 	Aparams.setCompressionType(MIPAudioSessionParams::Speex);
 //	Aparams.setAcceptOwnPackets(true);
 //	Aparams.setInputDevice("/dev/dsp1");
 //	Aparams.setOutputDevice("/dev/dsp");
 //	Aparams.setSpeexEncoding(MIPAudioSessionParams::UltraWideBand);
+//	Aparams.setSpeexOutgoingPayloadType(97);
+//	Aparams.setSpeexIncomingPayloadType(97);
 	
-	std::cout << "Starting audio session at portbase 6000, video session at portbase 6100" << std::endl;
+	std::cout << "Starting audio session at portbase " << audioPort << ", video session at portbase " << videoPort << std::endl;
 
 	ret = videoSess.init(&Vparams);
 	checkRet(ret, videoSess);
@@ -122,8 +129,8 @@ int main(void)
 	checkRet(ret, audioSess);
 
 	uint8_t ipLocal[4] = { 127, 0, 0, 1 };
-	ret = videoSess.addDestination(RTPIPv4Address(ipLocal,6100));
-//	ret = audioSess.addDestination(RTPIPv4Address(ipLocal,6000));
+	ret = videoSess.addDestination(RTPIPv4Address(ipLocal, videoPort));
+//	ret = audioSess.addDestination(RTPIPv4Address(ipLocal, audioPort));
 
 	int ip[4] = { 127, 0, 0, 1};
 	int Aport = 6000;

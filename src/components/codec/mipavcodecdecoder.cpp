@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -55,7 +55,7 @@ MIPAVCodecDecoder::~MIPAVCodecDecoder()
 	destroy();
 }
 	
-bool MIPAVCodecDecoder::init()
+bool MIPAVCodecDecoder::init(bool waitForKeyframe)
 {
 	if (m_init)
 	{
@@ -80,6 +80,7 @@ bool MIPAVCodecDecoder::init()
 	m_msgIt = m_messages.begin();
 	m_lastExpireTime = MIPTime::getCurrentTime();
 	m_init = true;
+	m_waitForKeyframe = waitForKeyframe;
 	return true;
 }
 
@@ -156,8 +157,8 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 
 		pContext = avcodec_alloc_context();
 		avcodec_get_context_defaults(pContext);
-		pContext->width = width;
-		pContext->height = height;
+		pContext->width = 0; // let the codec work out the dimensions
+		pContext->height = 0;
 		if (avcodec_open(pContext, m_pCodec) < 0)
 		{
 			setErrorString(MIPAVCODECDECODER_ERRSTR_CANTCREATENEWDECODER);
@@ -167,9 +168,11 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 #ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
 		pInf = new DecoderInfo(width, height, pContext);
 #else
-		SwsContext *pSwsContext = sws_getContext(width, height, pContext->pix_fmt, width, height, PIX_FMT_YUV420P, SWS_FAST_BILINEAR, 0, 0, 0);
+		// We'll allocate this later, when we know the dimensions of the video frame
+		//SwsContext *pSwsContext = sws_getContext(width, height, pContext->pix_fmt, width, height, PIX_FMT_YUV420P, SWS_FAST_BILINEAR, 0, 0, 0);
 
-		pInf = new DecoderInfo(width, height, pContext, pSwsContext);
+		//pInf = new DecoderInfo(width, height, pContext, pSwsContext);
+		pInf = new DecoderInfo(width, height, pContext, 0);
 #endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		m_decoderStates[sourceID] = pInf;
 	}
@@ -217,34 +220,64 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 
 	if (framecomplete)
 	{
-		size_t dataSize = (width*height*3)/2;
-		uint8_t *pData = new uint8_t [dataSize];
+		bool skip = false;
+
+		if (m_waitForKeyframe)
+		{
+			if (!pInf->getContext()->coded_frame->key_frame)
+			{
+				if (!pInf->receivedKeyframe())
+					skip = true;
+			}
+			else
+				pInf->setReceivedKeyframe(true);
+		}
+
+		if (!skip)
+		{
+			// adjust width and height settings
+
+			width = pInf->getContext()->width;
+			height = pInf->getContext()->height;
+
+			size_t dataSize = (width*height*3)/2;
+			uint8_t *pData = new uint8_t [dataSize];
 
 #ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-		avpicture_fill((AVPicture *)m_pFrameYUV420P, pData, PIX_FMT_YUV420P, width, height);
-		img_convert((AVPicture *)m_pFrameYUV420P, PIX_FMT_YUV420P, (AVPicture*)m_pFrame, pInf->getContext()->pix_fmt, width, height);
+			avpicture_fill((AVPicture *)m_pFrameYUV420P, pData, PIX_FMT_YUV420P, width, height);
+			img_convert((AVPicture *)m_pFrameYUV420P, PIX_FMT_YUV420P, (AVPicture*)m_pFrame, pInf->getContext()->pix_fmt, width, height);
 #else
-		SwsContext *pSwsContext = pInf->getSwsContext();
+			SwsContext *pSwsContext = pInf->getSwsContext();
 
-		uint8_t *pDstPointers[3];
-		int dstStrides[3];
-	
-		pDstPointers[0] = pData;
-		pDstPointers[1] = pData+width*height;
-		pDstPointers[2] = pDstPointers[1]+(width*height)/4;
-		dstStrides[0] = width;
-		dstStrides[1] = width/2;
-		dstStrides[2] = width/2;
+			// TODO: check if width and height changed somehow?
+			if (pSwsContext == 0)
+			{
+				pSwsContext = sws_getContext(width, height, pInf->getContext()->pix_fmt, width, height, PIX_FMT_YUV420P, SWS_FAST_BILINEAR, 0, 0, 0);
 
-		sws_scale(pSwsContext, m_pFrame->data, m_pFrame->linesize, 0, height, pDstPointers, dstStrides);
+				pInf->setSwsContext(pSwsContext);
+			}
+
+			uint8_t *pDstPointers[3];
+			int dstStrides[3];
+		
+			pDstPointers[0] = pData;
+			pDstPointers[1] = pData+width*height;
+			pDstPointers[2] = pDstPointers[1]+(width*height)/4;
+			dstStrides[0] = width;
+			dstStrides[1] = width/2;
+			dstStrides[2] = width/2;
+
+			sws_scale(pSwsContext, m_pFrame->data, m_pFrame->linesize, 0, height, pDstPointers, dstStrides);
 #endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		
-		MIPRawYUV420PVideoMessage *pNewMsg = new MIPRawYUV420PVideoMessage(width, height, pData, true);
+			MIPRawYUV420PVideoMessage *pNewMsg = new MIPRawYUV420PVideoMessage(width, height, pData, true);
 
-		pNewMsg->setSourceID(sourceID);
-		pNewMsg->setTime(pEncMsg->getTime());
-		m_messages.push_back(pNewMsg);
-		m_msgIt = m_messages.begin();
+			pNewMsg->setSourceID(sourceID);
+			pNewMsg->setTime(pEncMsg->getTime());
+
+			m_messages.push_back(pNewMsg);
+			m_msgIt = m_messages.begin();
+		}
 	}
 	
 	return true;

@@ -1,4 +1,43 @@
-/**\mainpage EMIPLIB
+/**
+ * \htmlonly
+ * <style type="text/css">
+ * body {
+ * 	counter-reset: section;
+ * }
+ * 
+ * h2 {
+ * 	counter-increment: section;
+ * 	counter-reset: subsection;
+ * }
+ * 
+ * h3 {
+ * 	counter-increment: subsection;
+ * 	counter-reset: subsubsection;
+ * }
+ * 
+ * h4 {
+ * 	counter-increment: subsubsection;
+ * }
+ * 
+ * h2:before {
+ * 	content: counter(section) ".";
+ * 	color: #1a41a8;
+ * }
+ * 
+ * h3:before {
+ * 	content: counter(section) "." counter(subsection);
+ * 	color: #1a41a8;
+ * }
+ * 
+ * h4:before {
+ * 	content: counter(section) "." counter(subsection) "." counter(subsubsection);
+ * 	color: #1a41a8;
+ * }
+ * </style>
+ * \endhtmlonly
+ *
+ * \mainpage EMIPLIB 1.0.0
+ *
  *
  * \author Hasselt University - Expertise Centre for Digital Media
  *
@@ -33,7 +72,7 @@
  * 		
  * 		There is a mailing list available for EMIPLIB. To subscribe to it,
  * 		just send an e-mail to 
- * 		\c emiplib-subscribe \c [\c at] \c edm \c [\c dot] \c uhasselt \c [\c dot] be 
+ * 		\c emiplib-subscribe \c [\c at] \c edm \c [\c dot] \c uhasselt \c [\c dot] \c be 
  * 		and you'll receive additional instructions.
  * 
  * \section designphilosophy Design philosophy
@@ -132,7 +171,6 @@
  * 			order indicated by the numbers next to the connections.
  *
  * 			\image html chainbuilding.png
- * 			\image latex chainbuilding.eps
  *
  * 			The algorithm organizes the connections by placing the components in layers.
  * 			The first layer is simply the component set by the MIPComponentChain::setChainStart
@@ -193,6 +231,51 @@
  * 			Note that several feedback chains may exist; they can even have the same component
  * 			at the end of the chain. However, no two chains can pass through the same component
  * 			since there is no way to merge the feedback information of the two chains.
+ *
+ * 		\subsubsection branches Branching and merging
+ *
+ * 			The example in the section 'Building the chain' already shows that, from a
+ * 			specific component (e.g. the timer), you can create connections to several
+ * 			different components (e.g. the message dumper and soundfile input components).
+ * 			It's even possible to let such subchains merge again. In the following
+ * 			example, two different soundfile components are used, each reading data
+ * 			from a different file:
+ *
+ * 			\image html subchains1.png
+ *
+ * 			The data from each file is then resampled so that a single sampling rate
+ * 			is obtained. An audio mixer will merge the audio from the two files into
+ * 			a single output stream, after which a block of mixed audio data is sent
+ * 			to the sound card using an appropriate encoding.
+ *
+ * 			Now suppose that one of the soundfiles already possesses the appropriate
+ * 			sampling rate. In that case, passing its data through a sampling rate
+ * 			converter will not really be necessary, and at a first glance you might
+ * 			think that the following chain avoids this unnecessary operation:
+ *
+ * 			\image html subchains3.png
+ *
+ *			However, if we perform the connection ordering procedure from above, the
+ *			following ordering can arise:
+ * \code
+ *                   Timer -> Soundfile input 2
+ *                   Timer -> Soundfile input 1
+ *       Soundfile input 2 -> Mixer
+ *       Soundfile input 1 -> Sampling rate converter
+ *                   Mixer -> Sample encoder
+ * Sampling rate converter -> Mixer
+ *          Sample encoder -> Soundcard output
+ * \endcode
+ *			In this case, a block of audio will be extracted from the audio mixer
+ *			\em before a block of audio will be transferred from the sampling rate
+ *			converter to the mixer. In the best case scenario this will cause an
+ *			offset of one stream with respect to the other, in other circumstances
+ *			it may even be possible that one stream will be discarded.
+ *
+ *			So in general, when using branches that merge again, you will probably
+ *			want to use an equal number of components in each branch to avoid such
+ *			issues. To help make branches of equal length and avoid unnecessary
+ *			copying of data, the MIPComponentAlias class may come in handy. 
  *
  * \section tutorial Tutorial
  *
@@ -713,7 +796,7 @@
  * 	   This is a wrapper for a simple voice over IP session. It can use several codecs for
  * 	   audio compression.
  * 	 - MIPVideoSession:
- * 	   This is a wrapper for s simple video over IP session. It uses libavcodec's H.263+
+ * 	   This is a wrapper for a simple video over IP session. It uses libavcodec's H.263+
  * 	   codec.
  * 
  */

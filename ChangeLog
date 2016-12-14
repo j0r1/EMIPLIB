@@ -3,6 +3,43 @@
                               EMIPLIB ChangeLog
 
 
+Version 1.0.0, July 2010
+ * Fixed bugs in MIPComponentChain. The feedback chain building
+   procedure had to be adjusted slightly to handle the case in
+   which multiple feedback chains go through the same component.
+   Also, the procedure needed to start from the ordered list of
+   connections, not the input list.
+ * Added MIPAudioTrackOutput and MIPAudioRecorderInput for Android 
+   platform.
+ * Removed libavcodec code from MIPDirectShowCapture. Component now
+   generates either YUV420P or YUYV422 data, which can be converted
+   using a MIPAVCodecFrameConverter instance. Corresponding changes
+   were made to MIPVideoSession.
+ * MIPAVCodecDecoder was modified so that the user can choose to
+   ignore data before the first keyframe.
+ * Created components MIPRTPH263Encoder and MIPRTPH263Decoder which
+   cause H.263 video to be encapsulated correctly in RTP packets.
+ * Added MIPRTPPacketGrouper utility. When data (a single video
+   frame for example) has to be split over multiple RTP packets,
+   this class can help group these packets so that they can be
+   recombined again.
+ * Added MIPComponentAlias, which basically allows you to refer
+   to the same component using a different pointer. See documentation
+   for an example of its usage.
+ * MIPRTPPacketDecoder interface (and implementation in derived
+   classes) changed somewhat. When data (like a video frame) is split
+   over several RTP packets, it is possible that a single packet
+   signals the completion of more than one frame. Interface was
+   changed to support this, and corresponding changes to MIPRTPDecoder
+   were made.
+ * Old, non standard, video encapsulation in RTP code now also supports
+   video frames that are larger than a maximum packet size (i.e. data
+   will be split over multiple RTP packets when necessary). Support
+   for sending raw YUV420P frames was added as well.
+ * MIPVideoSession was modified to allow the user to choose between
+   several video encodings/compressions. The session can also be
+   initialized for output only, no video is captured in that case.
+
 Version 0.17.0, August 2009
  * Added a virtual function to the WAV file input components which gets
    called when the last block of the file has been read. This allows

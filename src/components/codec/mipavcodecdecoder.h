@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -66,8 +66,13 @@ public:
 	MIPAVCodecDecoder();
 	~MIPAVCodecDecoder();
 
-	/** Initialize the component. */
-	bool init();
+	/** Initialize the component.
+	 *  Initialize the component.
+	 *  \param waitForKeyframe If set to true, frames will only be output after a key frame
+	 *                         has been received. Looks cleaner, but you may have to wait a
+	 *                         bit longer to actually see something.
+	 */
+	bool init(bool waitForKeyframe);
 
 	/** De-initialize the component. */
 	bool destroy();
@@ -99,6 +104,7 @@ private:
 #ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
 			m_pSwsContext = pSwsContext;
 #endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+			m_gotKeyframe = false;
 		}
 
 		~DecoderInfo()
@@ -106,7 +112,8 @@ private:
 			avcodec_close(m_pContext);
 			av_free(m_pContext);
 #ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
-			sws_freeContext(m_pSwsContext);
+			if (m_pSwsContext)
+				sws_freeContext(m_pSwsContext);
 #endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		}
 
@@ -115,7 +122,10 @@ private:
 		AVCodecContext *getContext()						{ return m_pContext; }
 #ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
 		SwsContext *getSwsContext()						{ return m_pSwsContext; }
+		void setSwsContext(SwsContext *pCtx)					{ m_pSwsContext = pCtx; }
 #endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+		bool receivedKeyframe() const						{ return m_gotKeyframe; }
+		void setReceivedKeyframe(bool f)					{ m_gotKeyframe = f; }
 
 		MIPTime getLastUpdateTime() const					{ return m_lastTime; }
 		void setLastUpdateTime(MIPTime t)					{ m_lastTime = t; }
@@ -126,6 +136,7 @@ private:
 #ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
 		SwsContext *m_pSwsContext;
 #endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+		bool m_gotKeyframe;
 	};
 	
 	bool m_init;
@@ -146,6 +157,7 @@ private:
 	std::list<MIPRawYUV420PVideoMessage *>::const_iterator m_msgIt;
 	int64_t m_lastIteration;
 	MIPTime m_lastExpireTime;
+	bool m_waitForKeyframe;
 };
 
 #endif // MIPCONFIG_SUPPORT_AVCODEC

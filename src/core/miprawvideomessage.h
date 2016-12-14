@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -43,10 +43,18 @@
  * \def MIPRAWVIDEOMESSAGE_TYPE_YUYV
  * 	\brief A message with this subtype represents a YUYV encoded video frame, stored in a
  *	       MIPRawYUYVVideoMessage instance.
+ * \def MIPRAWVIDEOMESSAGE_TYPE_RGB24
+ * 	\brief A message with this subtype represents a 24-bit RGB video frame, stored in a
+ *	       MIPRawRGBVideoMessage instance.
+ * \def MIPRAWVIDEOMESSAGE_TYPE_RGB32
+ * 	\brief A message with this subtype represents a 32-bit RGB video frame, stored in a
+ *	       MIPRawRGBVideoMessage instance.
  */
 
 #define MIPRAWVIDEOMESSAGE_TYPE_YUV420P								0x00000001
 #define MIPRAWVIDEOMESSAGE_TYPE_YUYV								0x00000002
+#define MIPRAWVIDEOMESSAGE_TYPE_RGB24								0x00000004
+#define MIPRAWVIDEOMESSAGE_TYPE_RGB32								0x00000008
 
 /** Container for an YUV420P encoded raw video frame. */
 class MIPRawYUV420PVideoMessage : public MIPVideoMessage
@@ -116,6 +124,52 @@ public:
 private:
 	bool m_deleteData;
 	uint8_t *m_pData;
+};
+
+/** Container for an RGB encoded raw video frame. */
+class MIPRawRGBVideoMessage : public MIPVideoMessage
+{
+public:
+	/** Creates a raw video message with RGB representation.
+	 *  Creates a raw video message with representation.
+	 *  \param width Width of the video frame.
+	 *  \param height Height of the video frame.
+	 *  \param pData The data of the video frame.
+	 *  \param depth32 Flag indicating if data is in 32-bit or 24-bit format.
+	 *  \param deleteData Flag indicating if the data contained in \c pData should be
+	 *                    deleted when this message is destroyed or when the data is replaced.
+	 */
+	MIPRawRGBVideoMessage(int width, int height, uint8_t *pData, bool depth32, bool deleteData) : MIPVideoMessage(true, (depth32)?MIPRAWVIDEOMESSAGE_TYPE_RGB32:MIPRAWVIDEOMESSAGE_TYPE_RGB24, width, height)
+												{ m_pData = pData; m_deleteData = deleteData; m_depth32 = depth32; }
+	~MIPRawRGBVideoMessage()								{ if (m_deleteData) delete [] m_pData; }
+
+	/** Returns the image data. */
+	const uint8_t *getImageData() const							{ return m_pData; }
+
+	/** Returns \c true if it's 32-bit data, \c false if it's 24-bit data. */
+	bool is32Bit() const									{ return m_depth32; }
+
+	/** Returns a copy of the message. */
+	MIPMediaMessage *createCopy() const
+	{
+		size_t dataSize = getWidth()*getHeight();
+
+		if (m_depth32)
+			dataSize *= 4;
+		else
+			dataSize *= 3;
+
+		uint8_t *pData = new uint8_t [dataSize];
+
+		memcpy(pData, m_pData, dataSize);
+		MIPMediaMessage *pMsg = new MIPRawRGBVideoMessage(getWidth(), getHeight(), pData, m_depth32, true);
+		pMsg->copyMediaInfoFrom(*this);
+		return pMsg;
+	}
+private:
+	bool m_deleteData;
+	uint8_t *m_pData;
+	bool m_depth32;
 };
 
 #endif // MIPRAWVIDEOMESSAGE_H

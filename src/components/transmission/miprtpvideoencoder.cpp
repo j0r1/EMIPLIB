@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -28,9 +28,12 @@
 #include "miprawvideomessage.h"
 #include "mipencodedvideomessage.h"
 
-#define MIPRTPVIDEOENCODER_ERRSTR_BADMESSAGE		"Can't understand message"
-#define MIPRTPVIDEOENCODER_ERRSTR_CANTENCODE		"Can't encode this message"
+#include "mipdebug.h"
+
+#define MIPRTPVIDEOENCODER_ERRSTR_BADMESSAGE		"Message type or subtype doesn't correspond to the settings during initialization"
 #define MIPRTPVIDEOENCODER_ERRSTR_NOTINIT		"RTP encoder not initialized"
+#define MIPRTPVIDEOENCODER_ERRSTR_BADMAXPACKSIZE	"Maximum RTP payload size should be at least 128"
+#define MIPRTPVIDEOENCODER_ERRSTR_BADENCODINGTYPE	"Specified encoding type is not valid"
 
 MIPRTPVideoEncoder::MIPRTPVideoEncoder() : MIPRTPEncoder("MIPRTPVideoEncoder")
 {
@@ -42,10 +45,42 @@ MIPRTPVideoEncoder::~MIPRTPVideoEncoder()
 	cleanUp();
 }
 
-bool MIPRTPVideoEncoder::init(real_t frameRate)
+bool MIPRTPVideoEncoder::init(real_t frameRate, size_t maxPayloadSize, MIPRTPVideoEncoder::EncodingType encType)
 {
+	if (maxPayloadSize < 128)
+	{
+		setErrorString(MIPRTPVIDEOENCODER_ERRSTR_BADMAXPACKSIZE);
+		return false;
+	}
+
+	uint8_t encodingType = 0;
+	uint32_t encMsgType = 0;
+	uint32_t encSubMsgType = 0;
+
+	switch(encType)
+	{
+	case MIPRTPVideoEncoder::YUV420P:
+		encodingType = 0;
+		encMsgType = MIPMESSAGE_TYPE_VIDEO_RAW;
+		encSubMsgType = MIPRAWVIDEOMESSAGE_TYPE_YUV420P;
+		break;
+	case MIPRTPVideoEncoder::H263:
+		encodingType = 1;
+		encMsgType = MIPMESSAGE_TYPE_VIDEO_ENCODED;
+		encSubMsgType = MIPENCODEDVIDEOMESSAGE_TYPE_H263P;
+		break;
+	default:
+		setErrorString(MIPRTPVIDEOENCODER_ERRSTR_BADENCODINGTYPE);
+		return false;
+	}
+
 	if (m_init)
 		cleanUp();
+
+	m_maxPayloadSize = maxPayloadSize;
+	m_encodingType = encodingType;
+	m_encMsgType = encMsgType;
+	m_encSubMsgType = encSubMsgType;
 
 	m_msgIt = m_messages.begin();
 	m_prevIteration = -1;
@@ -68,53 +103,90 @@ bool MIPRTPVideoEncoder::push(const MIPComponentChain &chain, int64_t iteration,
 		clearMessages();
 	}
 	
-	if (pMsg->getMessageType() == MIPMESSAGE_TYPE_VIDEO_ENCODED)
+	if (pMsg->getMessageType() == m_encMsgType && pMsg->getMessageSubtype() == m_encSubMsgType)
 	{
-		MIPEncodedVideoMessage *pVidMsg = (MIPEncodedVideoMessage *)pMsg;
-		
+		const uint8_t *pVideoData = 0;
+		size_t msgSize = 0;
+		uint32_t width = 0;
+		uint32_t height = 0;
+		MIPTime sampTime;
+
+		if (pMsg->getMessageType() == MIPMESSAGE_TYPE_VIDEO_ENCODED)
+		{
+			MIPEncodedVideoMessage *pVidMsg = (MIPEncodedVideoMessage *)pMsg;
+	
+			msgSize = pVidMsg->getDataLength();
+			width = (uint32_t)pVidMsg->getWidth();
+			height = (uint32_t)pVidMsg->getHeight();
+			pVideoData = pVidMsg->getImageData();
+			sampTime = pVidMsg->getTime();
+		}
+		else // raw data, should be YUV420P for now
+		{
+			MIPRawYUV420PVideoMessage *pVidMsg = (MIPRawYUV420PVideoMessage *)pMsg;
+	
+			width = (uint32_t)pVidMsg->getWidth();
+			height = (uint32_t)pVidMsg->getHeight();
+			msgSize = (width*height*3)/2;
+			pVideoData = pVidMsg->getImageData();
+			sampTime = pVidMsg->getTime();
+		}
+
 		// We'll use a timestamp unit of 1.0/90000.0
 
 		real_t tsUnit = 1.0/90000.0;
 		uint32_t tsInc = (uint32_t)((1.0/(m_frameRate*tsUnit))+0.5);
 		uint8_t payloadType = getPayloadType();
-		uint32_t width = (uint32_t)pVidMsg->getWidth();
-		uint32_t height = (uint32_t)pVidMsg->getHeight();
-		uint8_t typeByte = 0;
-		size_t msgSize = pVidMsg->getDataLength();
-		bool marker = false;
-		
-		if (pMsg->getMessageSubtype() == MIPENCODEDVIDEOMESSAGE_TYPE_H263P)
+
+		int extraBytes = 9;
+		int offset = 0;
+
+		while (offset < msgSize)
 		{
-			typeByte = 1;
-			marker = false;
+			size_t partSize = msgSize-offset+extraBytes;
+			uint32_t partTSInc = 0;
+			bool marker = true;
+
+			if (partSize > m_maxPayloadSize)
+			{
+				partSize = m_maxPayloadSize;
+				marker = false;
+			}
+			else
+				partTSInc = tsInc;
+
+			uint8_t *pMsgData = new uint8_t [partSize];
+		
+			memcpy(pMsgData + extraBytes, pVideoData + offset, partSize-extraBytes);
+
+			if (extraBytes == 9) // first part of a frame
+			{
+				pMsgData[0] = m_encodingType;
+				pMsgData[1] = (uint8_t)(width&0xff);
+				pMsgData[2] = (uint8_t)((width>>8)&0xff);
+				pMsgData[3] = (uint8_t)((width>>16)&0xff);
+				pMsgData[4] = (uint8_t)((width>>24)&0xff);
+				pMsgData[5] = (uint8_t)(height&0xff);
+				pMsgData[6] = (uint8_t)((height>>8)&0xff);
+				pMsgData[7] = (uint8_t)((height>>16)&0xff);
+				pMsgData[8] = (uint8_t)((height>>24)&0xff);
+			}
+			else
+			{
+				pMsgData[0] = 0xff; // indicate that it's not the first packet of a frame
+			}
+
+			MIPRTPSendMessage *pNewMsg;
+
+			pNewMsg = new MIPRTPSendMessage(pMsgData, partSize, payloadType, marker, partTSInc);
+			pNewMsg->setSamplingInstant(sampTime);
+
+			m_messages.push_back(pNewMsg);
+
+			offset += (partSize-extraBytes);
+			extraBytes = 1;
 		}
-		else
-		{
-			setErrorString(MIPRTPVIDEOENCODER_ERRSTR_BADMESSAGE);
-			return false;
-		}
-		
-		msgSize += 1 + 2*sizeof(uint32_t);
-		uint8_t *pMsgData = new uint8_t [msgSize];
-		
-		pMsgData[0] = typeByte;
-		pMsgData[1] = (uint8_t)(width&0xff);
-		pMsgData[2] = (uint8_t)((width>>8)&0xff);
-		pMsgData[3] = (uint8_t)((width>>16)&0xff);
-		pMsgData[4] = (uint8_t)((width>>24)&0xff);
-		pMsgData[5] = (uint8_t)(height&0xff);
-		pMsgData[6] = (uint8_t)((height>>8)&0xff);
-		pMsgData[7] = (uint8_t)((height>>16)&0xff);
-		pMsgData[8] = (uint8_t)((height>>24)&0xff);
-
-		memcpy(pMsgData+9,pVidMsg->getImageData(),msgSize-9);
-
-		MIPRTPSendMessage *pNewMsg;
-
-		pNewMsg = new MIPRTPSendMessage(pMsgData,msgSize,payloadType,marker,tsInc);
-		pNewMsg->setSamplingInstant(pVidMsg->getTime());
-		
-		m_messages.push_back(pNewMsg);
+	
 		m_msgIt = m_messages.begin();
 	}
 	else

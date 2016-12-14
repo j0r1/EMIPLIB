@@ -38,7 +38,7 @@ build_triplet = @build@
 host_triplet = @host@
 noinst_PROGRAMS = simplechain$(EXEEXT) soundfileplayer$(EXEEXT) \
 	feedbackexample$(EXEEXT) avsession$(EXEEXT) \
-	soundrecorder$(EXEEXT)
+	soundrecorder$(EXEEXT) multiplesoundfileplayer$(EXEEXT)
 subdir = examples
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -57,6 +57,12 @@ am_feedbackexample_OBJECTS = feedbackexample.$(OBJEXT)
 feedbackexample_OBJECTS = $(am_feedbackexample_OBJECTS)
 feedbackexample_LDADD = $(LDADD)
 feedbackexample_DEPENDENCIES = ../src/.libs/libemip.a
+am_multiplesoundfileplayer_OBJECTS =  \
+	multiplesoundfileplayer.$(OBJEXT)
+multiplesoundfileplayer_OBJECTS =  \
+	$(am_multiplesoundfileplayer_OBJECTS)
+multiplesoundfileplayer_LDADD = $(LDADD)
+multiplesoundfileplayer_DEPENDENCIES = ../src/.libs/libemip.a
 am_simplechain_OBJECTS = simplechain.$(OBJEXT)
 simplechain_OBJECTS = $(am_simplechain_OBJECTS)
 simplechain_LDADD = $(LDADD)
@@ -81,11 +87,11 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(avsession_SOURCES) $(feedbackexample_SOURCES) \
-	$(simplechain_SOURCES) $(soundfileplayer_SOURCES) \
-	$(soundrecorder_SOURCES)
+	$(multiplesoundfileplayer_SOURCES) $(simplechain_SOURCES) \
+	$(soundfileplayer_SOURCES) $(soundrecorder_SOURCES)
 DIST_SOURCES = $(avsession_SOURCES) $(feedbackexample_SOURCES) \
-	$(simplechain_SOURCES) $(soundfileplayer_SOURCES) \
-	$(soundrecorder_SOURCES)
+	$(multiplesoundfileplayer_SOURCES) $(simplechain_SOURCES) \
+	$(soundfileplayer_SOURCES) $(soundrecorder_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -155,6 +161,8 @@ MIPCONFIG_BIGENDIAN = @MIPCONFIG_BIGENDIAN@
 MIPCONFIG_GPL = @MIPCONFIG_GPL@
 MIPCONFIG_SUPPORT_ALSA = @MIPCONFIG_SUPPORT_ALSA@
 MIPCONFIG_SUPPORT_AUDIOFILE = @MIPCONFIG_SUPPORT_AUDIOFILE@
+MIPCONFIG_SUPPORT_AUDIORECORDER = @MIPCONFIG_SUPPORT_AUDIORECORDER@
+MIPCONFIG_SUPPORT_AUDIOTRACK = @MIPCONFIG_SUPPORT_AUDIOTRACK@
 MIPCONFIG_SUPPORT_AVCODEC = @MIPCONFIG_SUPPORT_AVCODEC@
 MIPCONFIG_SUPPORT_AVCODEC_OLD = @MIPCONFIG_SUPPORT_AVCODEC_OLD@
 MIPCONFIG_SUPPORT_ESD = @MIPCONFIG_SUPPORT_ESD@
@@ -260,6 +268,7 @@ soundfileplayer_SOURCES = soundfileplayer.cpp
 feedbackexample_SOURCES = feedbackexample.cpp
 avsession_SOURCES = avsession.cpp
 soundrecorder_SOURCES = soundrecorder.cpp
+multiplesoundfileplayer_SOURCES = multiplesoundfileplayer.cpp
 INCLUDES = -I ../src/core -I ../src/components/input -I ../src/components/output -I ../src/components/timer \
            -I ../src/components/transform -I ../src/components/io -I ../src/util -I ../src/components/mixer \
 	   -I ../src/components/transmission -I ../src/sessions -I ../src/components/codec @MIPINCLUDES@
@@ -311,6 +320,9 @@ avsession$(EXEEXT): $(avsession_OBJECTS) $(avsession_DEPENDENCIES)
 feedbackexample$(EXEEXT): $(feedbackexample_OBJECTS) $(feedbackexample_DEPENDENCIES) 
 	@rm -f feedbackexample$(EXEEXT)
 	$(CXXLINK) $(feedbackexample_LDFLAGS) $(feedbackexample_OBJECTS) $(feedbackexample_LDADD) $(LIBS)
+multiplesoundfileplayer$(EXEEXT): $(multiplesoundfileplayer_OBJECTS) $(multiplesoundfileplayer_DEPENDENCIES) 
+	@rm -f multiplesoundfileplayer$(EXEEXT)
+	$(CXXLINK) $(multiplesoundfileplayer_LDFLAGS) $(multiplesoundfileplayer_OBJECTS) $(multiplesoundfileplayer_LDADD) $(LIBS)
 simplechain$(EXEEXT): $(simplechain_OBJECTS) $(simplechain_DEPENDENCIES) 
 	@rm -f simplechain$(EXEEXT)
 	$(CXXLINK) $(simplechain_LDFLAGS) $(simplechain_OBJECTS) $(simplechain_LDADD) $(LIBS)
@@ -329,6 +341,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/avsession.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/feedbackexample.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/multiplesoundfileplayer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simplechain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/soundfileplayer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/soundrecorder.Po@am__quote@

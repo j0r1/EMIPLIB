@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -59,13 +59,13 @@ public:
 	 *  This function locks the component. It is used in the MIPComponentChain background thread
 	 *  to prevent a component being accessed at the same time in different threads.
 	 */
-	void lock()											{ m_componentMutex.Lock(); }
+	virtual void lock()										{ m_componentMutex.Lock(); }
 
 	/** Unlocks the current component.
 	 *  This function removes the lock on the current component. It too is used in the MIPComponentChain
 	 *  background thread.
 	 */
-	void unlock()											{ m_componentMutex.Unlock(); }
+	virtual void unlock()										{ m_componentMutex.Unlock(); }
 
 	/** Feeds a message into the component.
 	 *  This function needs to be implemented by a derived class. It is part of the message passing system
@@ -108,6 +108,10 @@ public:
 	 *  This function returns the name of the component, as it was specified in the constructor.
 	 */
 	std::string getComponentName() const								{ return m_componentName; }
+
+	// TODO: is it necessary to explain this in the documentation? Most likely only useful in the
+	//       MIPComponentAlias component
+	virtual const MIPComponent *getComponentPointer() const						{ return this; }
 private:
 	JMutex m_componentMutex;
 	std::string m_componentName;

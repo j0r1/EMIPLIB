@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2009  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2010  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -68,7 +68,7 @@ bool MIPRTPSpeexDecoder::validatePacket(const RTPPacket *pRTPPack, real_t &times
 	return true;
 }
 
-MIPMediaMessage *MIPRTPSpeexDecoder::createNewMessage(const RTPPacket *pRTPPack)
+void MIPRTPSpeexDecoder::createNewMessages(const RTPPacket *pRTPPack, std::list<MIPMediaMessage *> &messages, std::list<uint32_t> &timestamps)
 {
 	size_t length = pRTPPack->GetPayloadLength();
 	uint8_t *pData = new uint8_t [length];
@@ -76,7 +76,8 @@ MIPMediaMessage *MIPRTPSpeexDecoder::createNewMessage(const RTPPacket *pRTPPack)
 	memcpy(pData, pRTPPack->GetPayloadData(), length);
 	MIPEncodedAudioMessage *pEncMsg = new MIPEncodedAudioMessage(MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX, m_sampRate, 1, -1, pData, length, true);
 
-	return pEncMsg;
+	messages.push_back(pEncMsg);
+	timestamps.push_back(pRTPPack->GetTimestamp());
 }
 
 #endif // MIPCONFIG_SUPPORT_SPEEX

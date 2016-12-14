@@ -43,7 +43,7 @@
 /** An object of this type can be used to get the file names in a
  *  specific directory.
  */
-class MIPDirectoryBrowser : public MIPErrorBase
+class EMIPLIB_IMPORTEXPORT MIPDirectoryBrowser : public MIPErrorBase
 {
 public:
 	MIPDirectoryBrowser();

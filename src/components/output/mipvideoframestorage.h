@@ -40,7 +40,7 @@
  *  This component accepts raw video frames in YUV420P format and stores the last frame
  *  received from each source. It does not produce any messages itself.
  */
-class MIPVideoFrameStorage : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPVideoFrameStorage : public MIPComponent
 {
 public:
 	MIPVideoFrameStorage();

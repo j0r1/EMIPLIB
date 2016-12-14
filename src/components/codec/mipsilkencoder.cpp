@@ -38,7 +38,7 @@
 #define MIPSILKENCODER_ERRSTR_NOTINIT				"Not initialized"
 #define MIPSILKENCODER_ERRSTR_ALREADYINIT			"Already initialized"
 #define MIPSILKENCODER_ERRSTR_CANTGETENCODERSIZE		"Unable to retrieve appropriate encoder state size"
-#define MIPSILKENCODER_ERRSTR_INVALIDBITRATE			"Bitrate must lie between 5000 and 100000 bps"
+//#define MIPSILKENCODER_ERRSTR_INVALIDBITRATE			"Bitrate must lie between 5000 and 100000 bps"
 #define MIPSILKENCODER_ERRSTR_INVALIDENCODERSAMPLINGRATE	"Encoder sampling rate must be one of 8000, 12000, 16000 and 24000 Hz"
 #define MIPSILKENCODER_ERRSTR_INVALIDINPUTSAMPLINGRATE		"Input sampling rate must be one of 8000, 12000, 16000, 24000, 32000, 44100 and 48000 Hz"
 #define MIPSILKENCODER_ERRSTR_INVALIDINTERVAL			"Interval must be either 20, 40, 60, 80 or 100 ms"
@@ -80,11 +80,16 @@ bool MIPSILKEncoder::init(int samplingRate, MIPTime interval, int targetBitrate,
 		return false;
 	}
 
+	if (targetBitrate < 0)
+		targetBitrate = 0;
+
+	/*
 	if (targetBitrate < 5000 || targetBitrate > 100000)
 	{
 		setErrorString(MIPSILKENCODER_ERRSTR_INVALIDBITRATE);
 		return false;
 	}
+	*/
 
 	int intervalMs = (int)(interval.getValue()*1000.0 + 0.5);
 

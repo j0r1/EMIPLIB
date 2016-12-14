@@ -42,7 +42,7 @@ class MIPRTPSendMessage;
  *  encoder uses an internal format to store data in RTP packets, this will not
  *  be compatible with other applications.
  */
-class MIPRTPVideoEncoder : public MIPRTPEncoder
+class EMIPLIB_IMPORTEXPORT MIPRTPVideoEncoder : public MIPRTPEncoder
 {
 public:
 	/** Specifies the kind of message that will be accepted as input. */

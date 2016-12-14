@@ -48,7 +48,7 @@ class MIPWAVReader;
  *        frame would consist of two samples: one for the left channel and one for
  *        the right.
  */
-class MIPWAVInput : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPWAVInput : public MIPComponent
 {
 public:
 	MIPWAVInput();

@@ -57,7 +57,7 @@
  *  component, initialized with \c useTimeInfo set to \c false, and by using the
  *  MIPAudioMixer::setExtraDelay function.
  */
-class MIPSpeexEchoCanceller : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPSpeexEchoCanceller : public MIPComponent
 {
 public:
 	MIPSpeexEchoCanceller();

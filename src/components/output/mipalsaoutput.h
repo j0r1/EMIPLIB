@@ -45,7 +45,7 @@
  *  soundcard output functions. The component accepts floating point raw audio messages
  *  or signed 16 bit integer encoded raw audio messages and does not generate any messages itself.
  */
-class MIPAlsaOutput : public MIPComponent, private jthread::JThread
+class EMIPLIB_IMPORTEXPORT MIPAlsaOutput : public MIPComponent, private jthread::JThread
 {
 public:
 	MIPAlsaOutput();

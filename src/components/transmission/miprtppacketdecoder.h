@@ -42,7 +42,7 @@ namespace jrtplib
 class MIPMediaMessage;
 
 /** Abstract base class for RTP packet decoders for a specific kind of payload. */
-class MIPRTPPacketDecoder
+class EMIPLIB_IMPORTEXPORT MIPRTPPacketDecoder
 {
 public:
 	MIPRTPPacketDecoder()									{ }

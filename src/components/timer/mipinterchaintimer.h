@@ -44,7 +44,7 @@
  *  trigger component accepts any incoming message; the main component only accepts
  *  a MIPSYSTEMMESSAGE_TYPE_WAITTIME message.
  */
-class MIPInterChainTimer : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPInterChainTimer : public MIPComponent
 {
 public:
 	MIPInterChainTimer();

@@ -41,7 +41,7 @@
  *  example, soundcard input plugins use such an object to indicate when
  *  a new block of sound data is available.
  */
-class MIPSignalWaiter
+class EMIPLIB_IMPORTEXPORT MIPSignalWaiter
 {
 public:
 	MIPSignalWaiter();

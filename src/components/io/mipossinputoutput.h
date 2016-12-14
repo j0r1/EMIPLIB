@@ -43,7 +43,7 @@
 class MIPRaw16bitAudioMessage;
 
 /** Parameters for a MIPOSSInputOutput instance. */
-class MIPOSSInputOutputParams
+class EMIPLIB_IMPORTEXPORT MIPOSSInputOutputParams
 {
 public:
 	MIPOSSInputOutputParams() : m_bufferTime(10.0), m_ossBufferTime(0.007), m_devName("/dev/dsp")
@@ -106,7 +106,7 @@ private:
  *  an object of this type as start component and a connection from this object to 
  *  this object, thereby immediately playing back the captured audio.
  */
-class MIPOSSInputOutput : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPOSSInputOutput : public MIPComponent
 {
 public:
 	/** Indicates the access mode for the device. 

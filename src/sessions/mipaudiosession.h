@@ -53,7 +53,7 @@ class MIPRTPSynchronizer;
 class MIPRTPPacketDecoder;
 
 /** Parameters for an audio session. */
-class MIPAudioSessionParams
+class EMIPLIB_IMPORTEXPORT MIPAudioSessionParams
 {
 public:
 	/** Used to select compression/encoding type. */
@@ -225,7 +225,7 @@ private:
  *  RTPAddress from the JRTPLIB library. Currently, only RTPIPv4Address
  *  instances can be specified.
  */
-class MIPAudioSession : public MIPErrorBase
+class EMIPLIB_IMPORTEXPORT MIPAudioSession : public MIPErrorBase
 {
 public:
 	MIPAudioSession();

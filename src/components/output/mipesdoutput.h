@@ -43,7 +43,7 @@
  *  soundcard output functions. The component accepts integer raw audio messages
  *  (16 bit native endian) and does not generate any messages itself.
  */
-class MIPEsdOutput : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPEsdOutput : public MIPComponent
 {
 public:
 	MIPEsdOutput();

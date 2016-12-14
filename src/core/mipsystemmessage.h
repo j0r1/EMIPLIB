@@ -50,7 +50,7 @@
  *  This kind of message is used to instruct a component to wait until messages can be
  *  distributed in the chain or to inform a component that an interval has elapsed.
  */
-class MIPSystemMessage : public MIPMessage
+class EMIPLIB_IMPORTEXPORT MIPSystemMessage : public MIPMessage
 {
 public:
 	/** Constructs a system message with a specific subtype.

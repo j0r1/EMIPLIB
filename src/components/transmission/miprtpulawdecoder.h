@@ -37,7 +37,7 @@
  *  This class takes MIPRTPReceiveMessages as input and generates 
  *  U-law encoded audio messages.
  */
-class MIPRTPULawDecoder : public MIPRTPPacketDecoder
+class EMIPLIB_IMPORTEXPORT MIPRTPULawDecoder : public MIPRTPPacketDecoder
 {
 public:
 	MIPRTPULawDecoder();

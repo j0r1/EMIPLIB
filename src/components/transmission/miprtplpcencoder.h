@@ -43,7 +43,7 @@ class MIPRTPSendMessage;
  *  This component accepts incoming LPC compressed audio packets and generates 
  *  MIPRTPSendMessage objects which can then be transferred to a MIPRTPComponent instance.
  */
-class MIPRTPLPCEncoder : public MIPRTPEncoder
+class EMIPLIB_IMPORTEXPORT MIPRTPLPCEncoder : public MIPRTPEncoder
 {
 public:
 	MIPRTPLPCEncoder();

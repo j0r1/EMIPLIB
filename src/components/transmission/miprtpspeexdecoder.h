@@ -41,7 +41,7 @@
  *  This class takes MIPRTPReceiveMessages as input and generates 
  *  Speex audio messages.
  */
-class MIPRTPSpeexDecoder : public MIPRTPPacketDecoder
+class EMIPLIB_IMPORTEXPORT MIPRTPSpeexDecoder : public MIPRTPPacketDecoder
 {
 public:
 	MIPRTPSpeexDecoder();

@@ -36,7 +36,7 @@
 #include <stdio.h>
 
 /** This is a simple WAV file writer (8 bit, mono) */
-class MIPWAVWriter : public MIPErrorBase
+class EMIPLIB_IMPORTEXPORT MIPWAVWriter : public MIPErrorBase
 {
 public:
 	MIPWAVWriter();

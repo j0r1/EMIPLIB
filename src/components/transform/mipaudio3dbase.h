@@ -48,7 +48,7 @@
  *  works on a different scale, a scale factor can be installed to compensate. Finally, the class provides
  *  an implementation of the convolution product.
  */
-class MIPAudio3DBase : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAudio3DBase : public MIPComponent
 {
 protected:
 	/** Constructor to be used by derived classes. */

@@ -34,7 +34,7 @@
 #include <string>
 
 /** Version information about the library. */ 
-class MIPVersion
+class EMIPLIB_IMPORTEXPORT MIPVersion
 {
 public:
 	MIPVersion();

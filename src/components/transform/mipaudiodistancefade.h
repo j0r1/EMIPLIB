@@ -40,7 +40,7 @@ class MIPRawFloatAudioMessage;
  *  A simple 3D audio component which only takes the distance between participants into account.
  *  The compontent accepts and produces floating point raw audio messages.
  */
-class MIPAudioDistanceFade : public MIPAudio3DBase
+class EMIPLIB_IMPORTEXPORT MIPAudioDistanceFade : public MIPAudio3DBase
 {
 public:
 	MIPAudioDistanceFade();

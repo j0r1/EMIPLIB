@@ -50,7 +50,7 @@ namespace jrtplib
  *  MIPRTPSendMessage are accepted. Messages produced by this component are of type 
  *  MIPRTPReceiveMessage.
  */
-class MIPRTPComponent : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPRTPComponent : public MIPComponent
 {
 public:
 	MIPRTPComponent();

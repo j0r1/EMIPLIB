@@ -40,7 +40,7 @@
  *  written and from which the same data can be read again, making
  *  it well suited to safely pass data between threads.
  */
-class MIPStreamBuffer
+class EMIPLIB_IMPORTEXPORT MIPStreamBuffer
 {
 public:
 	/** Constructs a MIPStreamBuffer object.

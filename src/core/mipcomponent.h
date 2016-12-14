@@ -44,7 +44,7 @@ class MIPFeedback;
  *  This class serves as a base class from which actual components can be derived. A working component
  *  needs to implement the MIPComponent::pull and MIPComponent::push methods.
  */
-class MIPComponent : public MIPErrorBase
+class EMIPLIB_IMPORTEXPORT MIPComponent : public MIPErrorBase
 {
 protected:
 	/** Create a component with the specified name.

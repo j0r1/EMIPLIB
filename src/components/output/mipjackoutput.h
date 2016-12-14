@@ -45,7 +45,7 @@
  *  It accepts stereo raw floating point audio messages and does not produce
  *  any messages itself.
  */
-class MIPJackOutput : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPJackOutput : public MIPComponent
 {
 public:
 	MIPJackOutput();

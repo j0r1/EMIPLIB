@@ -36,7 +36,7 @@
 #include <list>
 
 /** Base class for HRIR based 3D audio components. */
-class MIPHRIRBase : public MIPAudio3DBase
+class EMIPLIB_IMPORTEXPORT MIPHRIRBase : public MIPAudio3DBase
 {
 protected:
 	/** Constructor to be used by derived classes. */

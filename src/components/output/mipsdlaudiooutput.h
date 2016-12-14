@@ -43,7 +43,7 @@
  *  This component uses the SDL audio system to produce audio output. It accepts
  *  16 bit native endian raw audio messages and produces no messages itself.
  */
-class MIPSDLAudioOutput : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPSDLAudioOutput : public MIPComponent
 {
 public:
 	MIPSDLAudioOutput();

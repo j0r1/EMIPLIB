@@ -38,9 +38,13 @@
 
 /** This class decodes incoming RTP data into SILK messages.
  *  This class takes MIPRTPReceiveMessages as input and generates 
- *  SILK audio messages.
+ *  SILK audio messages. For the best result, the user should set the timestamp
+ *  unit of each RTPSourceData instance from which SILK messages are being
+ *  received. If not, the component can derive this timestamp unit when two
+ *  consecutive RTCP sender reports from that source have been received, but
+ *  this can take a number of seconds.
  */
-class MIPRTPSILKDecoder : public MIPRTPPacketDecoder
+class EMIPLIB_IMPORTEXPORT MIPRTPSILKDecoder : public MIPRTPPacketDecoder
 {
 public:
 	MIPRTPSILKDecoder();

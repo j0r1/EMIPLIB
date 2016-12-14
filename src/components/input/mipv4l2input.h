@@ -48,7 +48,7 @@ class MIPVideoMessage;
  *  recommended message to use. Output frames can be YUV420P encoded, YUYV encoded or JPEG
  *  compressed.
  */
-class MIPV4L2Input : public MIPComponent, private jthread::JThread
+class EMIPLIB_IMPORTEXPORT MIPV4L2Input : public MIPComponent, private jthread::JThread
 {
 public:
 	MIPV4L2Input();

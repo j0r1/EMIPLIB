@@ -43,7 +43,7 @@ class MIPComponentChain;
  *  specified interval has elapsed. Note that this is only on average after each interval:
  *  fluctuation will be present.
  */
-class MIPAverageTimer : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAverageTimer : public MIPComponent
 {
 public:
 	/** Creates a timing object.

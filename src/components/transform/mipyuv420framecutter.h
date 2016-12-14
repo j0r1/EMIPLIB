@@ -42,7 +42,7 @@ class MIPVideoMessage;
  *  creates a video frame (same encoding) which containts a part of the 
  *  input frame as output.
  */
-class MIPYUV420FrameCutter : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPYUV420FrameCutter : public MIPComponent
 {
 public:
 	MIPYUV420FrameCutter();

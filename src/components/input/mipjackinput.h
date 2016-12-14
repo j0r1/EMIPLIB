@@ -52,7 +52,7 @@ class MIPRawFloatAudioMessage;
  *        frame would consist of two samples: one for the left channel and one for
  *        the right.
  */
-class MIPJackInput : public MIPComponent, public jthread::JThread
+class EMIPLIB_IMPORTEXPORT MIPJackInput : public MIPComponent, public jthread::JThread
 {
 public:
 	MIPJackInput();

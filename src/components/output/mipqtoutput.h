@@ -47,7 +47,7 @@ class MIPQtOutputWidget;
  *  frames: one window is created for each source. Input video frames can be in either YUV420P
  *  or 32-bit RGB format.
  */
-class MIPQtOutput : public MIPComponent, private jthread::JThread
+class EMIPLIB_IMPORTEXPORT MIPQtOutput : public MIPComponent, private jthread::JThread
 {
 public:
 	MIPQtOutput();

@@ -43,7 +43,7 @@ class MIPRTPSendMessage;
  *  This component accepts incoming GSM compressed audio packets and generates 
  *  MIPRTPSendMessage objects which can then be transferred to a MIPRTPComponent instance.
  */
-class MIPRTPGSMEncoder : public MIPRTPEncoder
+class EMIPLIB_IMPORTEXPORT MIPRTPGSMEncoder : public MIPRTPEncoder
 {
 public:
 	MIPRTPGSMEncoder();

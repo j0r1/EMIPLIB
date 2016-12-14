@@ -1,7 +1,7 @@
 
 
                                EMIPLIB README 
-				  (1.1.0)
+				  (1.1.1)
 
 
 1. INTRODUCTION
@@ -84,7 +84,7 @@ available to the public and for allowing us to include a derived
 version in this library.
 
 The component which converts JPEG data into an uncompressed image
-used the Tiny Jpeg Decoder by Luc Saillard. Thanks for making this
+uses the Tiny Jpeg Decoder by Luc Saillard. Thanks for making this
 publically available. Please see the source code in 
 src/thirdparty/tinyjpeg for more information about copyright and
 disclaimer.

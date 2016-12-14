@@ -46,7 +46,7 @@
 /** This class is used for timing purposes.
  *  This class provides some time handling functions.
  */
-class MIPTime
+class EMIPLIB_IMPORTEXPORT MIPTime
 {
 public:
 	/** Returns a MIPTime object containing the current time. */

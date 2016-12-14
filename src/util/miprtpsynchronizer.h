@@ -46,7 +46,7 @@
  *  function of a MIPRTPDecoder derived class. Based upon the RTCP CNAME information, streams
  *  will be grouped and synchronized.
  */
-class MIPRTPSynchronizer : public MIPErrorBase
+class EMIPLIB_IMPORTEXPORT MIPRTPSynchronizer : public MIPErrorBase
 {
 public:
 	MIPRTPSynchronizer();

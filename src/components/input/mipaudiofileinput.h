@@ -49,7 +49,7 @@
  *        frame would consist of two samples: one for the left channel and one for
  *        the right.
  */
-class MIPAudioFileInput : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAudioFileInput : public MIPComponent
 {
 public:
 	MIPAudioFileInput();

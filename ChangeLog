@@ -3,6 +3,13 @@
                               EMIPLIB ChangeLog
 
 
+Version 1.1.1, November 2011
+ * Fixed a bug in the CMake configuration: was unable to handle
+   path names with spaces.
+ * In an MS-Windows environment you can now choose to build a
+   DLL instead of a static library. This should make it easier
+   to comply with the LGPL when working on that platform.
+
 Version 1.1.0, July 2011
  * Switched to CMake build system.
  * Bugfix in MIPAVCodecFrameConverter. Forgot to copy media info.

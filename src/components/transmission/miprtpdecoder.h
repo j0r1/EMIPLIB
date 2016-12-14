@@ -62,7 +62,7 @@ class MIPRTPPacketDecoder;
  *  generation code, therefore it is the derived class that decides which messages 
  *  can be generated.
  */
-class MIPRTPDecoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPRTPDecoder : public MIPComponent
 {
 public:
 	MIPRTPDecoder();
@@ -95,7 +95,7 @@ public:
 	 *  Sets the maximum amount of jitter buffering that may be done. Set it to a negative
 	 *  value (default setting) to allow unconstrained jitter buffering.
 	 */
-	bool setMaximumJitterBuffering(MIPTime t)								{ m_maxJitterBuffer = t; }
+	void setMaximumJitterBuffering(MIPTime t)								{ m_maxJitterBuffer = t; }
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);

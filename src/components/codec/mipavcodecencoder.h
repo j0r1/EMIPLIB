@@ -51,7 +51,7 @@ class MIPEncodedVideoMessage;
  *  raw video messages in YUV420P format and creates encoded video messages with
  *  subtype MIPENCODEDVIDEOMESSAGE_TYPE_H263P.
  */
-class MIPAVCodecEncoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAVCodecEncoder : public MIPComponent
 {
 public:
 	MIPAVCodecEncoder();

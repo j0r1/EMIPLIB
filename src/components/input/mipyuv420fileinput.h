@@ -42,7 +42,7 @@ class MIPRawYUV420PVideoMessage;
  *  messages as input, and produces a raw YUV420P video message as
  *  output.
  */
-class MIPYUV420FileInput : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPYUV420FileInput : public MIPComponent
 {
 public:
 	MIPYUV420FileInput();

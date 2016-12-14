@@ -33,7 +33,7 @@ MIPVersion::MIPVersion()
 {
 	m_major = 1;
 	m_minor = 1;
-	m_debug = 0;
+	m_debug = 1;
 #ifdef MIPCONFIG_GPL
 	m_license = std::string("GPL");
 #else

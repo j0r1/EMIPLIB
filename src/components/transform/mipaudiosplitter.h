@@ -41,7 +41,7 @@ class MIPAudioMessage;
  *  This component takes raw audio messages as its input and produces similar
  *  messages, containing at most a specified amount of data.
  */
-class MIPAudioSplitter : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAudioSplitter : public MIPComponent
 {
 public:
 	MIPAudioSplitter();

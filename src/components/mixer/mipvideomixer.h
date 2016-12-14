@@ -45,7 +45,7 @@
  *  During each interval, a number of raw video frames in YUV420P format is 
  *  produced.
  */
-class MIPVideoMixer : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPVideoMixer : public MIPComponent
 {
 public:
 	MIPVideoMixer();

@@ -51,7 +51,7 @@ class MIPRawFloatAudioMessage;
  *        frame would consist of two samples: one for the left channel and one for
  *        the right.
  */
-class MIPSndFileInput : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPSndFileInput : public MIPComponent
 {
 public:
 	MIPSndFileInput();

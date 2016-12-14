@@ -40,7 +40,7 @@
  *  happening, a dummy RTP packet decoder can be installed as default packet
  *  decoder.
  */
-class MIPRTPDummyDecoder : public MIPRTPPacketDecoder
+class EMIPLIB_IMPORTEXPORT MIPRTPDummyDecoder : public MIPRTPPacketDecoder
 {
 public:
 	MIPRTPDummyDecoder()											{ }

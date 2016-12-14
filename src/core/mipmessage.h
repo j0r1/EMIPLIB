@@ -69,7 +69,7 @@
  *  the MIPComponent::pull and MIPComponent::push functions. The
  *  message type numbers can be found in mipmessage.h
  */
-class MIPMessage
+class EMIPLIB_IMPORTEXPORT MIPMessage
 {
 protected:
 	/** Creates a message with specific type and subtype.

@@ -36,7 +36,7 @@
 #include <stdio.h>
 
 /** This is a simple WAV file reader. */
-class MIPWAVReader : public MIPErrorBase
+class EMIPLIB_IMPORTEXPORT MIPWAVReader : public MIPErrorBase
 {
 public:
 	MIPWAVReader();

@@ -42,7 +42,7 @@ class MIPAudioMessage;
  *  Removes a frequency range from audio messages.
  *  It accepts floating point raw audio messages and produces similar audio messages.
  */
-class MIPAudioFilter : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAudioFilter : public MIPComponent
 {
 public:
 	MIPAudioFilter();

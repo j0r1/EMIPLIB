@@ -52,7 +52,7 @@
  *  - Support for source position properties relative to own position?
  *  - Allow specification of distance attenuation properties.
  */
-class MIPOpenALOutput : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPOpenALOutput : public MIPComponent
 {
 public:
 	MIPOpenALOutput();

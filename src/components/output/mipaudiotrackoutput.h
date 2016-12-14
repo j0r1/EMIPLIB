@@ -51,7 +51,7 @@ namespace android
  *  messages, using native byte ordering. No output messages are
  *  produced.
  */
-class MIPAudioTrackOutput : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAudioTrackOutput : public MIPComponent
 {
 public:
 	MIPAudioTrackOutput();

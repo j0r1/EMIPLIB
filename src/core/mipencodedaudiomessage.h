@@ -59,7 +59,7 @@
 
 /** Container for encoded audio data.
  */
-class MIPEncodedAudioMessage : public MIPAudioMessage
+class EMIPLIB_IMPORTEXPORT MIPEncodedAudioMessage : public MIPAudioMessage
 {
 public:
 	/** Creates an encoded audio message.

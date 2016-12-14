@@ -44,7 +44,7 @@ class MIPComponent;
  *  chain is started, messages will be passed over these links. The messages are described by
  *  classes derived from MIPMessage, components are implemented in classes derived from MIPComponent.
  */
-class MIPComponentChain : private jthread::JThread, public MIPErrorBase
+class EMIPLIB_IMPORTEXPORT MIPComponentChain : private jthread::JThread, public MIPErrorBase
 {
 public:
 	/** Create a chain with a specific name.

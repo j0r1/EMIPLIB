@@ -44,7 +44,7 @@
  *  You can then add a link from the soundcard input component to this component
  *  to make this component behave like it's a timing component. 
  */
-class MIPPushEventTimer : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPPushEventTimer : public MIPComponent
 {
 public:
 	MIPPushEventTimer();

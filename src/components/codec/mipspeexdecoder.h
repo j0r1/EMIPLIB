@@ -52,7 +52,7 @@ struct SpeexBits;
  *  The component generates floating point mono raw audio messages or signed 16 bit native endian
  *  encoded raw audio messages.
  */
-class MIPSpeexDecoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPSpeexDecoder : public MIPComponent
 {
 public:
 	MIPSpeexDecoder();

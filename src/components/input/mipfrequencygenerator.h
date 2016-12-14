@@ -42,7 +42,7 @@ class MIPRawFloatAudioMessage;
  *  MIPSYSTEMMESSAGE_TYPE_ISTIME as input and generates stereo floating point
  *  raw audio messages.
  */
-class MIPFrequencyGenerator : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPFrequencyGenerator : public MIPComponent
 {
 public:
 	MIPFrequencyGenerator();

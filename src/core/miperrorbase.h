@@ -35,7 +35,7 @@
 
 /** This class provides the error description functions for other classes.
  */
-class MIPErrorBase
+class EMIPLIB_IMPORTEXPORT MIPErrorBase
 {
 public:
 	MIPErrorBase()										{ }

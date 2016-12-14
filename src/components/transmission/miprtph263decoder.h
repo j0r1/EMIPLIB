@@ -44,7 +44,7 @@
  *  This class takes MIPRTPReceiveMessages as input and generates 
  *  H.263 video messages. 
  */
-class MIPRTPH263Decoder : public MIPRTPPacketDecoder
+class EMIPLIB_IMPORTEXPORT MIPRTPH263Decoder : public MIPRTPPacketDecoder
 {
 public:
 	MIPRTPH263Decoder();

@@ -68,7 +68,7 @@ class MIPAVCodecFrameConverter;
 class MIPComponentAlias;
 
 /** Parameters for a video session. */
-class MIPVideoSessionParams
+class EMIPLIB_IMPORTEXPORT MIPVideoSessionParams
 {
 public:
 	/** Specifies the type of session that will be used. */
@@ -264,7 +264,7 @@ private:
  *  RTPAddress from the JRTPLIB library. Currently, only RTPIPv4Address
  *  instances can be specified.
  */
-class MIPVideoSession : public MIPErrorBase
+class EMIPLIB_IMPORTEXPORT MIPVideoSession : public MIPErrorBase
 {
 public:
 	MIPVideoSession();

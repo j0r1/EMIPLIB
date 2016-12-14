@@ -50,7 +50,7 @@ class MIPAudioMessage;
  *  should be MIPEncodedAudioMessage instances with subtype MIPENCODEDAUDIOMESSAGE_TYPE_SILK.
  *  The component generates signed 16 bit native endian encoded raw audio messages.
  */
-class MIPSILKDecoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPSILKDecoder : public MIPComponent
 {
 public:
 	MIPSILKDecoder();

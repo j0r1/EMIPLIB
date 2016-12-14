@@ -52,7 +52,7 @@ class MIPStreamBuffer;
  *  output part of the component. Messages produced by this component are 16 bit
  *  native endian raw audio messages.
  */
-class MIPPAInputOutput : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPPAInputOutput : public MIPComponent
 {
 public:
 	/** Indicates the access mode for the device. 

@@ -41,7 +41,7 @@ class MIPRaw16bitAudioMessage;
  *  This component accepts a-law encoded audio messages and produces message
  *  raw audio messages using 16 bit signed native endian encoding.
  */
-class MIPALawDecoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPALawDecoder : public MIPComponent
 {
 public:
 	MIPALawDecoder();

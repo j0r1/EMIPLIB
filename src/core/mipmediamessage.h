@@ -41,7 +41,7 @@
  *  information. The MIPRTPDecoder class uses the timing information to store the position
  *  of the data in the output stream.
  */
-class MIPMediaMessage : public MIPMessage
+class EMIPLIB_IMPORTEXPORT MIPMediaMessage : public MIPMessage
 {
 public:
 	/** Medium type. */

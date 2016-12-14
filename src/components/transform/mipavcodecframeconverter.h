@@ -61,7 +61,7 @@ class MIPVideoMessage;
  *  This component will convert incoming video frames to a specific width, height
  *  and format. To do this, the libavcodec library is used.
  */
-class MIPAVCodecFrameConverter : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAVCodecFrameConverter : public MIPComponent
 {
 public:
 	MIPAVCodecFrameConverter();

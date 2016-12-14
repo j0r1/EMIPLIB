@@ -53,7 +53,7 @@ namespace jrtplib
  *  to be sure that all packets with a specific timestamp have been
  *  processed.
  */
-class MIPRTPPacketGrouper : public MIPErrorBase
+class EMIPLIB_IMPORTEXPORT MIPRTPPacketGrouper : public MIPErrorBase
 {
 public:
 	MIPRTPPacketGrouper();

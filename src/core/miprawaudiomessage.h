@@ -72,7 +72,7 @@
 #define MIPRAWAUDIOMESSAGE_TYPE_U16								0x00000080
 
 /** Container for floating point raw audio data. */
-class MIPRawFloatAudioMessage : public MIPAudioMessage
+class EMIPLIB_IMPORTEXPORT MIPRawFloatAudioMessage : public MIPAudioMessage
 {
 public:
 	/** Creates a MIPRawFloatAudioMessage instance.
@@ -117,7 +117,7 @@ private:
 };
 
 /** Container for unsigned eight-bit raw audio data. */
-class MIPRawU8AudioMessage : public MIPAudioMessage
+class EMIPLIB_IMPORTEXPORT MIPRawU8AudioMessage : public MIPAudioMessage
 {
 public:
 	/** Creates a MIPRawU8AudioMessage instance.
@@ -163,7 +163,7 @@ private:
 };
 
 /** Container for sixteen-bit raw audio data. */
-class MIPRaw16bitAudioMessage : public MIPAudioMessage
+class EMIPLIB_IMPORTEXPORT MIPRaw16bitAudioMessage : public MIPAudioMessage
 {
 public:
 	/** Used in constructor to specify sample encoding. */

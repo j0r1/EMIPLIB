@@ -36,7 +36,7 @@
 /** Base class for encoded and raw audio messages.
  *  This class is the base class of both raw audio messages and encoded audio messages.
  */
-class MIPAudioMessage : public MIPMediaMessage
+class EMIPLIB_IMPORTEXPORT MIPAudioMessage : public MIPMediaMessage
 {
 protected:
 	/** Constructor of the class.

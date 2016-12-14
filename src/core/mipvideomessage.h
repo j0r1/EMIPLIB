@@ -38,7 +38,7 @@
 /** Base class for encoded and raw video messages.
  *  This class is the base class of both raw video messages and encoded video messages.
  */
-class MIPVideoMessage : public MIPMediaMessage
+class EMIPLIB_IMPORTEXPORT MIPVideoMessage : public MIPMediaMessage
 {
 protected:
 	/** Constructor of the class.

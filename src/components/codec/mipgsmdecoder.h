@@ -51,7 +51,7 @@ struct gsm_state;
  *  should be MIPEncodedAudioMessage instances with subtype MIPENCODEDAUDIOMESSAGE_TYPE_GSM.
  *  The component generates signed 16 bit native endian encoded raw audio messages.
  */
-class MIPGSMDecoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPGSMDecoder : public MIPComponent
 {
 public:
 	MIPGSMDecoder();

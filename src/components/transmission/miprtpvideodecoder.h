@@ -45,7 +45,7 @@
  *  video messages. The RTP messages themselves should use the
  *  internal format provided by MIPRTPVideoEncoder.
  */
-class MIPRTPVideoDecoder : public MIPRTPPacketDecoder
+class EMIPLIB_IMPORTEXPORT MIPRTPVideoDecoder : public MIPRTPPacketDecoder
 {
 public:
 	MIPRTPVideoDecoder();

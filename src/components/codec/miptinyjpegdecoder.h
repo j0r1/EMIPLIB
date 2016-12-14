@@ -40,7 +40,7 @@ class MIPVideoMessage;
  *  A JPEG decoder based on the Tiny JPEG Decoder library. It accepts frames that
  *  are JPEG compressed and outputs YUV420P frames.
  */
-class MIPTinyJPEGDecoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPTinyJPEGDecoder : public MIPComponent
 {
 public:
 	MIPTinyJPEGDecoder();

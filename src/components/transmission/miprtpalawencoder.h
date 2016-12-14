@@ -40,7 +40,7 @@ class MIPRTPSendMessage;
  *  This component accepts incoming A-law encoded 8000Hz mono audio packets and generates 
  *  MIPRTPSendMessage objects which can then be transferred to a MIPRTPComponent instance.
  */
-class MIPRTPALawEncoder : public MIPRTPEncoder
+class EMIPLIB_IMPORTEXPORT MIPRTPALawEncoder : public MIPRTPEncoder
 {
 public:
 	MIPRTPALawEncoder();

@@ -38,7 +38,7 @@
 #include <speex/speex.h>
 
 /** An instance of this class can be used to analyse Speex data. */
-class MIPSpeexUtil : public MIPErrorBase
+class EMIPLIB_IMPORTEXPORT MIPSpeexUtil : public MIPErrorBase
 {
 public:
 	/** Identifies the Speex bandwidth used. */

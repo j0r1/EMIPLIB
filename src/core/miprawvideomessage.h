@@ -57,7 +57,7 @@
 #define MIPRAWVIDEOMESSAGE_TYPE_RGB32								0x00000008
 
 /** Container for an YUV420P encoded raw video frame. */
-class MIPRawYUV420PVideoMessage : public MIPVideoMessage
+class EMIPLIB_IMPORTEXPORT MIPRawYUV420PVideoMessage : public MIPVideoMessage
 {
 public:
 	/** Creates a raw video message with a YUV420P representation.
@@ -92,7 +92,7 @@ private:
 };
 
 /** Container for an YUYV encoded raw video frame. */
-class MIPRawYUYVVideoMessage : public MIPVideoMessage
+class EMIPLIB_IMPORTEXPORT MIPRawYUYVVideoMessage : public MIPVideoMessage
 {
 public:
 	/** Creates a raw video message with a YUYV representation.
@@ -127,7 +127,7 @@ private:
 };
 
 /** Container for an RGB encoded raw video frame. */
-class MIPRawRGBVideoMessage : public MIPVideoMessage
+class EMIPLIB_IMPORTEXPORT MIPRawRGBVideoMessage : public MIPVideoMessage
 {
 public:
 	/** Creates a raw video message with RGB representation.

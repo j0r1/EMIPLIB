@@ -37,7 +37,7 @@
  *  This class takes MIPRTPReceiveMessages as input and generates 
  *  GSM encoded audio messages.
  */
-class MIPRTPGSMDecoder : public MIPRTPPacketDecoder
+class EMIPLIB_IMPORTEXPORT MIPRTPGSMDecoder : public MIPRTPPacketDecoder
 {
 public:
 	MIPRTPGSMDecoder();

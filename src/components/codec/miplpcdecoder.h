@@ -51,7 +51,7 @@ class LPCDecoder;
  *  should be MIPEncodedAudioMessage instances with subtype MIPENCODEDAUDIOMESSAGE_TYPE_LPC.
  *  The component generates signed 16 bit native endian encoded raw audio messages.
  */
-class MIPLPCDecoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPLPCDecoder : public MIPComponent
 {
 public:
 	MIPLPCDecoder();

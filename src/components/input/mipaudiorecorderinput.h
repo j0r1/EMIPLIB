@@ -53,7 +53,7 @@ namespace android
  *  platform to capture audio. It should be placed at the start of a chain
  *  and produces raw signed 16 bit audio messages, using native byte ordering.
  */
-class MIPAudioRecorderInput : public MIPComponent, public jthread::JThread
+class EMIPLIB_IMPORTEXPORT MIPAudioRecorderInput : public MIPComponent, public jthread::JThread
 {
 public:
 	MIPAudioRecorderInput();

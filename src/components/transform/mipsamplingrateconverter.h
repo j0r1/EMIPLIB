@@ -42,7 +42,7 @@ class MIPAudioMessage;
  *  similar messages with a specific sampling rate and number of channels set during
  *  initialization.
  */
-class MIPSamplingRateConverter : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPSamplingRateConverter : public MIPComponent
 {
 public:
 	MIPSamplingRateConverter();

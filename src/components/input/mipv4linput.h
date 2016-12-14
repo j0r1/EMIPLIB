@@ -42,7 +42,7 @@
 class MIPRawYUV420PVideoMessage;
 
 /** Base class for video4linux input component parameters. */
-class MIPV4LInputParameters
+class EMIPLIB_IMPORTEXPORT MIPV4LInputParameters
 {
 public:
 	MIPV4LInputParameters()									{ }
@@ -55,7 +55,7 @@ public:
  *  The component accepts both MIPSYSTEMMESSAGE_TYPE_WAITTIME and MIPSYSTEMMESSAGE_TYPE_ISTIME 
  *  messages.
  */
-class MIPV4LInput : public MIPComponent, private jthread::JThread
+class EMIPLIB_IMPORTEXPORT MIPV4LInput : public MIPComponent, private jthread::JThread
 {
 public:
 	MIPV4LInput();

@@ -80,7 +80,7 @@ class MIPMediaMessage;
  *  is used to try to send the messages to the Speex decoder in the right order. Note
  *  that the component itself does not introduce extra delay.
  */
-class MIPMediaBuffer : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPMediaBuffer : public MIPComponent
 {
 public:
 	MIPMediaBuffer();

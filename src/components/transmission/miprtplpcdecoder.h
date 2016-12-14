@@ -37,7 +37,7 @@
  *  This class takes MIPRTPReceiveMessages as input and generates 
  *  LPC encoded audio messages.
  */
-class MIPRTPLPCDecoder : public MIPRTPPacketDecoder
+class EMIPLIB_IMPORTEXPORT MIPRTPLPCDecoder : public MIPRTPPacketDecoder
 {
 public:
 	MIPRTPLPCDecoder();

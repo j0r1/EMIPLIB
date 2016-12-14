@@ -41,7 +41,7 @@ class MIPRTPSendMessage;
  *  and generates MIPRTPSendMessage objects which can then be transferred 
  *  to a MIPRTPComponent instance.
  */
-class MIPRTPH263Encoder : public MIPRTPEncoder
+class EMIPLIB_IMPORTEXPORT MIPRTPH263Encoder : public MIPRTPEncoder
 {
 public:
 	MIPRTPH263Encoder();

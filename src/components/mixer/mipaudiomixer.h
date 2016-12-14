@@ -45,7 +45,7 @@ class MIPRawFloatAudioMessage;
  *  can also work with signed 16 bit native raw audio messages. This component
  *  generates feedback about the current offset in the output stream.
  */
-class MIPAudioMixer : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAudioMixer : public MIPComponent
 {
 public:
 	MIPAudioMixer();

@@ -42,7 +42,7 @@ class MIPRTPSendMessage;
  *  which can then be transferred to a MIPRTPComponent instance. The default sampling
  *  rate is 44100 Hz, which corresponds to a predefined payload type in RFC 3551.
  */
-class MIPRTPL16Encoder : public MIPRTPEncoder
+class EMIPLIB_IMPORTEXPORT MIPRTPL16Encoder : public MIPRTPEncoder
 {
 public:
 	MIPRTPL16Encoder();

@@ -36,7 +36,7 @@
 /** Base class for RTP encoders.
  *  Base class for RTP encoders. Contains a member function to set the payload type.
  */
-class MIPRTPEncoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPRTPEncoder : public MIPComponent
 {
 public:
 	MIPRTPEncoder(const std::string &compName) : MIPComponent(compName)					{ m_payloadType = 0; }

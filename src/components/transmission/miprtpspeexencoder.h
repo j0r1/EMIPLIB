@@ -43,7 +43,7 @@ class MIPRTPSendMessage;
  *  This component accepts incoming Speex compressed audio packets and generates 
  *  MIPRTPSendMessage objects which can then be transferred to a MIPRTPComponent instance.
  */
-class MIPRTPSpeexEncoder : public MIPRTPEncoder
+class EMIPLIB_IMPORTEXPORT MIPRTPSpeexEncoder : public MIPRTPEncoder
 {
 public:
 	MIPRTPSpeexEncoder();

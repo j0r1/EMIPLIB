@@ -43,7 +43,7 @@ class MIPEncodedAudioMessage;
  *  with type MIPMESSAGE_TYPE_AUDIO_ENCODED and subtype MIPENCODEDAUDIOMESSAGE_TYPE_ULAW
  *  is produced.
  */
-class MIPULawEncoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPULawEncoder : public MIPComponent
 {
 public:
 	MIPULawEncoder();

@@ -42,7 +42,7 @@ class MIPAudioMessage;
  *  It accepts all raw audio messages and produces similar raw audio messages, using
  *  a predefined encoding type.
  */
-class MIPSampleEncoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPSampleEncoder : public MIPComponent
 {
 public:
 	MIPSampleEncoder();

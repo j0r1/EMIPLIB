@@ -43,13 +43,17 @@ class MIPRTPSendMessage;
  *  This component accepts incoming SILK compressed audio packets and generates 
  *  MIPRTPSendMessage objects which can then be transferred to a MIPRTPComponent instance.
  */
-class MIPRTPSILKEncoder : public MIPRTPEncoder
+class EMIPLIB_IMPORTEXPORT MIPRTPSILKEncoder : public MIPRTPEncoder
 {
 public:
 	MIPRTPSILKEncoder();
 	~MIPRTPSILKEncoder();
 
-	/** Initializes the encoder. */
+	/** Initializes the encoder.
+	 *  Initializes the component.
+	 *  \param timestampsPerSecond Tells the component how much the RTP timestamp should be increased
+	 *                             each second. This can be either 8000, 12000, 16000 or 24000.
+	 */
 	bool init(int timestampsPerSecond);
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);

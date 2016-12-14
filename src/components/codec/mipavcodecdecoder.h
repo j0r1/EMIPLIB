@@ -61,7 +61,7 @@ class MIPRawYUV420PVideoMessage;
  *  This component is a libavcodec based H.263+ decoder. It accepts encoded video messages with
  *  subtype MIPENCODEDVIDEOMESSAGE_TYPE_H263P and creates raw video messages in YUV420P format.
  */
-class MIPAVCodecDecoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAVCodecDecoder : public MIPComponent
 {
 public:
 	MIPAVCodecDecoder();

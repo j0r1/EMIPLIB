@@ -42,7 +42,7 @@ class MIPRawFloatAudioMessage;
  *  stereo raw floating point audio messages. The sound in the output messages will
  *  have a 3D effect, based upon your own location and the location of the sound source.
  */
-class MIPHRIRListen : public MIPHRIRBase
+class EMIPLIB_IMPORTEXPORT MIPHRIRListen : public MIPHRIRBase
 {
 public:
 	MIPHRIRListen();

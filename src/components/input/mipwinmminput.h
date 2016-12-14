@@ -53,7 +53,7 @@ class MIPRaw16bitAudioMessage;
  *  messages. The messages generated are raw audio messages, containing 16 bit
  *  signed little endian data.
  */
-class MIPWinMMInput : public MIPComponent, private jthread::JThread
+class EMIPLIB_IMPORTEXPORT MIPWinMMInput : public MIPComponent, private jthread::JThread
 {
 public:
 	MIPWinMMInput();

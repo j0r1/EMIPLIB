@@ -39,7 +39,7 @@
  *  raw audio messages containing signed 16 bit big endian samples of a
  *  specific sampling rate.
  */
-class MIPRTPL16Decoder : public MIPRTPPacketDecoder
+class EMIPLIB_IMPORTEXPORT MIPRTPL16Decoder : public MIPRTPPacketDecoder
 {
 public:
 	MIPRTPL16Decoder(bool stereo, int sampRate = 44100);

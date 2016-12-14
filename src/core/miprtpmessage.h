@@ -51,7 +51,7 @@
  *  This message is a container for data which has to be sent using the RTP protocol.
  *  The subtype of this message is MIPRTPMESSAGE_TYPE_SEND, defined in miprtpmessage.h
  */
-class MIPRTPSendMessage : public MIPMessage
+class EMIPLIB_IMPORTEXPORT MIPRTPSendMessage : public MIPMessage
 {
 public:
 	/** Constructs a message containing data to be sent using RTP.
@@ -105,7 +105,7 @@ private:
  *  Using this message, received RTP data can be transferred. This class depends on
  *  the \c JRTPLIB \c RTPPacket class.
  */
-class MIPRTPReceiveMessage : public MIPMessage
+class EMIPLIB_IMPORTEXPORT MIPRTPReceiveMessage : public MIPMessage
 {
 public:
 	/** Constructs a message containing received RTP data.

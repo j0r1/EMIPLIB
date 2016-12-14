@@ -38,7 +38,7 @@
  *  Each object in the same chain can inspect and/or modify the information in the
  *  MIPFeedback instance.
  */
-class MIPFeedback
+class EMIPLIB_IMPORTEXPORT MIPFeedback
 {
 public:
 	MIPFeedback() : m_playbackStreamTime(0), m_playbackDelay(0)			{ m_playbackStreamTimeSet = false; }

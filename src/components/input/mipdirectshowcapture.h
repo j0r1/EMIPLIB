@@ -48,7 +48,7 @@ class MIPVideoMessage;
  *  both MIPSYSTEMMESSAGE_TYPE_WAITTIME and MIPSYSTEMMESSAGE_TYPE_ISTIME messages
  *  and created YUV420P encoded raw video messages.
  */
-class MIPDirectShowCapture : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPDirectShowCapture : public MIPComponent
 {
 public:
 	MIPDirectShowCapture();

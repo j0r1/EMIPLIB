@@ -45,7 +45,7 @@
 #define MIPENCODEDVIDEOMESSAGE_TYPE_JPEG							0x00000002
 
 /** Container for encoded video data. */
-class MIPEncodedVideoMessage : public MIPVideoMessage
+class EMIPLIB_IMPORTEXPORT MIPEncodedVideoMessage : public MIPVideoMessage
 {
 public:
 	/** Creates an encoded video message.

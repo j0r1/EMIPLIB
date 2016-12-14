@@ -149,7 +149,7 @@
  * In this chain, it is of course still possible that the same synchronization
  * problem occurs.
  */
-class MIPComponentAlias : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPComponentAlias : public MIPComponent
 {
 public:
 	/** Create a component alias for component \c pComp. */

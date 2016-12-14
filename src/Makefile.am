@@ -4,13 +4,21 @@ core/mipcomponent.cpp \
 core/mipcomponentchain.cpp \
 core/mipversion.cpp \
 components/timer/mipaveragetimer.cpp \
-components/timer/mippusheventtimer.cpp \
+components/timer/mippusheventtimer.cpp
+
+if MIP_USEQT
+libemip_la_SOURCES += components/output/mipqtoutput.moc
+endif
+
+libemip_la_SOURCES += \
 components/output/mipmessagedumper.cpp \
 components/output/mipsndfileoutput.cpp \
 components/output/mipalsaoutput.cpp \
+components/output/mipesdoutput.cpp \
 components/output/mipqtoutput.cpp \
 components/output/mipvideoframestorage.cpp \
 components/input/mipsndfileinput.cpp \
+components/input/mipaudiofileinput.cpp \
 components/input/mipv4linput.cpp \
 components/input/mipfrequencygenerator.cpp \
 components/input/mipwavinput.cpp \
@@ -40,10 +48,6 @@ util/miprtpsynchronizer.cpp \
 sessions/mipaudiosession.cpp \
 sessions/mipvideosession.cpp
 
-if MIP_USEQT
-libemip_la_SOURCES += components/output/mipqtoutput.moc
-endif
-
 libemipinclude_HEADERS = \
 core/mipcompat.h \
 core/miperrorbase.h \
@@ -72,10 +76,12 @@ components/timer/mippusheventtimer.h \
 components/output/mipmessagedumper.h \
 components/output/mipsndfileoutput.h \
 components/output/mipalsaoutput.h \
+components/output/mipesdoutput.h \
 components/output/mipqtoutput.h \
 components/output/mipwinmmoutput.h \
 components/output/mipvideoframestorage.h \
 components/input/mipsndfileinput.h  \
+components/input/mipaudiofileinput.h  \
 components/input/mipv4linput.h \
 components/input/mipwinmminput.h \
 components/input/mipfrequencygenerator.h \
@@ -110,11 +116,13 @@ sessions/mipvideosession.h
 INCLUDES = -I core/ -I util/ -I components/codec/ -I components/input/ -I components/io/ -I components/mixer/ \
 	   -I components/output/ -I components/timer/ -I components/transform/ -I components/transmission/ \
 	   @MIPINCLUDES@
-libemip_la_LDFLAGS = -release 0.9.0
+libemip_la_LDFLAGS = -release 0.10.0
 libemipincludedir = ${includedir}/emiplib
 
 if MIP_USEQT
-components/output/mipqtoutput.moc: components/output/mipqtoutput.cpp
+components/output/mipqtoutput.cpp: components/output/mipqtoutput.moc
+	
+components/output/mipqtoutput.moc:
 	/usr/lib/qt/bin/moc -o components/output/mipqtoutput.moc components/output/mipqtoutput.cpp
 endif
 

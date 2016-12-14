@@ -367,7 +367,7 @@ bool MIPOSSInputOutput::open(int sampRate, int channels, MIPTime interval, Acces
 			m_pMsgBuffer[i] = initVal;
 		}
 		m_gotLastInput = false;
-		m_pMsg = new MIPRaw16bitAudioMessage(m_sampRate, m_channels, m_blockFrames, m_isSigned, false, m_pMsgBuffer, false);
+		m_pMsg = new MIPRaw16bitAudioMessage(m_sampRate, m_channels, m_blockFrames, m_isSigned, MIPRaw16bitAudioMessage::LittleEndian, m_pMsgBuffer, false);
 		
 		m_pInputThread = new InputThread(*this);
 		if (m_pInputThread->Start() < 0)
@@ -500,6 +500,7 @@ bool MIPOSSInputOutput::push(const MIPComponentChain &chain, int64_t iteration, 
 		const uint16_t *frames = audioMessage->getFrames();
 
 		m_outputFrameMutex.Lock();
+		//std::cerr << "Adding at position " << m_nextOutputPos << std::endl;
 		while (num > 0)
 		{
 			size_t maxAmount = m_bufferLength - m_nextOutputPos;
@@ -587,7 +588,7 @@ bool MIPOSSInputOutput::outputThreadStep()
 	if (m_curOutputPos + m_blockLength > m_bufferLength)
 	{
 		m_curOutputPos = 0;
-//		std::cerr << "Cycling cur output pos" << std::endl;
+	//	std::cerr << "Cycling cur output pos" << std::endl;
 	}
 		
 	if (m_nextOutputPos < m_curOutputPos + m_blockLength && m_nextOutputPos >= m_curOutputPos)
@@ -596,17 +597,18 @@ bool MIPOSSInputOutput::outputThreadStep()
 		if (m_nextOutputPos >= m_bufferLength)
 			m_nextOutputPos = 0;
 		m_outputDistTime = m_blockTime;
-//		std::cerr << "Pushing next output pos" << std::endl;
+	//	std::cerr << "Pushing next output pos" << std::endl;
 	}
 		
-	if (m_outputDistTime > MIPTime(0.200))
+	if (m_outputDistTime > MIPTime(0.500))
 	{
+	//	std::cerr << "Adjusting to runaway input (" << m_outputDistTime.getString() << ")" << std::endl;
 		m_nextOutputPos = m_curOutputPos + m_blockLength;
 		if (m_nextOutputPos >= m_bufferLength)
 			m_nextOutputPos = 0;
 		m_outputDistTime = m_blockTime;
-//		std::cerr << "Adjusting to runaway input (" << m_outputDistTime.getString() << ")" << std::endl;
 	}
+//	std::cerr << "About to write position " << m_curOutputPos << std::endl;
 	m_outputFrameMutex.Unlock();
 	return true;
 }

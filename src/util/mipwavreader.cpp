@@ -285,13 +285,13 @@ bool MIPWAVReader::open(const std::string &fileName)
 	m_pFrameBuffer = new uint8_t [m_frameSize*MIPWAVREADER_FRAMEBUFSIZE];
 	
 	if (m_bytesPerSample == 4)
-		m_negStartVal = 0xffffffff00000000LL;
+		m_negStartVal = 0x00000000;
 	else if (m_bytesPerSample == 3)
-		m_negStartVal = 0xffffffffff000000LL;
+		m_negStartVal = 0xff000000;
 	else if (m_bytesPerSample == 2)
-		m_negStartVal = 0xffffffffffff0000LL;
+		m_negStartVal = 0xffff0000;
 	else
-		m_negStartVal = 0xffffffffffffff00LL;
+		m_negStartVal = 0xffffff00;
 
 	m_file = f;
 	return true;
@@ -346,20 +346,89 @@ bool MIPWAVReader::readFrames(float *buffer, int numFrames, int *numFramesRead)
 		{
 			for (int j = 0 ; j < m_channels ; j++)
 			{
-				uint64_t x = 0;
+				uint32_t x = 0;
 
 				if ((m_pFrameBuffer[byteBufPos + m_bytesPerSample - 1] & 0x80) == 0x80)
 					x = m_negStartVal;
 	
 				int shiftNum = 0;
 				for (int k = 0 ; k < m_bytesPerSample ; k++, shiftNum += 8, byteBufPos++)
-					x |= ((uint64_t)(m_pFrameBuffer[byteBufPos])) << shiftNum;
+					x |= ((uint32_t)(m_pFrameBuffer[byteBufPos])) << shiftNum;
 
-				int64_t y = *((int64_t *)(&x));
+				int32_t y = *((int32_t *)(&x));
 
 				buffer[floatBufPos] = ((float)y)*m_scale;
 				
 				floatBufPos++;
+			}
+		}
+		
+		framesToRead -= num;
+		framesRead += num;
+	}
+
+	*numFramesRead = (int)framesRead;
+	m_framesLeft -= framesRead;
+	
+	return true;
+}
+
+bool MIPWAVReader::readFrames(int16_t *buffer, int numFrames, int *numFramesRead)
+{
+	if (m_file == 0)
+	{
+		setErrorString(MIPWAVREADER_ERRSTR_NOTOPENED);
+		return false;
+	}
+
+	int64_t framesToRead = numFrames;
+	int64_t framesRead = 0;
+
+	if (framesToRead > m_framesLeft)
+		framesToRead = m_framesLeft;
+	
+	int intBufPos = 0;
+	
+	while (framesToRead > 0)
+	{
+		int num = (int)framesToRead;
+		
+		if (num > MIPWAVREADER_FRAMEBUFSIZE)
+			num = MIPWAVREADER_FRAMEBUFSIZE;
+
+		if ((int)fread(m_pFrameBuffer, m_frameSize, num, m_file) != num)
+		{
+			setErrorString(MIPWAVREADER_ERRSTR_UNEXPECTEDEOF);
+			return false;
+		}
+
+		int byteBufPos = 0;
+		
+		for (int i = 0 ; i < num ; i++)
+		{
+			for (int j = 0 ; j < m_channels ; j++)
+			{
+				uint32_t x = 0;
+
+				if ((m_pFrameBuffer[byteBufPos + m_bytesPerSample - 1] & 0x80) == 0x80)
+					x = m_negStartVal;
+	
+				int shiftNum = 0;
+				for (int k = 0 ; k < m_bytesPerSample ; k++, shiftNum += 8, byteBufPos++)
+					x |= ((uint32_t)(m_pFrameBuffer[byteBufPos])) << shiftNum;
+
+				int32_t y = *((int32_t *)(&x));
+
+				if (m_bytesPerSample == 1)
+					buffer[intBufPos] = (int16_t)(y << 8);
+				else if (m_bytesPerSample == 2)
+					buffer[intBufPos] = (int16_t)y;
+				else if (m_bytesPerSample == 3)
+					buffer[intBufPos] = (int16_t)(y >> 8);
+				else
+					buffer[intBufPos] = (int16_t)(y >> 16);
+				
+				intBufPos++;
 			}
 		}
 		

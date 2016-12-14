@@ -1,12 +1,12 @@
 
 
                                EMIPLIB README 
-			           (0.9.0)
+				  (0.10.0)
 
 
 1. INTRODUCTION
 
-The name EMIPLIB means 'EDM Media over IP libray'. This library was developed 
+The name EMIPLIB means 'EDM Media over IP library'. This library was developed
 at the Expertise Centre for Digital Media (EDM) (http://www.edm.uhasselt.be), 
 a research institute of the Hasselt University (http://www.uhasselt.be). As 
 the name suggests the goal of the library is to make it easier to stream 
@@ -63,4 +63,7 @@ There is a mailing list available for EMIPLIB. To subscribe to it, just
 send an e-mail with the text subscribe emiplib as the message body (not 
 the  subject!) to majordomo@edm.uhasselt.be and you'll receive additional 
 instructions.
+
+If you don't like to post your question to the mailing list, you can also
+send a more private mail to emiplibinfo@edm.uhasselt.be.
 

@@ -65,12 +65,15 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	core/mipcomponentchain.cpp core/mipversion.cpp \
 	components/timer/mipaveragetimer.cpp \
 	components/timer/mippusheventtimer.cpp \
+	components/output/mipqtoutput.moc \
 	components/output/mipmessagedumper.cpp \
 	components/output/mipsndfileoutput.cpp \
 	components/output/mipalsaoutput.cpp \
+	components/output/mipesdoutput.cpp \
 	components/output/mipqtoutput.cpp \
 	components/output/mipvideoframestorage.cpp \
 	components/input/mipsndfileinput.cpp \
+	components/input/mipaudiofileinput.cpp \
 	components/input/mipv4linput.cpp \
 	components/input/mipfrequencygenerator.cpp \
 	components/input/mipwavinput.cpp \
@@ -95,23 +98,24 @@ am__libemip_la_SOURCES_DIST = core/mipcomponent.cpp \
 	components/codec/mipavcodecdecoder.cpp \
 	util/mipsignalwaiter.cpp util/mipdirectorybrowser.cpp \
 	util/mipwavreader.cpp util/miprtpsynchronizer.cpp \
-	sessions/mipaudiosession.cpp sessions/mipvideosession.cpp \
-	components/output/mipqtoutput.moc
+	sessions/mipaudiosession.cpp sessions/mipvideosession.cpp
 am__objects_1 =
 am_libemip_la_OBJECTS = mipcomponent.lo mipcomponentchain.lo \
 	mipversion.lo mipaveragetimer.lo mippusheventtimer.lo \
-	mipmessagedumper.lo mipsndfileoutput.lo mipalsaoutput.lo \
-	mipqtoutput.lo mipvideoframestorage.lo mipsndfileinput.lo \
-	mipv4linput.lo mipfrequencygenerator.lo mipwavinput.lo \
-	mipossinputoutput.lo miprtpcomponent.lo miprtpaudioencoder.lo \
-	miprtpdecoder.lo miprtpaudiodecoder.lo miprtpvideoencoder.lo \
-	miprtpvideodecoder.lo mipsamplingrateconverter.lo \
-	mipsampleencoder.lo mipaudio3dbase.lo miphrirlisten.lo \
-	mipaudiosplitter.lo mipaudiomixer.lo mipvideomixer.lo \
-	mipmediabuffer.lo mipspeexencoder.lo mipspeexdecoder.lo \
-	mipavcodecencoder.lo mipavcodecdecoder.lo mipsignalwaiter.lo \
-	mipdirectorybrowser.lo mipwavreader.lo miprtpsynchronizer.lo \
-	mipaudiosession.lo mipvideosession.lo $(am__objects_1)
+	$(am__objects_1) mipmessagedumper.lo mipsndfileoutput.lo \
+	mipalsaoutput.lo mipesdoutput.lo mipqtoutput.lo \
+	mipvideoframestorage.lo mipsndfileinput.lo \
+	mipaudiofileinput.lo mipv4linput.lo mipfrequencygenerator.lo \
+	mipwavinput.lo mipossinputoutput.lo miprtpcomponent.lo \
+	miprtpaudioencoder.lo miprtpdecoder.lo miprtpaudiodecoder.lo \
+	miprtpvideoencoder.lo miprtpvideodecoder.lo \
+	mipsamplingrateconverter.lo mipsampleencoder.lo \
+	mipaudio3dbase.lo miphrirlisten.lo mipaudiosplitter.lo \
+	mipaudiomixer.lo mipvideomixer.lo mipmediabuffer.lo \
+	mipspeexencoder.lo mipspeexdecoder.lo mipavcodecencoder.lo \
+	mipavcodecdecoder.lo mipsignalwaiter.lo mipdirectorybrowser.lo \
+	mipwavreader.lo miprtpsynchronizer.lo mipaudiosession.lo \
+	mipvideosession.lo
 libemip_la_OBJECTS = $(am_libemip_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -195,7 +199,9 @@ MAKEINFO = @MAKEINFO@
 MIPCONFIG_BIGENDIAN = @MIPCONFIG_BIGENDIAN@
 MIPCONFIG_GPL = @MIPCONFIG_GPL@
 MIPCONFIG_SUPPORT_ALSA = @MIPCONFIG_SUPPORT_ALSA@
+MIPCONFIG_SUPPORT_AUDIOFILE = @MIPCONFIG_SUPPORT_AUDIOFILE@
 MIPCONFIG_SUPPORT_AVCODEC = @MIPCONFIG_SUPPORT_AVCODEC@
+MIPCONFIG_SUPPORT_ESD = @MIPCONFIG_SUPPORT_ESD@
 MIPCONFIG_SUPPORT_INTELIPP = @MIPCONFIG_SUPPORT_INTELIPP@
 MIPCONFIG_SUPPORT_QT = @MIPCONFIG_SUPPORT_QT@
 MIPCONFIG_SUPPORT_SNDFILE = @MIPCONFIG_SUPPORT_SNDFILE@
@@ -282,13 +288,15 @@ x_libraries = @x_libraries@
 lib_LTLIBRARIES = libemip.la
 libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
 	core/mipversion.cpp components/timer/mipaveragetimer.cpp \
-	components/timer/mippusheventtimer.cpp \
+	components/timer/mippusheventtimer.cpp $(am__append_1) \
 	components/output/mipmessagedumper.cpp \
 	components/output/mipsndfileoutput.cpp \
 	components/output/mipalsaoutput.cpp \
+	components/output/mipesdoutput.cpp \
 	components/output/mipqtoutput.cpp \
 	components/output/mipvideoframestorage.cpp \
 	components/input/mipsndfileinput.cpp \
+	components/input/mipaudiofileinput.cpp \
 	components/input/mipv4linput.cpp \
 	components/input/mipfrequencygenerator.cpp \
 	components/input/mipwavinput.cpp \
@@ -313,8 +321,7 @@ libemip_la_SOURCES = core/mipcomponent.cpp core/mipcomponentchain.cpp \
 	components/codec/mipavcodecdecoder.cpp \
 	util/mipsignalwaiter.cpp util/mipdirectorybrowser.cpp \
 	util/mipwavreader.cpp util/miprtpsynchronizer.cpp \
-	sessions/mipaudiosession.cpp sessions/mipvideosession.cpp \
-	$(am__append_1)
+	sessions/mipaudiosession.cpp sessions/mipvideosession.cpp
 libemipinclude_HEADERS = \
 core/mipcompat.h \
 core/miperrorbase.h \
@@ -343,10 +350,12 @@ components/timer/mippusheventtimer.h \
 components/output/mipmessagedumper.h \
 components/output/mipsndfileoutput.h \
 components/output/mipalsaoutput.h \
+components/output/mipesdoutput.h \
 components/output/mipqtoutput.h \
 components/output/mipwinmmoutput.h \
 components/output/mipvideoframestorage.h \
 components/input/mipsndfileinput.h  \
+components/input/mipaudiofileinput.h  \
 components/input/mipv4linput.h \
 components/input/mipwinmminput.h \
 components/input/mipfrequencygenerator.h \
@@ -382,7 +391,7 @@ INCLUDES = -I core/ -I util/ -I components/codec/ -I components/input/ -I compon
 	   -I components/output/ -I components/timer/ -I components/transform/ -I components/transmission/ \
 	   @MIPINCLUDES@
 
-libemip_la_LDFLAGS = -release 0.9.0
+libemip_la_LDFLAGS = -release 0.10.0
 libemipincludedir = ${includedir}/emiplib
 EXTRA_DIST = \
 core/miptypes_win.h \
@@ -465,6 +474,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipalsaoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudio3dbase.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiofileinput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiomixer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiosession.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipaudiosplitter.Plo@am__quote@
@@ -474,6 +484,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipcomponent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipcomponentchain.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipdirectorybrowser.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipesdoutput.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipfrequencygenerator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/miphrirlisten.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mipmediabuffer.Plo@am__quote@
@@ -580,6 +591,13 @@ mipalsaoutput.lo: components/output/mipalsaoutput.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipalsaoutput.lo `test -f 'components/output/mipalsaoutput.cpp' || echo '$(srcdir)/'`components/output/mipalsaoutput.cpp
 
+mipesdoutput.lo: components/output/mipesdoutput.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipesdoutput.lo -MD -MP -MF "$(DEPDIR)/mipesdoutput.Tpo" -c -o mipesdoutput.lo `test -f 'components/output/mipesdoutput.cpp' || echo '$(srcdir)/'`components/output/mipesdoutput.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipesdoutput.Tpo" "$(DEPDIR)/mipesdoutput.Plo"; else rm -f "$(DEPDIR)/mipesdoutput.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/output/mipesdoutput.cpp' object='mipesdoutput.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipesdoutput.lo `test -f 'components/output/mipesdoutput.cpp' || echo '$(srcdir)/'`components/output/mipesdoutput.cpp
+
 mipqtoutput.lo: components/output/mipqtoutput.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipqtoutput.lo -MD -MP -MF "$(DEPDIR)/mipqtoutput.Tpo" -c -o mipqtoutput.lo `test -f 'components/output/mipqtoutput.cpp' || echo '$(srcdir)/'`components/output/mipqtoutput.cpp; \
 @am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipqtoutput.Tpo" "$(DEPDIR)/mipqtoutput.Plo"; else rm -f "$(DEPDIR)/mipqtoutput.Tpo"; exit 1; fi
@@ -600,6 +618,13 @@ mipsndfileinput.lo: components/input/mipsndfileinput.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/input/mipsndfileinput.cpp' object='mipsndfileinput.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipsndfileinput.lo `test -f 'components/input/mipsndfileinput.cpp' || echo '$(srcdir)/'`components/input/mipsndfileinput.cpp
+
+mipaudiofileinput.lo: components/input/mipaudiofileinput.cpp
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipaudiofileinput.lo -MD -MP -MF "$(DEPDIR)/mipaudiofileinput.Tpo" -c -o mipaudiofileinput.lo `test -f 'components/input/mipaudiofileinput.cpp' || echo '$(srcdir)/'`components/input/mipaudiofileinput.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/mipaudiofileinput.Tpo" "$(DEPDIR)/mipaudiofileinput.Plo"; else rm -f "$(DEPDIR)/mipaudiofileinput.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='components/input/mipaudiofileinput.cpp' object='mipaudiofileinput.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o mipaudiofileinput.lo `test -f 'components/input/mipaudiofileinput.cpp' || echo '$(srcdir)/'`components/input/mipaudiofileinput.cpp
 
 mipv4linput.lo: components/input/mipv4linput.cpp
 @am__fastdepCXX_TRUE@	if $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT mipv4linput.lo -MD -MP -MF "$(DEPDIR)/mipv4linput.Tpo" -c -o mipv4linput.lo `test -f 'components/input/mipv4linput.cpp' || echo '$(srcdir)/'`components/input/mipv4linput.cpp; \
@@ -998,7 +1023,9 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES \
 	uninstall-libemipincludeHEADERS
 
 
-@MIP_USEQT_TRUE@components/output/mipqtoutput.moc: components/output/mipqtoutput.cpp
+@MIP_USEQT_TRUE@components/output/mipqtoutput.cpp: components/output/mipqtoutput.moc
+
+@MIP_USEQT_TRUE@components/output/mipqtoutput.moc:
 @MIP_USEQT_TRUE@	/usr/lib/qt/bin/moc -o components/output/mipqtoutput.moc components/output/mipqtoutput.cpp
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

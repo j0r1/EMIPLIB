@@ -34,6 +34,4 @@
 	#include "mipconfig_unix.h"
 #endif
 
-//#define MIPCONFIG_BIGENDIAN
-
 #endif // MIPCONFIG_H

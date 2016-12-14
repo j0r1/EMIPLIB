@@ -23,45 +23,45 @@
 */
 
 /**
- * \file mipwavinput.h
+ * \file mipaudiofileinput.h
  */
+#ifndef MIPAUDIOFILEINPUT_H
 
-#ifndef MIPWAVINPUT_H
-
-#define MIPWAVINPUT_H
+#define MIPAUDIOFILEINPUT_H
 
 #include "mipconfig.h"
+
+#ifdef MIPCONFIG_SUPPORT_AUDIOFILE
+
 #include "mipcomponent.h"
+#include "miprawaudiomessage.h"
 #include "miptime.h"
+#include <audiofile.h>
 #include <string>
 
-class MIPAudioMessage;
-class MIPWAVReader;
-
 /** A sound file input component.
- *  This component can be used to read audio from a WAV file.
- *  The component accepts MIPSYSTEMMESSAGE_ISTIME messages, so a timing component should 
- *  send its messages to the component. The output messages contain raw audio in floating 
- *  point or 16 bit signed native encoding.
+ *  This component can be used to read audio from a file. The component uses the
+ *  \c libaudiofile library to accomplish this. This component accepts MIPSYSTEMMESSAGE_ISTIME
+ *  messages, so a timing component should sent its messages to the component. The
+ *  output messages contain raw audio in 16 bit integer encoding.
  *  \note A frame consists of a number of samples (equal to the number of channels)
  *        sampled at the same instant. For example, in a stereo sound file, one
  *        frame would consist of two samples: one for the left channel and one for
  *        the right.
  */
-class MIPWAVInput : public MIPComponent
+class MIPAudioFileInput : public MIPComponent
 {
 public:
-	MIPWAVInput();
-	~MIPWAVInput();
+	MIPAudioFileInput();
+	~MIPAudioFileInput();
 
 	/** Opens a sound file.
 	 *  With this function, a sound file can be opened for reading.
 	 *  \param fname	The name of the sound file 
 	 *  \param frames	The number of frames which should be read during each iteration.
 	 *  \param loop		Flag indicating if the sound file should be played over and over again or just once.
-	 *  \param intSamples	If \c true, 16 bit integer samples will be used. If \c false, floating point samples will be used.
 	 */
-	bool open(const std::string &fname, int frames, bool loop = true, bool intSamples = false);
+	bool open(const std::string &fname, int frames, bool loop = true);
 	
 	/** Opens a sound file.
 	 *  With this function, a sound file can be opened for reading.
@@ -69,9 +69,8 @@ public:
 	 *  \param interval	During each iteration, a number of frames corresponding to the time interval described
 	 *                      by this parameter are read.
 	 *  \param loop		Flag indicating if the sound file should be played over and over again or just once.
-	 *  \param intSamples	If \c true, 16 bit integer samples will be used. If \c false, floating point samples will be used.
 	 */
-	bool open(const std::string &fname, MIPTime interval, bool loop = true, bool intSamples = false);
+	bool open(const std::string &fname, MIPTime interval, bool loop = true);
 
 	/** Closes the sound file.
 	 *  Use this function to stop using a previously opened sound file.
@@ -79,32 +78,36 @@ public:
 	bool close();
 
 	/** Returns the sampling rate of the sound file. */
-	int getSamplingRate() const								{ if (m_pSndFile) return m_sampRate; return 0; }
+	int getSamplingRate() const								{ if (m_audiofileHandle) return m_sampRate; return 0; }
 	
 	/** Returns the number of frames that will be read during each iteration. */
-	int getNumberOfFrames() const								{ if (m_pSndFile) return m_numFrames; return 0; }
+	int getNumberOfFrames() const								{ if (m_audiofileHandle) return m_numFrames; return 0; }
 
 	/** Returns the number of channels in the sound file. */
-	int getNumberOfChannels() const								{ if (m_pSndFile) return m_numChannels; return 0; }
+	int getNumberOfChannels() const								{ if (m_audiofileHandle) return m_numChannels; return 0; }
 
-	/** Sets the source ID for outgoing messages. */
+	/** Returns the sample encoding used in generated raw audio messages. */
+	MIPRaw16bitAudioMessage::SampleEncoding getSampleEncoding() const			{ if (m_audiofileHandle) return m_sampleEncoding; return MIPRaw16bitAudioMessage::Native; }
+
+	/** Selects which source ID will be set in outgoing audio messages. */
 	void setSourceID(uint64_t sourceID)							{ m_sourceID = sourceID; }
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 private:
-	MIPWAVReader *m_pSndFile;
+	AFfilehandle m_audiofileHandle;
 	int m_sampRate;
 	int m_numFrames;
 	int m_numChannels;
-	bool m_intSamples;
-	float *m_pFramesFloat;
-	uint16_t *m_pFramesInt;
-	MIPAudioMessage *m_pMsg;
+	uint16_t *m_pFrames;
+	MIPRaw16bitAudioMessage *m_pMsg;
+	MIPRaw16bitAudioMessage::SampleEncoding m_sampleEncoding;
 	bool m_gotMessage;
 	bool m_loop, m_eof;
 	uint64_t m_sourceID;
 };
 
-#endif // MIPWAVINPUT_H
+#endif // MIPCONFIG_SUPPORT_AUDIOFILE
+
+#endif // MIPAUDIOFILEINPUT_H
 

@@ -91,8 +91,11 @@ bool MIPAVCodecEncoder::init(int width, int height, real_t framerate, int bitrat
 	m_pContext->frame_rate_base = denominator;
 #endif // LIBAVCODEC_VERSION_INT > 0x0409
 	if (bitrate > 0)
+	{
 		m_pContext->bit_rate = bitrate;
-
+		m_pContext->bit_rate_tolerance = bitrate/20; // 5%
+	}
+	
 	if (avcodec_open(m_pContext, m_pCodec) < 0)
 	{
 		m_pCodec = 0;

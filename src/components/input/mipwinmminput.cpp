@@ -130,7 +130,7 @@ bool MIPWinMMInput::open(int sampRate, int channels, MIPTime interval, MIPTime b
 
 	m_gotLastInput = false;
 	m_gotMsg = false;
-	m_pMsg = new MIPRaw16bitAudioMessage(m_sampRate, m_channels, (int)m_frames, true, false, m_pMsgBuffer, false);
+	m_pMsg = new MIPRaw16bitAudioMessage(m_sampRate, m_channels, (int)m_frames, true, MIPRaw16bitAudioMessage::LittleEndian, m_pMsgBuffer, false);
 	m_stopThread = false;
 
 	m_numBuffers = (int)((bufferTime.getValue() / interval.getValue())+0.5);

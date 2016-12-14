@@ -86,6 +86,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 #endif // _WIN32_WCE
 	int sampRate = 16000;
 	int channels = 1;
+	bool singleThread = false;
 	
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	m_pInput = new MIPWinMMInput();
@@ -109,6 +110,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		
 		m_pInput = new MIPOSSInputOutput();
 		m_pOutput = m_pInput;
+		singleThread = true;
 
 		ioParams.setDeviceName(pParams2->getInputDevice());
 
@@ -156,7 +158,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 #endif // _WIN32_WCE
 
 	m_pSampEnc = new MIPSampleEncoder();
-	if (!m_pSampEnc->init(MIPRAWAUDIOMESSAGE_TYPE_FLOAT))
+	if (!m_pSampEnc->init(MIPRAWAUDIOMESSAGE_TYPE_S16))
 	{
 		setErrorString(m_pSampEnc->getErrorString());
 		deleteAll();
@@ -204,7 +206,8 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		return false;
 	}
 
-	m_pTimer = new MIPAverageTimer(outputInterval);
+	if (!singleThread)
+		m_pTimer = new MIPAverageTimer(outputInterval);
 	
 	m_pRTPDec = new MIPRTPAudioDecoder();
 	if (!m_pRTPDec->init(true, pSync))
@@ -223,7 +226,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	}
 	
 	m_pSpeexDec = new MIPSpeexDecoder();
-	if (!m_pSpeexDec->init())
+	if (!m_pSpeexDec->init(false))
 	{
 		setErrorString(m_pSpeexDec->getErrorString());
 		deleteAll();
@@ -231,7 +234,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	}
 	
 	m_pMixer = new MIPAudioMixer();
-	if (!m_pMixer->init(sampRate, channels, outputInterval))
+	if (!m_pMixer->init(sampRate, channels, outputInterval, true, false))
 	{
 		setErrorString(m_pMixer->getErrorString());
 		deleteAll();
@@ -253,44 +256,70 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		return false;
 	}
 
-	// Create input chain
-	
-	m_pInputChain = new InputChain(this);
-
-	m_pInputChain->setChainStart(m_pInput);
-#ifdef _WIN32_WCE
-	m_pInputChain->addConnection(m_pInput, m_pSplitter);
-	m_pInputChain->addConnection(m_pSplitter, m_pSampEnc);
-#else
-	m_pInputChain->addConnection(m_pInput, m_pSampEnc);
-#endif // _WIN32_WCE
-	m_pInputChain->addConnection(m_pSampEnc, m_pSpeexEnc);
-	m_pInputChain->addConnection(m_pSpeexEnc, m_pRTPEnc);
-	m_pInputChain->addConnection(m_pRTPEnc, m_pRTPComp);
-	
-	m_pOutputChain = new OutputChain(this);
-
-	m_pOutputChain->setChainStart(m_pTimer);
-	m_pOutputChain->addConnection(m_pTimer, m_pRTPComp);
-	m_pOutputChain->addConnection(m_pRTPComp, m_pRTPDec);
-	m_pOutputChain->addConnection(m_pRTPDec, m_pMediaBuf, true);
-	m_pOutputChain->addConnection(m_pMediaBuf, m_pSpeexDec, true, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX);
-	m_pOutputChain->addConnection(m_pSpeexDec, m_pMixer, true);
-	m_pOutputChain->addConnection(m_pMixer, m_pSampEnc2, true);
-	m_pOutputChain->addConnection(m_pSampEnc2, m_pOutput, true);
-
-	if (!m_pInputChain->start())
+	if (!singleThread)
 	{
-		setErrorString(m_pInputChain->getErrorString());
-		deleteAll();
-		return false;
+		// Create input chain
+		
+		m_pInputChain = new InputChain(this);
+	
+		m_pInputChain->setChainStart(m_pInput);
+	#ifdef _WIN32_WCE
+		m_pInputChain->addConnection(m_pInput, m_pSplitter);
+		m_pInputChain->addConnection(m_pSplitter, m_pSampEnc);
+	#else
+		m_pInputChain->addConnection(m_pInput, m_pSampEnc);
+	#endif // _WIN32_WCE
+		m_pInputChain->addConnection(m_pSampEnc, m_pSpeexEnc);
+		m_pInputChain->addConnection(m_pSpeexEnc, m_pRTPEnc);
+		m_pInputChain->addConnection(m_pRTPEnc, m_pRTPComp);
+		
+		m_pOutputChain = new OutputChain(this);
+	
+		m_pOutputChain->setChainStart(m_pTimer);
+		m_pOutputChain->addConnection(m_pTimer, m_pRTPComp);
+		m_pOutputChain->addConnection(m_pRTPComp, m_pRTPDec);
+		m_pOutputChain->addConnection(m_pRTPDec, m_pMediaBuf, true);
+		m_pOutputChain->addConnection(m_pMediaBuf, m_pSpeexDec, true, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX);
+		m_pOutputChain->addConnection(m_pSpeexDec, m_pMixer, true);
+		m_pOutputChain->addConnection(m_pMixer, m_pSampEnc2, true);
+		m_pOutputChain->addConnection(m_pSampEnc2, m_pOutput, true);
+	
+		if (!m_pInputChain->start())
+		{
+			setErrorString(m_pInputChain->getErrorString());
+			deleteAll();
+			return false;
+		}
+	
+		if (!m_pOutputChain->start())
+		{
+			setErrorString(m_pOutputChain->getErrorString());
+			deleteAll();
+			return false;
+		}
 	}
-
-	if (!m_pOutputChain->start())
+	else // single I/O thread
 	{
-		setErrorString(m_pOutputChain->getErrorString());
-		deleteAll();
-		return false;
+		m_pIOChain = new IOChain(this);
+		
+		m_pIOChain->setChainStart(m_pInput);
+		m_pIOChain->addConnection(m_pInput, m_pSampEnc);
+		m_pIOChain->addConnection(m_pSampEnc, m_pSpeexEnc);
+		m_pIOChain->addConnection(m_pSpeexEnc, m_pRTPEnc);
+		m_pIOChain->addConnection(m_pRTPEnc, m_pRTPComp);
+		m_pIOChain->addConnection(m_pRTPComp, m_pRTPDec);
+		m_pIOChain->addConnection(m_pRTPDec, m_pMediaBuf, true);
+		m_pIOChain->addConnection(m_pMediaBuf, m_pSpeexDec, true, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX);
+		m_pIOChain->addConnection(m_pSpeexDec, m_pMixer, true);
+		m_pIOChain->addConnection(m_pMixer, m_pSampEnc2, true);
+		m_pIOChain->addConnection(m_pSampEnc2, m_pOutput, true);
+	
+		if (!m_pIOChain->start())
+		{
+			setErrorString(m_pIOChain->getErrorString());
+			deleteAll();
+			return false;
+		}
 	}
 	
 	m_init = true;
@@ -522,6 +551,7 @@ void MIPAudioSession::zeroAll()
 {
 	m_pInputChain = 0;
 	m_pOutputChain = 0;
+	m_pIOChain = 0;
 	m_pInput = 0;
 	m_pOutput = 0;
 	m_pSampEnc = 0;
@@ -549,6 +579,11 @@ void MIPAudioSession::deleteAll()
 	{
 		m_pOutputChain->stop();
 		delete m_pOutputChain;
+	}
+	if (m_pIOChain)
+	{
+		m_pIOChain->stop();
+		delete m_pIOChain;
 	}
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	if (m_pInput)

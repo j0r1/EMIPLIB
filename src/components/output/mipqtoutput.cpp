@@ -413,7 +413,7 @@ void *MIPQtOutput::Thread()
 		m_lock.Unlock();
 	} while (!done);
 
-	std::cerr << "Qt thread is exiting..." << std::endl;
+	//std::cerr << "Qt thread is exiting..." << std::endl;
 
 	return 0;
 }

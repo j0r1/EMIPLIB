@@ -58,8 +58,9 @@ public:
 	 *  \param width Width of the video frames.
 	 *  \param height Height of the video frames.
 	 *  \param frameRate Framerate.
+	 *  \param devideNumber 0 opens the first device which is encountered, 1 the second, etc.
 	 */
-	bool open(int width, int height, real_t frameRate);
+	bool open(int width, int height, real_t frameRate, int deviceNumber = 0);
 
 	/** Closes the DirectShow input device. */
 	bool close();
@@ -82,7 +83,7 @@ private:
 	void zeroAll();
 	void clearNonZero();
 	bool initCaptureGraphBuilder();
-	bool getCaptureDevice();
+	bool getCaptureDevice(int deviceNumber);
 	bool setFormat(int w, int h, real_t rate);
 
 	class GrabCallback : public ISampleGrabberCB

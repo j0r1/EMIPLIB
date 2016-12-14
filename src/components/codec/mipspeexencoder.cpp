@@ -130,48 +130,87 @@ bool MIPSpeexEncoder::push(const MIPComponentChain &chain, int64_t iteration, MI
 		clearMessages();
 	}
 
-	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_AUDIO_RAW && pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_FLOAT))
+	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_AUDIO_RAW && (pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_FLOAT || pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_S16) ) )
 	{
 		setErrorString(MIPSPEEXENCODER_ERRSTR_BADMESSAGE);
 		return false;
 	}
 
-	MIPRawFloatAudioMessage *pAudioMsg = (MIPRawFloatAudioMessage *)pMsg;
-
-	if (pAudioMsg->getSamplingRate() != m_sampRate)
+	if (pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_FLOAT)
 	{
-		setErrorString(MIPSPEEXENCODER_ERRSTR_BADSAMPRATE);
-		return false;
+		MIPRawFloatAudioMessage *pAudioMsg = (MIPRawFloatAudioMessage *)pMsg;
+	
+		if (pAudioMsg->getSamplingRate() != m_sampRate)
+		{
+			setErrorString(MIPSPEEXENCODER_ERRSTR_BADSAMPRATE);
+			return false;
+		}
+		
+		if (pAudioMsg->getNumberOfChannels() != 1)
+		{
+			setErrorString(MIPSPEEXENCODER_ERRSTR_NOTMONO);
+			return false;
+		}
+		
+		if (pAudioMsg->getNumberOfFrames() != m_numFrames)
+		{
+			setErrorString(MIPSPEEXENCODER_ERRSTR_BADFRAMES);
+			return false;
+		}
+	
+		speex_bits_reset(&m_bits);
+	
+		const float *pFloatBuf = pAudioMsg->getFrames();
+		for (int i = 0 ; i < m_numFrames ; i++)
+			m_pFloatBuffer[i] = (float)(pFloatBuf[i]*32767.0);
+		
+		uint8_t *pBuffer = new uint8_t[m_numFrames]; // this should be more than enough memory
+	
+		speex_encode(m_pState, m_pFloatBuffer, &m_bits);
+		size_t numBytes = (size_t)speex_bits_write(&m_bits, (char *)pBuffer, (int)m_numFrames);
+		
+		MIPEncodedAudioMessage *pNewMsg = new MIPEncodedAudioMessage(MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX, m_sampRate, 1, m_numFrames, pBuffer, numBytes, true);
+		pNewMsg->copyMediaInfoFrom(*pAudioMsg); // copy time and sourceID
+		m_messages.push_back(pNewMsg);
+		
+		m_msgIt = m_messages.begin();
+	}
+	else // Signed 16 bit, native endian encoded samples
+	{
+		MIPRaw16bitAudioMessage *pAudioMsg = (MIPRaw16bitAudioMessage *)pMsg;
+	
+		if (pAudioMsg->getSamplingRate() != m_sampRate)
+		{
+			setErrorString(MIPSPEEXENCODER_ERRSTR_BADSAMPRATE);
+			return false;
+		}
+		
+		if (pAudioMsg->getNumberOfChannels() != 1)
+		{
+			setErrorString(MIPSPEEXENCODER_ERRSTR_NOTMONO);
+			return false;
+		}
+		
+		if (pAudioMsg->getNumberOfFrames() != m_numFrames)
+		{
+			setErrorString(MIPSPEEXENCODER_ERRSTR_BADFRAMES);
+			return false;
+		}
+	
+		speex_bits_reset(&m_bits);
+	
+		uint8_t *pBuffer = new uint8_t[m_numFrames]; // this should be more than enough memory
+	
+		speex_encode_int(m_pState, (int16_t *)pAudioMsg->getFrames(), &m_bits);
+		size_t numBytes = (size_t)speex_bits_write(&m_bits, (char *)pBuffer, (int)m_numFrames);
+		
+		MIPEncodedAudioMessage *pNewMsg = new MIPEncodedAudioMessage(MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX, m_sampRate, 1, m_numFrames, pBuffer, numBytes, true);
+		pNewMsg->copyMediaInfoFrom(*pAudioMsg); // copy time and sourceID
+		m_messages.push_back(pNewMsg);
+		
+		m_msgIt = m_messages.begin();
 	}
 	
-	if (pAudioMsg->getNumberOfChannels() != 1)
-	{
-		setErrorString(MIPSPEEXENCODER_ERRSTR_NOTMONO);
-		return false;
-	}
-	
-	if (pAudioMsg->getNumberOfFrames() != m_numFrames)
-	{
-		setErrorString(MIPSPEEXENCODER_ERRSTR_BADFRAMES);
-		return false;
-	}
-
-	speex_bits_reset(&m_bits);
-
-	const float *pFloatBuf = pAudioMsg->getFrames();
-	for (int i = 0 ; i < m_numFrames ; i++)
-		m_pFloatBuffer[i] = (float)(pFloatBuf[i]*32767.0);
-	
-	uint8_t *pBuffer = new uint8_t[m_numFrames]; // this should be more than enough memory
-
-	speex_encode(m_pState, m_pFloatBuffer, &m_bits);
-	size_t numBytes = (size_t)speex_bits_write(&m_bits, (char *)pBuffer, (int)m_numFrames);
-	
-	MIPEncodedAudioMessage *pNewMsg = new MIPEncodedAudioMessage(MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX, m_sampRate, 1, m_numFrames, pBuffer, numBytes, true);
-	pNewMsg->copyMediaInfoFrom(*pAudioMsg); // copy time and sourceID
-	m_messages.push_back(pNewMsg);
-	
-	m_msgIt = m_messages.begin();
 	return true;
 }
 

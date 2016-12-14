@@ -2,6 +2,28 @@
 
                               EMIPLIB ChangeLog
 
+
+Version 0.10.0, March 2006:
+ * Fixed bug in MIPAudioSession. In the GNU/Linux version, when the same
+   OSS device was used for both input and output, there were some problems.
+ * Added ESD audio output component.
+ * Added 16 bit signed and unsigned raw audio messages using native byte
+   order.
+ * Modified the MIPSampleEncoder component. Now, an int32_t is used as an
+   intermediate format instead of a float. This should speed things up on
+   devices without FPU.
+ * The MIPWAVReader can now also read samples as int16_t values (instead
+   of only float values)
+ * The MIPWAVInput component can now also produce samples as 16 bit (native
+   byte order) audio messages.
+ * Added Audio File Library audio input component.
+ * The DirectShow webcam input component now allows the selection of a
+   specific device (in case more than one is available).
+ * The audio mixer and Speex components can now also use integer samples
+   instead of floating point samples only.
+ * Added a post-build batch file for the MS-Windows version which copies
+   all the header files to an 'include' subdirectory.
+
 Version 0.9.0, January 2006:
  * Initial release
 

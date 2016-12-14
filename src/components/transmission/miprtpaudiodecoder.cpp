@@ -139,7 +139,7 @@ MIPMediaMessage *MIPRTPAudioDecoder::createNewMessage(const RTPPacket *pRTPPack)
 	
 			numFrames /= 2;
 			memcpy(pFrames, pRTPPack->GetPayloadData() + 3, length);
-			pAudioMsg = new MIPRaw16bitAudioMessage(m_sampRate, channels, numFrames, false, true, pFrames, true);
+			pAudioMsg = new MIPRaw16bitAudioMessage(m_sampRate, channels, numFrames, false, MIPRaw16bitAudioMessage::BigEndian, pFrames, true);
 		}
 		else // one byte per sample
 		{
@@ -158,6 +158,8 @@ MIPMediaMessage *MIPRTPAudioDecoder::createNewMessage(const RTPPacket *pRTPPack)
 	
 	memcpy(pData, pRTPPack->GetPayloadData() + 1, length);
 	MIPEncodedAudioMessage *pEncMsg = new MIPEncodedAudioMessage(m_encodingType, m_sampRate, 1, -1, pData, length, true);
+
+//	std::cout << "Created packet" << std::endl;
 
 	return pEncMsg;
 }

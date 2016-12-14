@@ -52,7 +52,7 @@ MIPSpeexDecoder::~MIPSpeexDecoder()
 	destroy();
 }
 
-bool MIPSpeexDecoder::init()
+bool MIPSpeexDecoder::init(bool floatSamples)
 {
 	if (m_init)
 	{
@@ -63,6 +63,7 @@ bool MIPSpeexDecoder::init()
 	m_lastIteration = -1;
 	m_msgIt = m_messages.begin();
 	m_lastExpireTime = MIPTime::getCurrentTime();
+	m_floatSamples = floatSamples;
 	m_init = true;
 	return true;
 }
@@ -93,7 +94,7 @@ bool MIPSpeexDecoder::destroy()
 
 void MIPSpeexDecoder::clearMessages()
 {
-	std::list<MIPRawFloatAudioMessage *>::iterator it;
+	std::list<MIPAudioMessage *>::iterator it;
 
 	for (it = m_messages.begin() ; it != m_messages.end() ; it++)
 		delete (*it);
@@ -205,19 +206,35 @@ bool MIPSpeexDecoder::push(const MIPComponentChain &chain, int64_t iteration, MI
 	}
 
 	int numFrames = pSpeexInf->getNumberOfFrames();
-	float *pFrames = new float [numFrames];
 	speex_bits_read_from(pSpeexInf->getBits(), (char *)pEncMsg->getData(), (int)pEncMsg->getDataLength());
-	speex_decode(pSpeexInf->getState(), pSpeexInf->getBits(), pFrames);
+
 	pSpeexInf->setUpdateTime();
 
-	for (int i = 0 ; i < numFrames ; i++)
-		pFrames[i] /= (float)32767.0;
+	if (m_floatSamples)
+	{
+		float *pFrames = new float [numFrames];
+		
+		speex_decode(pSpeexInf->getState(), pSpeexInf->getBits(), pFrames);
 	
-	MIPRawFloatAudioMessage *pNewMsg = new MIPRawFloatAudioMessage(sampRate, 1, numFrames, pFrames, true);
-	pNewMsg->copyMediaInfoFrom(*pEncMsg); // copy source ID and message time
-	m_messages.push_back(pNewMsg);
-	m_msgIt = m_messages.begin();
-	
+		for (int i = 0 ; i < numFrames ; i++)
+			pFrames[i] /= (float)32767.0;
+		
+		MIPRawFloatAudioMessage *pNewMsg = new MIPRawFloatAudioMessage(sampRate, 1, numFrames, pFrames, true);
+		pNewMsg->copyMediaInfoFrom(*pEncMsg); // copy source ID and message time
+		m_messages.push_back(pNewMsg);
+		m_msgIt = m_messages.begin();
+	}
+	else // use 16 bit signed native encoding
+	{
+		uint16_t *pFrames = new uint16_t [numFrames];
+		
+		speex_decode_int(pSpeexInf->getState(), pSpeexInf->getBits(), (int16_t *)pFrames);
+		
+		MIPRaw16bitAudioMessage *pNewMsg = new MIPRaw16bitAudioMessage(sampRate, 1, numFrames, true, MIPRaw16bitAudioMessage::Native, pFrames, true);
+		pNewMsg->copyMediaInfoFrom(*pEncMsg); // copy source ID and message time
+		m_messages.push_back(pNewMsg);
+		m_msgIt = m_messages.begin();
+	}
 	return true;
 }
 

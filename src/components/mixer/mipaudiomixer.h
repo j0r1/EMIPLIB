@@ -35,11 +35,13 @@
 #include "miptime.h"
 #include <list>
 
+class MIPRaw16bitAudioMessage;
 class MIPRawFloatAudioMessage;
 
 /** This component can mix several audio streams.
- *  Using this component, several audio streams can be mixed. It accepts floating point
- *  raw audio messages and produces floating point raw audio messages. This component
+ *  Using this component, several audio streams can be mixed. In the default mode, it accepts 
+ *  floating point raw audio messages and produces floating point raw audio messages. You
+ *  can also work with signed 16 bit native raw audio messages. This component
  *  generates feedback about the current offset in the output stream.
  */
 class MIPAudioMixer : public MIPComponent
@@ -58,8 +60,10 @@ public:
 	 *                     will be used to determine the position of the audio in the output
 	 *                     stream. If set to \c false, incoming messages will be inserted
 	 *                     at the head of the stream and timing information will be ignored.
+	 *  \param floatSamples Flag indicating if floating point samples should be used or
+	 *                      signed 16 bit native endian samples.
 	 */
-	bool init(int sampRate, int channels, MIPTime blockTime, bool useTimeInfo = true);
+	bool init(int sampRate, int channels, MIPTime blockTime, bool useTimeInfo = true, bool floatSamples = true);
 
 	/** De-initializes the mixer component.
 	 *  This function frees the resources claimed by the mixer component.
@@ -82,11 +86,14 @@ private:
 	class MIPAudioMixerBlock
 	{
 	public:
-		MIPAudioMixerBlock(int64_t playInterval, float *pFrames)			{ m_interval = playInterval; m_pFrames = pFrames; }
-		float *getFrames()								{ return m_pFrames; }
+		MIPAudioMixerBlock(int64_t playInterval, float *pFrames)			{ m_interval = playInterval; m_pFloatFrames = pFrames; m_pIntFrames = 0; }
+		MIPAudioMixerBlock(int64_t playInterval, uint16_t *pFrames)			{ m_interval = playInterval; m_pFloatFrames = 0; m_pIntFrames = pFrames; }
+		float *getFramesFloat()								{ return m_pFloatFrames; }
+		uint16_t *getFramesInt()							{ return m_pIntFrames; }
 		int64_t getInterval() const							{ return m_interval; }
 	private:
-		float *m_pFrames;
+		float *m_pFloatFrames;
+		uint16_t *m_pIntFrames;
 		int64_t m_interval;
 	};
 	
@@ -98,15 +105,19 @@ private:
 	bool m_useTimeInfo;
 	int64_t m_prevIteration;
 	bool m_gotMessage;
+	bool m_floatSamples;
 
 	MIPTime m_blockTime, m_playTime;
 	int m_sampRate, m_channels;
 	size_t m_blockFrames,m_blockSize;
 	int64_t m_curInterval;
 	
-	MIPRawFloatAudioMessage *m_pMsg;
-	float *m_pSilenceFrames;
-	float *m_pBlockFrames;
+	MIPRawFloatAudioMessage *m_pMsgFloat;
+	MIPRaw16bitAudioMessage *m_pMsgInt;
+	float *m_pSilenceFramesFloat;
+	uint16_t *m_pSilenceFramesInt;
+	float *m_pBlockFramesFloat;
+	uint16_t *m_pBlockFramesInt;
 
 	MIPTime m_extraDelay;
 	

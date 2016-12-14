@@ -378,9 +378,14 @@ bool MIPHRIRListen::processFile(const std::string &baseDir, const std::string &f
 	int subjectNumber, radius, azimuth, elevation;
 	char typeChar;
 	bool compensated;
-	
-	if (MIP_SSCANF(fileName.c_str(),"IRC_%04d_%c_R%04d_T%03d_P%03d.wav",&subjectNumber,&typeChar,&radius,&azimuth,&elevation) != 5)
+
+#if defined(WIN32) && !defined(_WIN32_WCE) && (defined(_MSC_VER) && _MSC_VER >= 1400 )
+	if (sscanf_s(fileName.c_str(),"IRC_%04d_%c_R%04d_T%03d_P%03d.wav",&subjectNumber,&typeChar,1,&radius,&azimuth,&elevation) != 5)
 		return true; // ignore file
+#else
+	if (sscanf(fileName.c_str(),"IRC_%04d_%c_R%04d_T%03d_P%03d.wav",&subjectNumber,&typeChar,&radius,&azimuth,&elevation) != 5)
+		return true; // ignore file
+#endif 
 
 	if (typeChar == 'C')
 		compensated = true;

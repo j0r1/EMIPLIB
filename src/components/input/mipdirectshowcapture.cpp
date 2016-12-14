@@ -36,7 +36,8 @@
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEMANAGER						"Can't create filter graph manager"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEDEVICEENUMERATOR				"Can't create device enumerator"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCAPTUREENUMERATOR					"Can't create video capture device enumerator"
-#define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTFINDCAPTUREDEVICE					"Can't find a useable capture device"
+#define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTFINDCAPTUREDEVICE					"Can't find the requested capture device"
+#define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTBINDCAPTUREDEVICE					"Can't bind the requested capture device"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATENULLRENDERER					"Can't create null renderer"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEGRABFILTER					"Can't create sample grabber filter"
 #define MIPDIRECTSHOWCAPTURE_ERRSTR_CANTCREATEGRABIFACE						"Unable to obtain sample grabber intereface"
@@ -75,7 +76,7 @@ MIPDirectShowCapture::~MIPDirectShowCapture()
 	close();
 }
 
-bool MIPDirectShowCapture::open(int width, int height, real_t frameRate)
+bool MIPDirectShowCapture::open(int width, int height, real_t frameRate, int deviceNumber)
 {
 	if (m_pGraph != 0)
 	{
@@ -86,7 +87,7 @@ bool MIPDirectShowCapture::open(int width, int height, real_t frameRate)
 	if (!initCaptureGraphBuilder())
 		return false;
 
-	if (!getCaptureDevice())
+	if (!getCaptureDevice(deviceNumber))
 	{
 		clearNonZero();
 		return false;
@@ -394,7 +395,7 @@ bool MIPDirectShowCapture::initCaptureGraphBuilder()
 	return true;
 }
 
-bool MIPDirectShowCapture::getCaptureDevice()
+bool MIPDirectShowCapture::getCaptureDevice(int deviceNumber)
 {
 	ICreateDevEnum *pDevEnum = 0;
 	IEnumMoniker *pEnum = 0;
@@ -424,16 +425,27 @@ bool MIPDirectShowCapture::getCaptureDevice()
 	IMoniker *pMoniker = NULL;
 	while (pEnum->Next(1, &pMoniker, NULL) == S_OK)
 	{
-		hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&m_pCaptDevice);
-		pMoniker->Release();
-		if (SUCCEEDED(hr))
+		if (deviceNumber == 0)
 		{
-			pEnum->Release();
-			pDevEnum->Release();
-			return true;
+			hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&m_pCaptDevice);
+			pMoniker->Release();
+			if (SUCCEEDED(hr))
+			{
+				pEnum->Release();
+				pDevEnum->Release();
+				return true;
+			}
+			else
+			{
+				m_pCaptDevice = 0;
+				pEnum->Release();
+				pDevEnum->Release();
+				setErrorString(MIPDIRECTSHOWCAPTURE_ERRSTR_CANTBINDCAPTUREDEVICE);
+				return false;
+			}
 		}
 		else
-			m_pCaptDevice = 0;
+			deviceNumber--;
 	}
 	pEnum->Release();
 	pDevEnum->Release();

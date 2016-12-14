@@ -117,6 +117,7 @@ int main(void)
 
 	uint8_t ipLocal[4] = { 127, 0, 0, 1 };
 	ret = videoSess.addDestination(RTPIPv4Address(ipLocal,6100));
+//	ret = audioSess.addDestination(RTPIPv4Address(ipLocal,6000));
 
 	int ip[4] = { 127, 0, 0, 1};
 	int Aport = 6000;

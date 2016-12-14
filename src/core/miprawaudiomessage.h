@@ -53,7 +53,13 @@
  * \def MIPRAWAUDIOMESSAGE_TYPE_S16BE
  *      \brief A message with this subtype represents signed 16 bit big endian encoded raw audio,
  *             stored in an MIPRaw16bitAudioMessage instance.
- */
+ * \def MIPRAWAUDIOMESSAGE_TYPE_S16
+ *      \brief A message with this subtype represents signed 16 bit native endian encoded raw audio,
+ *             stored in an MIPRaw16bitAudioMessage instance.
+ * \def MIPRAWAUDIOMESSAGE_TYPE_U16
+ *      \brief A message with this subtype represents unsigned 16 bit native endian encoded raw audio,
+ *             stored in an MIPRaw16bitAudioMessage instance.
+*/
 
 #define MIPRAWAUDIOMESSAGE_TYPE_FLOAT								0x00000001
 #define MIPRAWAUDIOMESSAGE_TYPE_U8								0x00000002
@@ -61,6 +67,8 @@
 #define MIPRAWAUDIOMESSAGE_TYPE_U16BE								0x00000008
 #define MIPRAWAUDIOMESSAGE_TYPE_S16LE								0x00000010
 #define MIPRAWAUDIOMESSAGE_TYPE_S16BE								0x00000020
+#define MIPRAWAUDIOMESSAGE_TYPE_S16								0x00000040
+#define MIPRAWAUDIOMESSAGE_TYPE_U16								0x00000080
 
 /** Container for floating point raw audio data. */
 class MIPRawFloatAudioMessage : public MIPAudioMessage
@@ -157,20 +165,23 @@ private:
 class MIPRaw16bitAudioMessage : public MIPAudioMessage
 {
 public:
+	/** Used in constructor to specify sample encoding. */
+	enum SampleEncoding { LittleEndian, BigEndian, Native };
+
 	/** Creates a MIPRaw16bitAudioMessage instance.
 	 *  Creates a MIPRaw16bitAudioMessage instance.
 	 *  \param sampRate Sampling rate.
 	 *  \param numChannels Number of channels.
 	 *  \param numFrames Number of frames.
 	 *  \param isSigned Flag indicating if the samples are stored as signed or unsigned data.
-	 *  \param isBigEndian Flag indicating if the samples are encoded in little endian or bigendian format.
+	 *  \param sampleEncoding Indicates if the samples are encoded in little endian, big endian or native format.
 	 *  \param pFrames The audio data.
 	 *  \param deleteFrames Flag indicating if the data contained in \c pFrames should be
 	 *                      deleted when this message is destroyed or when the data is replaced.
 	 */
-	MIPRaw16bitAudioMessage(int sampRate, int numChannels, int numFrames, bool isSigned, bool isBigEndian, 
-                                uint16_t *pFrames, bool deleteFrames) : MIPAudioMessage(true, calcSubtype(isSigned, isBigEndian), sampRate, numChannels, numFrames)
-												{ m_pFrames = pFrames; m_deleteFrames = deleteFrames; m_isSigned = isSigned; m_isBigEndian = isBigEndian; }
+	MIPRaw16bitAudioMessage(int sampRate, int numChannels, int numFrames, bool isSigned, SampleEncoding sampleEncoding, 
+                                uint16_t *pFrames, bool deleteFrames) : MIPAudioMessage(true, calcSubtype(isSigned, sampleEncoding), sampRate, numChannels, numFrames)
+												{ m_pFrames = pFrames; m_deleteFrames = deleteFrames; m_isSigned = isSigned; m_sampleEncoding = sampleEncoding; }
 	~MIPRaw16bitAudioMessage()								{ if (m_deleteFrames) delete [] m_pFrames; }
 
 	/** Returns the audio data. */
@@ -184,14 +195,24 @@ public:
 	 *  \param deleteFrames Flag indicating if the data contained in \c pFrames should be
 	 *                      deleted when this message is destroyed or when the data is replaced.
 	 */
-	void setFrames(bool isSigned, bool isBigEndian, uint16_t *pFrames, bool deleteFrames)	{ if (m_deleteFrames) delete [] m_pFrames; m_pFrames = pFrames; m_deleteFrames = deleteFrames; setMessageSubtype(calcSubtype(isSigned, isBigEndian)); m_isBigEndian = isBigEndian; m_isSigned = isSigned; }
+	void setFrames(bool isSigned, SampleEncoding sampleEncoding, uint16_t *pFrames, bool deleteFrames)
+												{ if (m_deleteFrames) delete [] m_pFrames; m_pFrames = pFrames; m_deleteFrames = deleteFrames; setMessageSubtype(calcSubtype(isSigned, sampleEncoding)); m_sampleEncoding = sampleEncoding; m_isSigned = isSigned; }
 
 	/** Returns \c true if the stored data uses a signed encoding, \c false otherwise. */
 	bool isSigned() const									{ return m_isSigned; }
 
 	/** Returns \c true if the stored data uses a big endian encoding, \c false otherwise. */
-	bool isBigEndian() const								{ return m_isBigEndian; }
+	bool isBigEndian() const								{ return (m_sampleEncoding == BigEndian)?true:false; }
 	
+	/** Returns \c true if the stored data uses a little endian encoding, \c false otherwise. */
+	bool isLittleEndian() const								{ return (m_sampleEncoding == LittleEndian)?true:false; }
+
+	/** Returns \c true if the stored data uses a native encoding, \c false otherwise. */
+	bool isNative() const									{ return (m_sampleEncoding == Native)?true:false; }
+
+	/** Returns sample encoding. */
+	SampleEncoding getSampleEncoding() const						{ return m_sampleEncoding; } 
+
 	/** Create a copy of this message. */
 	MIPMediaMessage *createCopy() const
 	{
@@ -201,27 +222,32 @@ public:
 		memcpy(pFrames, m_pFrames, numSamples*sizeof(uint16_t));
 		MIPMediaMessage *pMsg = new MIPRaw16bitAudioMessage(getSamplingRate(), getNumberOfChannels(),
 		                                                    getNumberOfFrames(), m_isSigned, 
-								    m_isBigEndian, pFrames, true);
+								    m_sampleEncoding, pFrames, true);
 		pMsg->copyMediaInfoFrom(*this);
 		return pMsg;
 	}
 private:
-	static inline uint32_t calcSubtype(bool isSigned, bool isBigEndian)
+	static inline uint32_t calcSubtype(bool isSigned, SampleEncoding sampleEncoding)
 	{
 		if (isSigned)
 		{
-			if (isBigEndian)
+			if (sampleEncoding == BigEndian)
 				return MIPRAWAUDIOMESSAGE_TYPE_S16BE;
-			return MIPRAWAUDIOMESSAGE_TYPE_S16LE;
+			if (sampleEncoding == LittleEndian)
+				return MIPRAWAUDIOMESSAGE_TYPE_S16LE;
+			return MIPRAWAUDIOMESSAGE_TYPE_S16;
 		}
-		if (isBigEndian)
+		if (sampleEncoding == BigEndian)
 			return MIPRAWAUDIOMESSAGE_TYPE_U16BE;
-		return MIPRAWAUDIOMESSAGE_TYPE_U16LE;
+		if (sampleEncoding == LittleEndian)
+			return MIPRAWAUDIOMESSAGE_TYPE_U16LE;
+		return MIPRAWAUDIOMESSAGE_TYPE_U16;
 	}
 	
 	uint16_t *m_pFrames;
 	bool m_deleteFrames;
-	bool m_isSigned, m_isBigEndian;
+	bool m_isSigned;
+	SampleEncoding m_sampleEncoding;
 };
 
 #endif // MIPRAWAUDIOMESSAGE_H

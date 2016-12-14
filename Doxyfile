@@ -23,7 +23,7 @@ PROJECT_NAME           = emiplib
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = 0.9.0
+PROJECT_NUMBER         = 0.10.0
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
@@ -996,9 +996,11 @@ INCLUDE_FILE_PATTERNS  =
 # undefined via #undef or recursively expanded use the := operator 
 # instead of the = operator.
 
-PREDEFINED             = MIPCONFIG_SUPPORT_SNDFILE MIPCONFIG_SUPPORT_ALSA MIPCONFIG_SUPPORT_QT \
-                         MIPCONFIG_SUPPORT_SPEEX MIPCONFIG_SUPPORT_AVCODEC WIN32 _WIN32_WCE \
-			 MIPCONFIG_GPL
+PREDEFINED             = MIPCONFIG_SUPPORT_SNDFILE MIPCONFIG_SUPPORT_ALSA \
+			MIPCONFIG_SUPPORT_ESD MIPCONFIG_SUPPORT_QT \
+			MIPCONFIG_SUPPORT_SPEEX MIPCONFIG_SUPPORT_AVCODEC \
+			WIN32 _WIN32_WCE MIPCONFIG_GPL \
+			MIPCONFIG_SUPPORT_AUDIOFILE
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 

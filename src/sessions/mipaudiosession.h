@@ -191,6 +191,16 @@ protected:
 	 *  \param errStr Contains a description of the error.
 	 */
 	virtual void onOutputThreadExit(bool err, const std::string &compName, const std::string &errStr)	{ }
+
+	/** By overriding this function, you can detect when the input/output thread has finished.
+	 *  By overriding this function, you can detect when the input/output thread has finished.
+	 *  A single input/output thread is used in the GNU/Linux version when input and output
+	 *  OSS device are the same.
+	 *  \param err Flag indicating if the thread stopped due to an error.
+	 *  \param compName Contains the component in which the error occured.
+	 *  \param errStr Contains a description of the error.
+	 */
+	virtual void onIOThreadExit(bool err, const std::string &compName, const std::string &errStr)	{ }
 private:
 	class InputChain : public MIPComponentChain
 	{
@@ -212,6 +222,16 @@ private:
 		MIPAudioSession *m_pAudioSess;
 	};
 
+	class IOChain : public MIPComponentChain
+	{
+	public:
+		IOChain(MIPAudioSession *pAudioSess) : MIPComponentChain("Input/Output chain")		{ m_pAudioSess = pAudioSess; }
+	protected:
+		void onThreadExit(bool err, const std::string &compName, const std::string &errStr)	{ m_pAudioSess->onIOThreadExit(err, compName, errStr); }
+	private:
+		MIPAudioSession *m_pAudioSess;
+	};
+
 	void zeroAll();
 	void deleteAll();
 
@@ -219,6 +239,7 @@ private:
 	
 	InputChain *m_pInputChain;
 	OutputChain *m_pOutputChain;
+	IOChain *m_pIOChain;
 #if (defined(WIN32) || defined(_WIN32_WCE))
 	MIPWinMMInput *m_pInput;
 	MIPWinMMOutput *m_pOutput;
@@ -241,6 +262,7 @@ private:
 	
 	friend class InputChain;
 	friend class OutputChain;
+	friend class IOChain;
 };
 
 #endif // MIPCONFIG_SUPPORT_SPEEX

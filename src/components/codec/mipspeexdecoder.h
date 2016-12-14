@@ -44,12 +44,13 @@
 #endif // Win32
 #include <list>
 
-class MIPRawFloatAudioMessage;
+class MIPAudioMessage;
 
 /** Decodes messages which contain Speex encoded data.
  *  This component can be used to decompress data using the Speex codec. Input messages
  *  should be MIPEncodedAudioMessage instances with subtype MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX.
- *  The component generates floating point mono raw audio messages.
+ *  The component generates floating point mono raw audio messages or signed 16 bit native endian
+ *  encoded raw audio messages.
  */
 class MIPSpeexDecoder : public MIPComponent
 {
@@ -57,8 +58,12 @@ public:
 	MIPSpeexDecoder();
 	~MIPSpeexDecoder();
 
-	/** Initialize the Speex decoder. */
-	bool init();
+	/** Initialize the Speex decoder. 
+	 *  Initialize the Speex decoder.
+	 *  \param floatSamples Flag indicating if floating point raw audio messages or signed 16 bit native
+	 *                      endian raw audio messages should be generated.
+	 */
+	bool init(bool floatSamples = true);
 
 	/** Clean up the Speex decoder. */
 	bool destroy();
@@ -116,10 +121,11 @@ private:
 	__gnu_cxx::hash_map<uint64_t, SpeexStateInfo *, __gnu_cxx::hash<uint32_t> > m_speexStates;
 #endif // Win32
 	
-	std::list<MIPRawFloatAudioMessage *> m_messages;
-	std::list<MIPRawFloatAudioMessage *>::const_iterator m_msgIt;
+	std::list<MIPAudioMessage *> m_messages;
+	std::list<MIPAudioMessage *>::const_iterator m_msgIt;
 	int64_t m_lastIteration;
 	MIPTime m_lastExpireTime;
+	bool m_floatSamples;
 };	
 
 #endif // MIPCONFIG_SUPPORT_SPEEX

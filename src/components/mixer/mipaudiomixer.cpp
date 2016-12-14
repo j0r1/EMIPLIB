@@ -49,7 +49,7 @@ MIPAudioMixer::~MIPAudioMixer()
 	destroy();
 }
 
-bool MIPAudioMixer::init(int sampRate, int channels, MIPTime blockTime, bool useTimeInfo)
+bool MIPAudioMixer::init(int sampRate, int channels, MIPTime blockTime, bool useTimeInfo, bool floatSamples)
 {
 	if (m_init)
 	{
@@ -65,13 +65,32 @@ bool MIPAudioMixer::init(int sampRate, int channels, MIPTime blockTime, bool use
 	m_playTime = MIPTime(0);
 	m_curInterval = 0;
 	m_useTimeInfo = useTimeInfo;
+	m_floatSamples = floatSamples;
 
-	m_pSilenceFrames = new float [m_blockSize];
-	for (size_t i = 0 ; i < m_blockSize ; i++)
-		m_pSilenceFrames[i] = 0;
-	m_pMsg = new MIPRawFloatAudioMessage(sampRate, channels, (int)m_blockFrames, m_pSilenceFrames, false);
-	m_pBlockFrames = 0;
-
+	if (floatSamples)
+	{
+		m_pSilenceFramesFloat = new float [m_blockSize];
+		for (size_t i = 0 ; i < m_blockSize ; i++)
+			m_pSilenceFramesFloat[i] = 0;
+		
+		m_pMsgFloat = new MIPRawFloatAudioMessage(sampRate, channels, (int)m_blockFrames, m_pSilenceFramesFloat, false);
+		m_pMsgInt = 0;
+		m_pSilenceFramesInt = 0;
+	}
+	else
+	{
+		m_pSilenceFramesInt = new uint16_t [m_blockSize];
+		for (size_t i = 0 ; i < m_blockSize ; i++)
+			m_pSilenceFramesInt[i] = 0;
+		
+		m_pMsgInt = new MIPRaw16bitAudioMessage(sampRate, channels, (int)m_blockFrames, true, MIPRaw16bitAudioMessage::Native, m_pSilenceFramesInt, false);
+		m_pMsgFloat = 0;
+		m_pSilenceFramesFloat = 0;
+	}
+	
+	m_pBlockFramesFloat = 0;
+	m_pBlockFramesInt = 0;
+	
 	m_extraDelay = MIPTime(0);	
 	
 	m_prevIteration = -1;
@@ -89,10 +108,18 @@ bool MIPAudioMixer::destroy()
 	}
 
 	clearAudioBlocks();
-	delete m_pMsg;
-	if (m_pBlockFrames)
-		delete [] m_pBlockFrames;
-	delete [] m_pSilenceFrames;
+	if (m_pMsgFloat)
+		delete m_pMsgFloat;
+	if (m_pBlockFramesFloat)
+		delete [] m_pBlockFramesFloat;
+	if (m_pSilenceFramesFloat)
+		delete [] m_pSilenceFramesFloat;
+	if (m_pMsgInt)
+		delete m_pMsgInt;
+	if (m_pBlockFramesInt)
+		delete [] m_pBlockFramesInt;
+	if (m_pSilenceFramesInt)
+		delete [] m_pSilenceFramesInt;
 
 	m_init = false;
 	
@@ -106,13 +133,13 @@ bool MIPAudioMixer::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 		setErrorString(MIPAUDIOMIXER_ERRSTR_NOTINIT);
 		return false;
 	}
-	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_AUDIO_RAW && pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_FLOAT))
+	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_AUDIO_RAW && ((pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_FLOAT && m_floatSamples) || (!m_floatSamples && pMsg->getMessageSubtype() == MIPRAWAUDIOMESSAGE_TYPE_S16 ) )))
 	{
 		setErrorString(MIPAUDIOMIXER_ERRSTR_BADMESSAGE);
 		return false;
 	}
 
-	MIPRawFloatAudioMessage *pAudioMsg = (MIPRawFloatAudioMessage *)pMsg;
+	MIPAudioMessage *pAudioMsg = (MIPAudioMessage *)pMsg;
 
 	if (pAudioMsg->getSamplingRate() != m_sampRate)
 	{
@@ -153,25 +180,54 @@ bool MIPAudioMixer::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 	size_t sampleOffset = frameOffset * m_channels;
 	size_t numSamplesLeft = (size_t)(pAudioMsg->getNumberOfFrames())*m_channels;
 	size_t samplePos = 0;
-	const float *pSamples = pAudioMsg->getFrames();
 
-	initBlockSearch();
-	while (numSamplesLeft != 0)
+	if (m_floatSamples)
 	{
-		MIPAudioMixerBlock block = searchBlock(intervalNumber);
-		float *blockSamples = block.getFrames();
-		
-		size_t num = (numSamplesLeft > (m_blockSize-sampleOffset))?(m_blockSize-sampleOffset):numSamplesLeft;
-		size_t i,j,k;
-		
-		// add samples to the block
-		for (i = 0, j = sampleOffset, k = samplePos ; i < num ; i++, j++, k++)
-			blockSamples[j] += pSamples[k];
-		
-		sampleOffset = 0;
-		samplePos += num;
-		numSamplesLeft -= num;
-		intervalNumber++;
+		MIPRawFloatAudioMessage *pFloatAudioMsg = (MIPRawFloatAudioMessage *)pMsg;
+		const float *pSamples = pFloatAudioMsg->getFrames();
+	
+		initBlockSearch();
+		while (numSamplesLeft != 0)
+		{
+			MIPAudioMixerBlock block = searchBlock(intervalNumber);
+			float *blockSamples = block.getFramesFloat();
+			
+			size_t num = (numSamplesLeft > (m_blockSize-sampleOffset))?(m_blockSize-sampleOffset):numSamplesLeft;
+			size_t i,j,k;
+			
+			// add samples to the block
+			for (i = 0, j = sampleOffset, k = samplePos ; i < num ; i++, j++, k++)
+				blockSamples[j] += pSamples[k];
+			
+			sampleOffset = 0;
+			samplePos += num;
+			numSamplesLeft -= num;
+			intervalNumber++;
+		}
+	}
+	else // signed 16 bit
+	{
+		MIPRaw16bitAudioMessage *pIntAudioMsg = (MIPRaw16bitAudioMessage *)pMsg;
+		const int16_t *pSamples = (const int16_t *)pIntAudioMsg->getFrames();
+	
+		initBlockSearch();
+		while (numSamplesLeft != 0)
+		{
+			MIPAudioMixerBlock block = searchBlock(intervalNumber);
+			int16_t *blockSamples = (int16_t *)block.getFramesInt();
+			
+			size_t num = (numSamplesLeft > (m_blockSize-sampleOffset))?(m_blockSize-sampleOffset):numSamplesLeft;
+			size_t i,j,k;
+			
+			// add samples to the block
+			for (i = 0, j = sampleOffset, k = samplePos ; i < num ; i++, j++, k++)
+				blockSamples[j] += pSamples[k];
+			
+			sampleOffset = 0;
+			samplePos += num;
+			numSamplesLeft -= num;
+			intervalNumber++;
+		}
 	}
 	
 	return true;
@@ -179,44 +235,97 @@ bool MIPAudioMixer::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 
 bool MIPAudioMixer::pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg)
 {
-	if (m_prevIteration != 	iteration)
+	if (!m_init)
 	{
-		m_prevIteration = iteration;
-		
-		// delete old frames
-		delete [] m_pBlockFrames;
-		m_pBlockFrames = 0;
-		
-		if (m_audioBlocks.empty())
-			m_pMsg->setFrames(m_pSilenceFrames,false);
-		else
-		{
-			MIPAudioMixerBlock block = *(m_audioBlocks.begin());
+		setErrorString(MIPAUDIOMIXER_ERRSTR_NOTINIT);
+		return false;
+	}
 
-			if (block.getInterval() == m_curInterval)
-			{
-				m_audioBlocks.pop_front();
-				m_pBlockFrames = block.getFrames();
-				m_pMsg->setFrames(m_pBlockFrames,false);
-			}
+	if (m_floatSamples)
+	{
+		if (m_prevIteration != 	iteration)
+		{
+			m_prevIteration = iteration;
+			
+			// delete old frames
+			if (m_pBlockFramesFloat)
+				delete [] m_pBlockFramesFloat;
+			m_pBlockFramesFloat = 0;
+			
+			if (m_audioBlocks.empty())
+				m_pMsgFloat->setFrames(m_pSilenceFramesFloat,false);
 			else
-				m_pMsg->setFrames(m_pSilenceFrames,false);
+			{
+				MIPAudioMixerBlock block = *(m_audioBlocks.begin());
+	
+				if (block.getInterval() == m_curInterval)
+				{
+					m_audioBlocks.pop_front();
+					m_pBlockFramesFloat = block.getFramesFloat();
+					m_pMsgFloat->setFrames(m_pBlockFramesFloat,false);
+				}
+				else
+					m_pMsgFloat->setFrames(m_pSilenceFramesFloat,false);
+			}
+			
+			m_gotMessage = false;
+			m_curInterval++;
+			m_playTime += m_blockTime;
 		}
 		
-		m_gotMessage = false;
-		m_curInterval++;
-		m_playTime += m_blockTime;
+		if (m_gotMessage)
+		{
+			m_gotMessage = false;
+			*pMsg = 0;
+		}
+		else
+		{
+			m_gotMessage = true;
+			*pMsg = m_pMsgFloat;
+		}
 	}
+	else // 16 bit signed
+	{
+		if (m_prevIteration != 	iteration)
+		{
+			m_prevIteration = iteration;
+			
+			// delete old frames
+			if (m_pBlockFramesInt)
+				delete [] m_pBlockFramesInt;
+			m_pBlockFramesInt = 0;
+			
+			if (m_audioBlocks.empty())
+				m_pMsgInt->setFrames(true, MIPRaw16bitAudioMessage::Native, m_pSilenceFramesInt,false);
+			else
+			{
+				MIPAudioMixerBlock block = *(m_audioBlocks.begin());
 	
-	if (m_gotMessage)
-	{
-		m_gotMessage = false;
-		*pMsg = 0;
-	}
-	else
-	{
-		m_gotMessage = true;
-		*pMsg = m_pMsg;
+				if (block.getInterval() == m_curInterval)
+				{
+					m_audioBlocks.pop_front();
+					m_pBlockFramesInt = block.getFramesInt();
+					m_pMsgInt->setFrames(true, MIPRaw16bitAudioMessage::Native, m_pBlockFramesInt,false);
+				}
+				else
+					m_pMsgInt->setFrames(true, MIPRaw16bitAudioMessage::Native, m_pSilenceFramesInt,false);
+			}
+			
+			m_gotMessage = false;
+			m_curInterval++;
+			m_playTime += m_blockTime;
+		}
+		
+		if (m_gotMessage)
+		{
+			m_gotMessage = false;
+			*pMsg = 0;
+		}
+		else
+		{
+			m_gotMessage = true;
+			*pMsg = m_pMsgInt;
+		}
 	}
 	return true;
 }
@@ -226,7 +335,12 @@ void MIPAudioMixer::clearAudioBlocks()
 	std::list<MIPAudioMixerBlock>::iterator it;
 
 	for (it = m_audioBlocks.begin() ; it != m_audioBlocks.end() ; it++)
-		delete [] (*it).getFrames();
+	{
+		if ((*it).getFramesFloat())
+			delete [] (*it).getFramesFloat();
+		if ((*it).getFramesInt())
+			delete [] (*it).getFramesInt();
+	}
 	m_audioBlocks.clear();
 }
 
@@ -239,9 +353,22 @@ MIPAudioMixer::MIPAudioMixerBlock MIPAudioMixer::searchBlock(int64_t intervalNum
 {
 	if (m_it == m_audioBlocks.end())
 	{
-		float *pNewFrames = new float [m_blockSize];
+		if (m_floatSamples)
+		{
+			float *pNewFrames = new float [m_blockSize];
+			
+			memcpy(pNewFrames, m_pSilenceFramesFloat, sizeof(float)*m_blockSize);
+			MIPAudioMixerBlock block(intervalNumber, pNewFrames);
+			m_audioBlocks.push_back(block);
+			m_it = m_audioBlocks.end();
+			return block;
+		}
+
+		// 16 bit signed
 		
-		memcpy(pNewFrames, m_pSilenceFrames, sizeof(float)*m_blockSize);
+		uint16_t *pNewFrames = new uint16_t [m_blockSize];
+			
+		memcpy(pNewFrames, m_pSilenceFramesInt, sizeof(uint16_t)*m_blockSize);
 		MIPAudioMixerBlock block(intervalNumber, pNewFrames);
 		m_audioBlocks.push_back(block);
 		m_it = m_audioBlocks.end();
@@ -250,9 +377,22 @@ MIPAudioMixer::MIPAudioMixerBlock MIPAudioMixer::searchBlock(int64_t intervalNum
 
 	if (intervalNumber < (*m_it).getInterval())
 	{
-		float *pNewFrames = new float [m_blockSize];
+		if (m_floatSamples)
+		{
+			float *pNewFrames = new float [m_blockSize];
+			
+			memcpy(pNewFrames, m_pSilenceFramesFloat, sizeof(float)*m_blockSize);
+			MIPAudioMixerBlock block(intervalNumber, pNewFrames);
+			m_it = m_audioBlocks.insert(m_it, block);
+			m_it++;
+			return block;
+		}
+
+		// 16 bit signed		
 		
-		memcpy(pNewFrames, m_pSilenceFrames, sizeof(float)*m_blockSize);
+		uint16_t *pNewFrames = new uint16_t [m_blockSize];
+			
+		memcpy(pNewFrames, m_pSilenceFramesInt, sizeof(uint16_t)*m_blockSize);
 		MIPAudioMixerBlock block(intervalNumber, pNewFrames);
 		m_it = m_audioBlocks.insert(m_it, block);
 		m_it++;
@@ -288,9 +428,22 @@ MIPAudioMixer::MIPAudioMixerBlock MIPAudioMixer::searchBlock(int64_t intervalNum
 
 			if (intervalNumber < (*m_it).getInterval())
 			{
-				float *pNewFrames = new float [m_blockSize];
-		
-				memcpy(pNewFrames, m_pSilenceFrames, sizeof(float)*m_blockSize);
+				if (m_floatSamples)
+				{
+					float *pNewFrames = new float [m_blockSize];
+			
+					memcpy(pNewFrames, m_pSilenceFramesFloat, sizeof(float)*m_blockSize);
+					MIPAudioMixerBlock block(intervalNumber, pNewFrames);
+					m_it = m_audioBlocks.insert(m_it, block);
+					m_it++;
+					return block;
+				}
+
+				// 16 bit signed
+				
+				uint16_t *pNewFrames = new uint16_t [m_blockSize];
+			
+				memcpy(pNewFrames, m_pSilenceFramesInt, sizeof(uint16_t)*m_blockSize);
 				MIPAudioMixerBlock block(intervalNumber, pNewFrames);
 				m_it = m_audioBlocks.insert(m_it, block);
 				m_it++;
@@ -299,9 +452,22 @@ MIPAudioMixer::MIPAudioMixerBlock MIPAudioMixer::searchBlock(int64_t intervalNum
 		}
 	} 
 	
-	float *pNewFrames = new float [m_blockSize];
-		
-	memcpy(pNewFrames, m_pSilenceFrames, sizeof(float)*m_blockSize);
+	if (m_floatSamples)
+	{
+		float *pNewFrames = new float [m_blockSize];
+			
+		memcpy(pNewFrames, m_pSilenceFramesFloat, sizeof(float)*m_blockSize);
+		MIPAudioMixerBlock block(intervalNumber, pNewFrames);
+		m_audioBlocks.push_back(block);
+		m_it = m_audioBlocks.end();
+		return block;
+	}
+
+	// 16 bit signed
+	
+	uint16_t *pNewFrames = new uint16_t [m_blockSize];
+			
+	memcpy(pNewFrames, m_pSilenceFramesInt, sizeof(uint16_t)*m_blockSize);
 	MIPAudioMixerBlock block(intervalNumber, pNewFrames);
 	m_audioBlocks.push_back(block);
 	m_it = m_audioBlocks.end();

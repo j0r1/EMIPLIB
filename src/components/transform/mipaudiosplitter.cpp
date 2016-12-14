@@ -155,11 +155,12 @@ bool MIPAudioSplitter::push(const MIPComponentChain &chain, int64_t iteration, M
 		m_msgIt = m_messages.begin();
 	}
 	else if (subtype == MIPRAWAUDIOMESSAGE_TYPE_S16LE || subtype == MIPRAWAUDIOMESSAGE_TYPE_U16LE ||
-		 subtype == MIPRAWAUDIOMESSAGE_TYPE_S16BE || subtype == MIPRAWAUDIOMESSAGE_TYPE_U16BE)
+		 subtype == MIPRAWAUDIOMESSAGE_TYPE_S16BE || subtype == MIPRAWAUDIOMESSAGE_TYPE_U16BE ||
+		 subtype == MIPRAWAUDIOMESSAGE_TYPE_S16 || subtype == MIPRAWAUDIOMESSAGE_TYPE_U16 )
 	{
 		MIPRaw16bitAudioMessage *pAudioMsg = (MIPRaw16bitAudioMessage *)pMsg;
 		const uint16_t *pInputFrames = pAudioMsg->getFrames();
-		bool isBE = pAudioMsg->isBigEndian();
+		MIPRaw16bitAudioMessage::SampleEncoding sampEnc = pAudioMsg->getSampleEncoding();
 		bool isSigned = pAudioMsg->isSigned();
 		
 		while (numFramesLeft > 0)
@@ -173,7 +174,7 @@ bool MIPAudioSplitter::push(const MIPComponentChain &chain, int64_t iteration, M
 
 			memcpy(pOutputFrames, pInputFrames, numSamples*sizeof(uint16_t));
 
-			MIPRaw16bitAudioMessage *pNewMsg = new MIPRaw16bitAudioMessage(sampRate, numChannels, num, isSigned, isBE, pOutputFrames, true);
+			MIPRaw16bitAudioMessage *pNewMsg = new MIPRaw16bitAudioMessage(sampRate, numChannels, num, isSigned, sampEnc, pOutputFrames, true);
 			pNewMsg->setTime(t);
 			pNewMsg->setSourceID(sourceID);
 			m_messages.push_back(pNewMsg);

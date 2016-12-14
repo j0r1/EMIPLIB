@@ -47,7 +47,8 @@ bool MIPSampleEncoder::init(int dstType)
 
 	if (! (dstType == MIPRAWAUDIOMESSAGE_TYPE_FLOAT || dstType == MIPRAWAUDIOMESSAGE_TYPE_U16LE ||
 	       dstType == MIPRAWAUDIOMESSAGE_TYPE_U16BE || dstType == MIPRAWAUDIOMESSAGE_TYPE_U8 ||
-	       dstType == MIPRAWAUDIOMESSAGE_TYPE_S16BE || dstType == MIPRAWAUDIOMESSAGE_TYPE_S16LE) )
+	       dstType == MIPRAWAUDIOMESSAGE_TYPE_S16BE || dstType == MIPRAWAUDIOMESSAGE_TYPE_S16LE || 
+	       dstType == MIPRAWAUDIOMESSAGE_TYPE_U16 || dstType == MIPRAWAUDIOMESSAGE_TYPE_S16) )
 	{
 		setErrorString(MIPSAMPLEENCODER_ERRSTR_BADTYPE);
 		return false;
@@ -113,19 +114,19 @@ bool MIPSampleEncoder::push(const MIPComponentChain &chain, int64_t iteration, M
 
 	for (size_t i = 0 ; i < numIn ; i++)
 	{
-		float value;
 		uint8_t a;
 		uint16_t b,c;
 		int16_t d;
+		int32_t value;
 
 		switch(srcType)
 		{
 		case MIPRAWAUDIOMESSAGE_TYPE_FLOAT:
-			value = pSamplesFloatIn[i];
+			value = ((int32_t)(pSamplesFloatIn[i]*32768.0f)) << 16;
 			break;
 		case MIPRAWAUDIOMESSAGE_TYPE_U8:
 			a = pSamplesU8In[i];
-			value = (((float)a)-128.0f)/128.0f;
+			value = (((int32_t)a)-128)<<24;
 			break;
 		case MIPRAWAUDIOMESSAGE_TYPE_U16BE:
 			b = pSamples16In[i];
@@ -133,7 +134,7 @@ bool MIPSampleEncoder::push(const MIPComponentChain &chain, int64_t iteration, M
 			c = b;
 			b = ((c >> 8) & 0xff) | ((c << 8) & 0xff00); // swap bytes
 #endif // MIPCONFIG_BIGENDIAN
-			value = (((float)b)-32768.0f)/32768.0f;
+			value = (((int32_t)b)-32768) << 16;
 			break;
 		case MIPRAWAUDIOMESSAGE_TYPE_U16LE:
 			b = pSamples16In[i];
@@ -141,7 +142,7 @@ bool MIPSampleEncoder::push(const MIPComponentChain &chain, int64_t iteration, M
 			c = b;
 			b = ((c >> 8) & 0xff) | ((c << 8) & 0xff00); // swap bytes
 #endif // MIPCONFIG_BIGENDIAN
-			value = (((float)b)-32768.0f)/32768.0f;
+			value = (((int32_t)b)-32768) << 16;
 			break;
 		case MIPRAWAUDIOMESSAGE_TYPE_S16BE:
 			b = pSamples16In[i];
@@ -150,7 +151,8 @@ bool MIPSampleEncoder::push(const MIPComponentChain &chain, int64_t iteration, M
 			b = ((c >> 8) & 0xff) | ((c << 8) & 0xff00); // swap bytes
 #endif // MIPCONFIG_BIGENDIAN
 			d = *((int16_t *)(&b));
-			value = ((float)d)/32768.0f;
+			value = ((int32_t)d) << 16;
+			break;
 		case MIPRAWAUDIOMESSAGE_TYPE_S16LE:
 			b = pSamples16In[i];
 #ifdef MIPCONFIG_BIGENDIAN // we're working on a big endian system
@@ -158,7 +160,16 @@ bool MIPSampleEncoder::push(const MIPComponentChain &chain, int64_t iteration, M
 			b = ((c >> 8) & 0xff) | ((c << 8) & 0xff00); // swap bytes
 #endif // MIPCONFIG_BIGENDIAN
 			d = *((int16_t *)(&b));
-			value = ((float)d)/32768.0f;
+			value = ((int32_t)d) << 16;
+			break;
+		case MIPRAWAUDIOMESSAGE_TYPE_S16:
+			b = pSamples16In[i];
+			d = *((int16_t *)(&b));
+			value = ((int32_t)d) << 16;
+			break;
+		case MIPRAWAUDIOMESSAGE_TYPE_U16:
+			b = pSamples16In[i];
+			value = (((int32_t)b)-32768) << 16;
 			break;
 		default:
 			value = 0;
@@ -167,28 +178,18 @@ bool MIPSampleEncoder::push(const MIPComponentChain &chain, int64_t iteration, M
 		switch(m_dstType)
 		{
 		case MIPRAWAUDIOMESSAGE_TYPE_FLOAT:
-			pSamplesFloat[i] = value;
+			pSamplesFloat[i] = ((float)(value >> 16))/32768.0f;
 			break;
 		case MIPRAWAUDIOMESSAGE_TYPE_U8:
-			value *= 128.0;
-			value += 128.0;
-			if (value < 0)
-				a = 0;
-			else if (value >= 255.0)
-				a = 255;
-			else
-				a = (uint8_t)value;
+			value = value >> 24;
+			value += 128;
+			a = (uint8_t)value;
 			pSamplesU8[i] = a;
 			break;
 		case MIPRAWAUDIOMESSAGE_TYPE_U16BE:
-			value *= 32768.0;
-			value += 32768.0;
-			if (value < 0)
-				b = 0;
-			else if (value > 65535.0)
-				b = 65535;
-			else
-				b = (uint16_t)value;
+			value = value >> 16;
+			value += 32768;
+			b = (uint16_t)value;
 #ifndef MIPCONFIG_BIGENDIAN // we're working on a little endian system
 			c = b;
 			b = ((c >> 8) & 0xff) | ((c << 8) & 0xff00); // swap bytes
@@ -196,14 +197,9 @@ bool MIPSampleEncoder::push(const MIPComponentChain &chain, int64_t iteration, M
 			pSamples16[i] = b;
 			break;
 		case MIPRAWAUDIOMESSAGE_TYPE_U16LE:
-			value *= 32768.0;
-			value += 32768.0;
-			if (value < 0)
-				b = 0;
-			else if (value > 65535.0)
-				b = 65535;
-			else
-				b = (uint16_t)value;
+			value = value >> 16;
+			value += 32768;
+			b = (uint16_t)value;
 #ifdef MIPCONFIG_BIGENDIAN // we're working on a big endian system
 			c = b;
 			b = ((c >> 8) & 0xff) | ((c << 8) & 0xff00); // swap bytes
@@ -211,13 +207,8 @@ bool MIPSampleEncoder::push(const MIPComponentChain &chain, int64_t iteration, M
 			pSamples16[i] = b;
 			break;
 		case MIPRAWAUDIOMESSAGE_TYPE_S16BE:
-			value *= 32768.0;
-			if (value < -32768.0)
-				d = -32768;
-			else if (value > 32767.0)
-				d = 32767;
-			else
-				d = (int16_t)value;
+			value = value >> 16;
+			d = (int16_t)value;
 			b = *((uint16_t *)&d);
 #ifndef MIPCONFIG_BIGENDIAN // we're working on a little endian system
 			c = b;
@@ -226,18 +217,25 @@ bool MIPSampleEncoder::push(const MIPComponentChain &chain, int64_t iteration, M
 			pSamples16[i] = b;
 			break;
 		case MIPRAWAUDIOMESSAGE_TYPE_S16LE:
-			value *= 32768.0;
-			if (value < -32768.0)
-				d = -32768;
-			else if (value > 32767.0)
-				d = 32767;
-			else
-				d = (int16_t)value;
+			value = value >> 16;
+			d = (int16_t)value;
 			b = *((uint16_t *)&d);
 #ifdef MIPCONFIG_BIGENDIAN // we're working on a big endian system
 			c = b;
 			b = ((c >> 8) & 0xff) | ((c << 8) & 0xff00); // swap bytes
 #endif // MIPCONFIG_BIGENDIAN
+			pSamples16[i] = b;
+			break;
+		case MIPRAWAUDIOMESSAGE_TYPE_S16:
+			value = value >> 16;
+			d = (int16_t)value;
+			b = *((uint16_t *)&d);
+			pSamples16[i] = b;
+			break;
+		case MIPRAWAUDIOMESSAGE_TYPE_U16:
+			value = value >> 16;
+			value += 32768;
+			b = (uint16_t)value;
 			pSamples16[i] = b;
 			break;
 		default:
@@ -254,19 +252,22 @@ bool MIPSampleEncoder::push(const MIPComponentChain &chain, int64_t iteration, M
 		pNewMsg = new MIPRawFloatAudioMessage(0,0,0,pSamplesFloat,true);
 	else
 	{
-		bool isSigned, bigEndian;
+		bool isSigned;
+		MIPRaw16bitAudioMessage::SampleEncoding sampEnc;
 
-		if (m_dstType == MIPRAWAUDIOMESSAGE_TYPE_S16LE || m_dstType == MIPRAWAUDIOMESSAGE_TYPE_S16BE)
+		if (m_dstType == MIPRAWAUDIOMESSAGE_TYPE_S16LE || m_dstType == MIPRAWAUDIOMESSAGE_TYPE_S16BE || m_dstType == MIPRAWAUDIOMESSAGE_TYPE_S16)
 			isSigned = true;
 		else
 			isSigned = false;
 		
 		if (m_dstType == MIPRAWAUDIOMESSAGE_TYPE_U16BE || m_dstType == MIPRAWAUDIOMESSAGE_TYPE_S16BE)
-			bigEndian = true;
+			sampEnc = MIPRaw16bitAudioMessage::BigEndian;
+		else if (m_dstType == MIPRAWAUDIOMESSAGE_TYPE_U16LE || m_dstType == MIPRAWAUDIOMESSAGE_TYPE_S16LE)
+			sampEnc = MIPRaw16bitAudioMessage::LittleEndian;
 		else
-			bigEndian = false;
+			sampEnc = MIPRaw16bitAudioMessage::Native;
 		
-		pNewMsg = new MIPRaw16bitAudioMessage(0,0,0,isSigned,bigEndian,pSamples16,true);
+		pNewMsg = new MIPRaw16bitAudioMessage(0,0,0,isSigned,sampEnc,pSamples16,true);
 	}
 
 	pNewMsg->copyAudioInfoFrom(*pAudioMsg);

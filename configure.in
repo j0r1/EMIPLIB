@@ -1,13 +1,15 @@
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(emiplib, 0.9.0)
+AM_INIT_AUTOMAKE(emiplib, 0.10.0)
 
 MIPCONFIG_BIGENDIAN="// Little endian system"
 MIPCONFIG_SUPPORT_SNDFILE="// No support for libsndfile"
+MIPCONFIG_SUPPORT_AUDIOFILE="// No support for libaudiofile"
 MIPCONFIG_SUPPORT_QT="// No support for Qt"
 MIPCONFIG_SUPPORT_ALSA="// No support for ALSA"
 MIPCONFIG_SUPPORT_SPEEX="// No speex support"
 MIPCONFIG_SUPPORT_AVCODEC="// No libavcodec support"
 MIPCONFIG_SUPPORT_INTELIPP="// No support for the Intel IPP library"
+MIPCONFIG_SUPPORT_ESD="// No support for esd"
 MIPCONFIG_GPL="// No GPL components will be compiled"
 
 MIPLINKLIBS=""
@@ -179,11 +181,25 @@ AC_CHECK_HEADER(sndfile.h,[MIPCONFIG_SUPPORT_SNDFILE="#define MIPCONFIG_SUPPORT_
 			   MIPLINKLIBS="$MIPLINKLIBS -lsndfile"])
 
 dnl ---------------------------------------------------------------------------
+dnl libaudiofile stuff
+dnl ---------------------------------------------------------------------------
+
+AC_CHECK_HEADER(audiofile.h,[MIPCONFIG_SUPPORT_AUDIOFILE="#define MIPCONFIG_SUPPORT_AUDIOFILE"
+			   MIPLINKLIBS="$MIPLINKLIBS -laudiofile"])
+
+dnl ---------------------------------------------------------------------------
 dnl ALSA stuff
 dnl ---------------------------------------------------------------------------
 
 AC_CHECK_HEADER(alsa/asoundlib.h,[MIPCONFIG_SUPPORT_ALSA="#define MIPCONFIG_SUPPORT_ALSA"
 				  MIPLINKLIBS="$MIPLINKLIBS -lasound"])
+
+dnl ---------------------------------------------------------------------------
+dnl Esound stuff
+dnl ---------------------------------------------------------------------------
+
+AC_CHECK_HEADER(esd.h,[MIPCONFIG_SUPPORT_ESD="#define MIPCONFIG_SUPPORT_ESD"
+				  MIPLINKLIBS="$MIPLINKLIBS -lesd"])
 
 dnl ---------------------------------------------------------------------------
 dnl Speex stuff
@@ -211,7 +227,7 @@ dnl Check if it's a big endian or little endian system
 dnl Note that we must be careful when a cross-compiler is being used...
 dnl ---------------------------------------------------------------------------
 
-if test "$cross_compiling" = yes  ; then
+if test $cross_compiling = "yes" ; then
 	cat << EOF
 
 ASSUMING TARGET IS BIG ENDIAN:
@@ -230,7 +246,7 @@ EOF
 	MIPCONFIG_BIGENDIAN="#define MIPCONFIG_BIGENDIAN // comment this if the target is a little endian system"
 else
 	AC_C_BIGENDIAN
-	if test "$ac_cv_c_bigendian" = yes; then
+	if test $ac_cv_c_bigendian = "yes" ; then
 		MIPCONFIG_BIGENDIAN="#define MIPCONFIG_BIGENDIAN"
 	fi
 fi
@@ -243,11 +259,13 @@ AC_SUBST(MIPINCLUDES)
 AC_SUBST(MIPLINKLIBS)
 AC_SUBST(MIPCONFIG_BIGENDIAN)
 AC_SUBST(MIPCONFIG_SUPPORT_SNDFILE)
+AC_SUBST(MIPCONFIG_SUPPORT_AUDIOFILE)
 AC_SUBST(MIPCONFIG_SUPPORT_QT)
 AC_SUBST(MIPCONFIG_SUPPORT_ALSA)
 AC_SUBST(MIPCONFIG_SUPPORT_SPEEX)
 AC_SUBST(MIPCONFIG_SUPPORT_AVCODEC)
 AC_SUBST(MIPCONFIG_SUPPORT_INTELIPP)
+AC_SUBST(MIPCONFIG_SUPPORT_ESD)
 AC_SUBST(MIPCONFIG_GPL)
 
 AC_OUTPUT(Makefile \

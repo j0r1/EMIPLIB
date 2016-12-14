@@ -62,6 +62,14 @@ public:
 	 */
 	bool readFrames(float *pBuffer, int numFrames, int *numFramesRead);
 
+	/** Read a number of frames.
+	 *  Using this function, a number of frames can be read from a file.
+	 *  \param pBuffer Buffer in which the read frames will be stored.
+	 *  \param numFrames The number of frames to read.
+	 *  \param numFramesRead Used to store the actual number of frames read.
+	 */
+	bool readFrames(int16_t *pBuffer, int numFrames, int *numFramesRead);
+
 	/** This function resets the state of the file as if it was just opened. */
 	bool rewind();
 
@@ -78,7 +86,7 @@ private:
 	long m_dataStartPos;
 	float m_scale;
 	uint8_t *m_pFrameBuffer;
-	uint64_t m_negStartVal;
+	uint32_t m_negStartVal;
 };
 
 #endif // MIPWAVREADER_H

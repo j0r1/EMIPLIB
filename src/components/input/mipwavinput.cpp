@@ -45,7 +45,7 @@ MIPWAVInput::~MIPWAVInput()
 	close();
 }
 
-bool MIPWAVInput::open(const std::string &fname, int frames, bool loop)
+bool MIPWAVInput::open(const std::string &fname, int frames, bool loop, bool intSamples)
 {
 	if (m_pSndFile != 0)
 	{
@@ -66,17 +66,26 @@ bool MIPWAVInput::open(const std::string &fname, int frames, bool loop)
 	m_numFrames = frames;
 	m_numChannels = m_pSndFile->getNumberOfChannels();
 	m_loop = loop;	
-	m_pFrames = new float[m_numFrames*m_numChannels];
-	m_pMsg = new MIPRawFloatAudioMessage(m_sampRate, m_numChannels, m_numFrames, m_pFrames, false);
+	if (intSamples)
+	{
+		m_pFramesInt = new uint16_t[m_numFrames*m_numChannels];
+		m_pMsg = new MIPRaw16bitAudioMessage(m_sampRate, m_numChannels, m_numFrames, true, MIPRaw16bitAudioMessage::Native, m_pFramesInt, false);
+	}
+	else
+	{
+		m_pFramesFloat = new float[m_numFrames*m_numChannels];
+		m_pMsg = new MIPRawFloatAudioMessage(m_sampRate, m_numChannels, m_numFrames, m_pFramesFloat, false);
+	}
 	m_eof = false;
 	m_gotMessage = false;
+	m_intSamples = intSamples;
 	
 	m_sourceID = 0;
 	
 	return true;
 }
 
-bool MIPWAVInput::open(const std::string &fname, MIPTime interval, bool loop)
+bool MIPWAVInput::open(const std::string &fname, MIPTime interval, bool loop, bool intSamples)
 {
 	if (m_pSndFile != 0)
 	{
@@ -99,10 +108,19 @@ bool MIPWAVInput::open(const std::string &fname, MIPTime interval, bool loop)
 	
 	m_numFrames = frames;
 	m_loop = loop;	
-	m_pFrames = new float[m_numFrames*m_numChannels];
-	m_pMsg = new MIPRawFloatAudioMessage(m_sampRate, m_numChannels, m_numFrames, m_pFrames, false);
+	if (intSamples)
+	{
+		m_pFramesInt = new uint16_t[m_numFrames*m_numChannels];
+		m_pMsg = new MIPRaw16bitAudioMessage(m_sampRate, m_numChannels, m_numFrames, true, MIPRaw16bitAudioMessage::Native, m_pFramesInt, false);
+	}
+	else
+	{
+		m_pFramesFloat = new float[m_numFrames*m_numChannels];
+		m_pMsg = new MIPRawFloatAudioMessage(m_sampRate, m_numChannels, m_numFrames, m_pFramesFloat, false);
+	}
 	m_eof = false;
 	m_gotMessage = false;
+	m_intSamples = intSamples;
 	
 	m_sourceID = 0;
 	
@@ -120,7 +138,10 @@ bool MIPWAVInput::close()
 	delete m_pSndFile;
 	m_pSndFile = 0;
 	
-	delete [] m_pFrames;
+	if (m_intSamples)
+		delete [] m_pFramesInt;
+	else
+		delete [] m_pFramesFloat;
 	delete m_pMsg;
 	
 	return true;
@@ -145,7 +166,10 @@ bool MIPWAVInput::push(const MIPComponentChain &chain, int64_t iteration, MIPMes
 		int num, readNum;
 	
 		num = m_numFrames;
-		m_pSndFile->readFrames(m_pFrames, num, &readNum);
+		if (m_intSamples)
+			m_pSndFile->readFrames((int16_t *)m_pFramesInt, num, &readNum);
+		else
+			m_pSndFile->readFrames(m_pFramesFloat, num, &readNum);
 	
 		if (readNum < num)
 		{
@@ -156,10 +180,18 @@ bool MIPWAVInput::push(const MIPComponentChain &chain, int64_t iteration, MIPMes
 				startPos = 0;
 			else
 				startPos = readNum*m_numChannels;
-				
-			for (i = startPos ; i < arrayLen ; i++)
-				m_pFrames[i] = 0;	
-	
+			
+			if (m_intSamples)
+			{
+				for (i = startPos ; i < arrayLen ; i++)
+					m_pFramesInt[i] = 0;	
+			}
+			else
+			{
+				for (i = startPos ; i < arrayLen ; i++)
+					m_pFramesFloat[i] = 0;	
+			}
+			
 			if (m_loop)
 				m_pSndFile->rewind();
 			else

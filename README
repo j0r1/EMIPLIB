@@ -1,0 +1,66 @@
+
+
+                               EMIPLIB README 
+			           (0.9.0)
+
+
+1. INTRODUCTION
+
+The name EMIPLIB means 'EDM Media over IP libray'. This library was developed 
+at the Expertise Centre for Digital Media (EDM) (http://www.edm.uhasselt.be), 
+a research institute of the Hasselt University (http://www.uhasselt.be). As 
+the name suggests the goal of the library is to make it easier to stream 
+several kinds of media, including (but not limited to) audio and video. For
+more detailed information about the library, please refer to the library 
+documentation.
+
+2. LICENSE
+
+The license that applies to the library is the LGPL. However, it is possible 
+to specify that you wish to use GPL licensed components as well, which then 
+causes the GPL to apply to the entire library. The license texts of these 
+two licenses can be found in the files LICENSE.LGPL and LICENSE.GPL of the 
+source code archive.
+
+Note that when creating an application, you have to take the licenses of 
+other libraries into account too. For example, if your application uses the 
+Qt component and you accepted the GPL license for the Qt library, linking 
+with the Qt library requires your application to be GPL too. Similarly, if 
+your version of libavcodec was compiled as a GPL library, using the 
+libavcodec component of emiplib will require your application to be GPL 
+too, since you'll need to link against your GPL version of libavcodec.
+
+3. INSTALLATION
+
+The library depends on the JThread and JRTPLIB libraries, which can be
+found at the following sites:
+http://research.edm.uhasselt.be/jori/jthread/jthread.html
+http://research.edm.uhasselt.be/jori/jrtplib/jrtplib.html
+
+3.1 GNU/Linux
+
+Use the configure script and make to build the library. Run the configure
+script with option '--help' to see which options can be specified.
+
+3.2 Win32/WinCE
+
+Project files for MS Visual Studio 8 are included in the library archive.
+Take a look at the file 'mipconfig_win.h' to enable or disable components.
+You may have to tune the project settings to make sure the right locations
+of other include files are set.
+
+If you want to compile the Qt component, you'll need to generate the
+file mipqtoutput.moc manually. To do this, go to the subdirectory
+src/components/output and run the command
+moc -o mipqtoutput.moc mipqtoutput.cpp
+
+4. CONTACT
+
+The library home page can be found at the following location:
+http://research.edm.uhasselt.be/emiplib/
+
+There is a mailing list available for EMIPLIB. To subscribe to it, just 
+send an e-mail with the text subscribe emiplib as the message body (not 
+the  subject!) to majordomo@edm.uhasselt.be and you'll receive additional 
+instructions.
+

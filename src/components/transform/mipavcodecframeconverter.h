@@ -36,11 +36,7 @@
 
 #include "mipcomponent.h"
 #include "miptime.h"
-#if defined(WIN32) || defined(_WIN32_WCE)
-	#include <hash_map>
-#else
-	#include <ext/hash_map>
-#endif // Win32
+#include <unordered_map>
 
 #ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
 	#include <ffmpeg/avcodec.h>	
@@ -136,11 +132,7 @@ private:
 		uint32_t m_srcSubtype;
 		MIPTime m_lastTime;
 	};
-#if defined(WIN32) || defined(_WIN32_WCE)
-	stdext::hash_map<uint64_t, ConvertCache *> m_convertCache;
-#else
-	__gnu_cxx::hash_map<uint64_t, ConvertCache *, __gnu_cxx::hash<uint32_t> > m_convertCache;
-#endif // Win32
+	std::unordered_map<uint64_t, ConvertCache *> m_convertCache;
 	MIPTime m_lastExpireTime;
 #endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 };

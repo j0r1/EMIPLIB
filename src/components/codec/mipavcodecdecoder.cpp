@@ -32,12 +32,6 @@
 
 #include "mipdebug.h"
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-using namespace stdext;
-#else
-using namespace __gnu_cxx;
-#endif // Win32
-
 #define MIPAVCODECDECODER_ERRSTR_NOTINIT				"Not initialized"
 #define MIPAVCODECDECODER_ERRSTR_ALREADYINIT				"Already initialized"
 #define MIPAVCODECDECODER_ERRSTR_BADMESSAGE				"Bad message"
@@ -92,13 +86,7 @@ bool MIPAVCodecDecoder::destroy()
 		return false;
 	}
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, DecoderInfo *>::iterator it;
-#else
-	hash_map<uint64_t, DecoderInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	for (it = m_decoderStates.begin() ; it != m_decoderStates.end() ; it++)
+	for (auto it = m_decoderStates.begin() ; it != m_decoderStates.end() ; it++)
 		delete (*it).second;
 	m_decoderStates.clear();
 
@@ -138,19 +126,13 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 
 	uint64_t sourceID = pEncMsg->getSourceID();
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, DecoderInfo *>::iterator it;
-#else
-	hash_map<uint64_t, DecoderInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
 	DecoderInfo *pInf = 0;
 	int width, height;
 
 	width = pEncMsg->getWidth();
 	height = pEncMsg->getHeight();
 
-	it = m_decoderStates.find(sourceID);
+	auto it = m_decoderStates.find(sourceID);
 	if (it == m_decoderStates.end()) // no entry found
 	{
 		AVCodecContext *pContext;
@@ -328,22 +310,12 @@ void MIPAVCodecDecoder::expire()
 	if ((curTime.getValue() - m_lastExpireTime.getValue()) < 60.0)
 		return;
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, DecoderInfo *>::iterator it;
-#else
-	hash_map<uint64_t, DecoderInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	it = m_decoderStates.begin();
+	auto it = m_decoderStates.begin();
 	while (it != m_decoderStates.end())
 	{
 		if ((curTime.getValue() - (*it).second->getLastUpdateTime().getValue()) > 60.0)
 		{
-#if defined(WIN32) || defined(_WIN32_WCE)
-			hash_map<uint64_t, DecoderInfo *>::iterator it2 = it;
-#else
-			hash_map<uint64_t, DecoderInfo *, __gnu_cxx::hash<uint32_t> >::iterator it2 = it;
-#endif // Win32
+			auto it2 = it;
 			it++;
 	
 			delete (*it2).second;

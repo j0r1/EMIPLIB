@@ -31,12 +31,6 @@
 
 #include "mipdebug.h"
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-using namespace stdext;
-#else
-using namespace __gnu_cxx;
-#endif // Win32
-
 #define MIPAVCODECFRAMECONVERTER_ERRSTR_ALREADYINITIALIZED		"Already initialized"
 #define MIPAVCODECFRAMECONVERTER_ERRSTR_NOTINITIALIZED			"Not initialized"
 #define MIPAVCODECFRAMECONVERTER_ERRSTR_INVALIDDIMENSION		"Invalid target width or height"
@@ -243,15 +237,9 @@ bool MIPAVCodecFrameConverter::push(const MIPComponentChain &chain, int64_t iter
 
 #else // swscale version
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, ConvertCache *>::iterator it;
-#else
-	hash_map<uint64_t, ConvertCache *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
 	ConvertCache *pCache = 0;
 
-	it = m_convertCache.find(sourceID);
+	auto it = m_convertCache.find(sourceID);
 	if (it == m_convertCache.end()) // no entry found
 	{
 		PixelFormat srcPixFmt;
@@ -452,22 +440,12 @@ void MIPAVCodecFrameConverter::expire()
 	if ((curTime.getValue() - m_lastExpireTime.getValue()) < 60.0)
 		return;
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, ConvertCache *>::iterator it;
-#else
-	hash_map<uint64_t, ConvertCache *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	it = m_convertCache.begin();
+	auto it = m_convertCache.begin();
 	while (it != m_convertCache.end())
 	{
 		if ((curTime.getValue() - (*it).second->getLastUpdateTime().getValue()) > 60.0)
 		{
-#if defined(WIN32) || defined(_WIN32_WCE)
-			hash_map<uint64_t, ConvertCache *>::iterator it2 = it;
-#else
-			hash_map<uint64_t, ConvertCache *, __gnu_cxx::hash<uint32_t> >::iterator it2 = it;
-#endif // Win32
+			auto it2 = it;
 			it++;
 	
 			delete (*it2).second;
@@ -484,13 +462,7 @@ void MIPAVCodecFrameConverter::expire()
 void MIPAVCodecFrameConverter::clearCache()
 {
 #ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, ConvertCache *>::iterator it;
-#else
-	hash_map<uint64_t, ConvertCache *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	for (it = m_convertCache.begin() ; it != m_convertCache.end() ; it++)
+	for (auto it = m_convertCache.begin() ; it != m_convertCache.end() ; it++)
 		delete (*it).second;
 	m_convertCache.clear();
 #endif // ! MIPCONFIG_SUPPORT_AVCODEC_OLD

@@ -36,11 +36,7 @@
 
 #include "mipcomponent.h"
 #include "miptime.h"
-#if defined(WIN32) || defined(_WIN32_WCE)
-	#include <hash_map>
-#else
-	#include <ext/hash_map>
-#endif // Win32
+#include <unordered_map>
 #include <list>
 
 class MIPAudioMessage;
@@ -85,11 +81,7 @@ private:
 
 	bool m_init;
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	stdext::hash_map<uint64_t, LPCStateInfo *> m_lpcStates;
-#else
-	__gnu_cxx::hash_map<uint64_t, LPCStateInfo *, __gnu_cxx::hash<uint32_t> > m_lpcStates;
-#endif // Win32
+	std::unordered_map<uint64_t, LPCStateInfo *> m_lpcStates;
 	
 	int *m_pFrameBuffer;
 	std::list<MIPAudioMessage *> m_messages;

@@ -2,7 +2,24 @@ cmake_minimum_required(VERSION 2.6)
 cmake_policy(SET CMP0026 OLD)
 
 project(emiplib)
-set(VERSION 1.1.1)
+set(VERSION 1.2.0)
+
+include(CheckCXXCompilerFlag)
+include(CheckIncludeFile)
+include(CheckIncludeFileCXX)
+include(CheckCXXSourceCompiles)
+
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+if(COMPILER_SUPPORTS_CXX11)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+else()
+	# Test if the compiler already supports C++11
+	check_cxx_source_compiles("#include <unordered_map>\nint main(void)\n{\nstd::unordered_map<int, int> m { { 1, 111}, {2, 222} };\n return 0; \n }" C11AVAIL)
+	if (NOT C11AVAIL)
+		message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
+	endif()
+endif()
+
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -18,10 +35,6 @@ if(NOT IS_ABSOLUTE "${LIBRARY_INSTALL_DIR}")
 	set(LIBRARY_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${LIBRARY_INSTALL_DIR}")
 endif()
 
-include(CheckCXXCompilerFlag)
-include(CheckIncludeFile)
-include(CheckIncludeFileCXX)
-include(CheckCXXSourceCompiles)
 include(TestBigEndian)
 include("${PROJECT_SOURCE_DIR}/cmake/Macros.cmake")
 

@@ -32,11 +32,6 @@
 #include "mipdebug.h"
 
 using namespace jrtplib;
-#if defined(WIN32) || defined(_WIN32_WCE)
-using namespace stdext;
-#else
-using namespace __gnu_cxx;
-#endif // Win32
 
 MIPRTPH263Decoder::MIPRTPH263Decoder()
 {
@@ -44,9 +39,7 @@ MIPRTPH263Decoder::MIPRTPH263Decoder()
 
 MIPRTPH263Decoder::~MIPRTPH263Decoder()
 {
-	hash_map<uint32_t, PacketGrouper *>::iterator it;
-
-	for (it = m_packetGroupers.begin() ; it != m_packetGroupers.end() ; it++)
+	for (auto it = m_packetGroupers.begin() ; it != m_packetGroupers.end() ; it++)
 		delete (*it).second;
 	m_packetGroupers.clear();
 }
@@ -74,11 +67,10 @@ void MIPRTPH263Decoder::createNewMessages(const RTPPacket *pRTPPack, std::list<M
 
 	expireGroupers();
 
-	hash_map<uint32_t, PacketGrouper *>::iterator it;
 	uint32_t ssrc = pRTPPack->GetSSRC();
 	MIPRTPPacketGrouper *pGrouper = 0;
 
-	it = m_packetGroupers.find(ssrc);
+	auto it = m_packetGroupers.find(ssrc);
 	if (it == m_packetGroupers.end()) // no entry exists yet
 	{
 		pGrouper = new MIPRTPPacketGrouper();
@@ -173,9 +165,7 @@ void MIPRTPH263Decoder::expireGroupers()
 
 	m_lastCheckTime = curTime;
 
-	hash_map<uint32_t, PacketGrouper *>::iterator it;
-
-	it = m_packetGroupers.begin(); 
+	auto it = m_packetGroupers.begin(); 
 
 	while (it != m_packetGroupers.end())
 	{
@@ -183,7 +173,7 @@ void MIPRTPH263Decoder::expireGroupers()
 
 		if (pPackGroup->getLastAccessTime().getValue() - curTime.getValue() > 10.0) // TODO: make this configurable?
 		{
-			hash_map<uint32_t, PacketGrouper *>::iterator it2 = it;
+			auto it2 = it;
 
 			it++;
 

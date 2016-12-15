@@ -33,12 +33,6 @@
 
 #include "mipdebug.h"
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-using namespace stdext;
-#else
-using namespace __gnu_cxx;
-#endif // Win32
-
 #define MIPLPCDECODER_ERRSTR_NOTINIT					"Not initialized"
 #define MIPLPCDECODER_ERRSTR_ALREADYINIT				"Already initialized"
 #define MIPLPCDECODER_ERRSTR_BADMESSAGE					"Bad message"
@@ -96,13 +90,7 @@ bool MIPLPCDecoder::destroy()
 
 	delete [] m_pFrameBuffer;
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, LPCStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, LPCStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	for (it = m_lpcStates.begin() ; it != m_lpcStates.end() ; it++)
+	for (auto it = m_lpcStates.begin() ; it != m_lpcStates.end() ; it++)
 		delete (*it).second;
 	m_lpcStates.clear();
 
@@ -128,22 +116,12 @@ void MIPLPCDecoder::expire()
 	if ((curTime.getValue() - m_lastExpireTime.getValue()) < 60.0)
 		return;
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, LPCStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, LPCStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	it = m_lpcStates.begin();
+	auto it = m_lpcStates.begin();
 	while (it != m_lpcStates.end())
 	{
 		if ((curTime.getValue() - (*it).second->getLastUpdateTime().getValue()) > 60.0)
 		{
-#if defined(WIN32) || defined(_WIN32_WCE)
-			hash_map<uint64_t, LPCStateInfo *>::iterator it2 = it;
-#else
-			hash_map<uint64_t, LPCStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it2 = it;
-#endif // Win32
+			auto it2 = it;
 			it++;
 	
 			delete (*it2).second;
@@ -196,13 +174,7 @@ bool MIPLPCDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 
 	uint64_t sourceID = pEncMsg->getSourceID();
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, LPCStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, LPCStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	it = m_lpcStates.find(sourceID);
+	auto it = m_lpcStates.find(sourceID);
 	LPCStateInfo *pLPCInf = 0;
 
 	if (it == m_lpcStates.end()) // no entry present yet, add one

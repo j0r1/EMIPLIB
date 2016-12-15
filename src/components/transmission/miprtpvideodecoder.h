@@ -34,11 +34,7 @@
 #include "miprtppacketdecoder.h"
 #include "miprtppacketgrouper.h"
 #include "miptime.h"
-#if defined(WIN32) || defined(_WIN32_WCE)
-	#include <hash_map>
-#else
-	#include <ext/hash_map>
-#endif // Win32
+#include <unordered_map>
 
 /** This class decodes incoming RTP data into video messages.
  *  This class takes MIPRTPReceiveMessages as input and generates 
@@ -85,11 +81,7 @@ private:
 		MIPRTPPacketGrouper *m_pGrouper;
 	};
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	stdext::hash_map<uint32_t, PacketGrouper *> m_packetGroupers;
-#else
-	__gnu_cxx::hash_map<uint32_t, PacketGrouper * > m_packetGroupers;
-#endif // Win32
+	std::unordered_map<uint32_t, PacketGrouper *> m_packetGroupers;
 	MIPTime m_lastCheckTime;
 };
 

@@ -34,11 +34,7 @@
 #include "mipcomponent.h"
 #include "miptime.h"
 #include <string.h>
-#if defined(WIN32) || defined(_WIN32_WCE)
-	#include <hash_map>
-#else
-	#include <ext/hash_map>
-#endif // Win32
+#include <unordered_map>
 
 #define MIPAUDIO3DBASE_CONST_PI	3.14159265
 
@@ -134,11 +130,7 @@ private:
 		MIPTime m_updateTime;
 	};
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	stdext::hash_map<uint64_t, PositionalInfo> m_posInfo;
-#else
-	__gnu_cxx::hash_map<uint64_t, PositionalInfo, __gnu_cxx::hash<uint32_t> > m_posInfo;
-#endif // Win32
+	std::unordered_map<uint64_t, PositionalInfo> m_posInfo;
 
 	real_t m_ownPos[3];
 	real_t m_xDir[3]; // front direction

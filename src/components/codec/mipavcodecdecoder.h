@@ -48,11 +48,7 @@
 	}
 #endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	#include <hash_map>
-#else
-	#include <ext/hash_map>
-#endif // Win32
+#include <unordered_map>
 #include <list>
 
 class MIPRawYUV420PVideoMessage;
@@ -142,11 +138,7 @@ private:
 	
 	bool m_init;
 	
-#if defined(WIN32) || defined(_WIN32_WCE)
-	stdext::hash_map<uint64_t, DecoderInfo *> m_decoderStates;
-#else
-	__gnu_cxx::hash_map<uint64_t, DecoderInfo *, __gnu_cxx::hash<uint32_t> > m_decoderStates;
-#endif // Win32
+	std::unordered_map<uint64_t, DecoderInfo *> m_decoderStates;
 	
 	AVCodec *m_pCodec;
 	AVFrame *m_pFrame;

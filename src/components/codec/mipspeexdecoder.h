@@ -36,11 +36,7 @@
 
 #include "mipcomponent.h"
 #include "miptime.h"
-#if defined(WIN32) || defined(_WIN32_WCE)
-	#include <hash_map>
-#else
-	#include <ext/hash_map>
-#endif // Win32
+#include <unordered_map>
 #include <list>
 
 class MIPAudioMessage;
@@ -103,11 +99,7 @@ private:
 
 	bool m_init;
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	stdext::hash_map<uint64_t, SpeexStateInfo *> m_speexStates;
-#else
-	__gnu_cxx::hash_map<uint64_t, SpeexStateInfo *, __gnu_cxx::hash<uint32_t> > m_speexStates;
-#endif // Win32
+	std::unordered_map<uint64_t, SpeexStateInfo *> m_speexStates;
 	
 	std::list<MIPAudioMessage *> m_messages;
 	std::list<MIPAudioMessage *>::const_iterator m_msgIt;

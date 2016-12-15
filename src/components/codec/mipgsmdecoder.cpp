@@ -33,12 +33,6 @@
 
 #include "mipdebug.h"
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-using namespace stdext;
-#else
-using namespace __gnu_cxx;
-#endif // Win32
-
 #define MIPGSMDECODER_ERRSTR_NOTINIT					"Not initialized"
 #define MIPGSMDECODER_ERRSTR_ALREADYINIT				"Already initialized"
 #define MIPGSMDECODER_ERRSTR_BADMESSAGE					"Bad message"
@@ -93,13 +87,7 @@ bool MIPGSMDecoder::destroy()
 		return false;
 	}
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, GSMStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, GSMStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	for (it = m_gsmStates.begin() ; it != m_gsmStates.end() ; it++)
+	for (auto it = m_gsmStates.begin() ; it != m_gsmStates.end() ; it++)
 		delete (*it).second;
 	m_gsmStates.clear();
 
@@ -125,22 +113,12 @@ void MIPGSMDecoder::expire()
 	if ((curTime.getValue() - m_lastExpireTime.getValue()) < 60.0)
 		return;
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, GSMStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, GSMStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	it = m_gsmStates.begin();
+	auto it = m_gsmStates.begin();
 	while (it != m_gsmStates.end())
 	{
 		if ((curTime.getValue() - (*it).second->getLastUpdateTime().getValue()) > 60.0)
 		{
-#if defined(WIN32) || defined(_WIN32_WCE)
-			hash_map<uint64_t, GSMStateInfo *>::iterator it2 = it;
-#else
-			hash_map<uint64_t, GSMStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it2 = it;
-#endif // Win32
+			auto it2 = it;
 			it++;
 	
 			delete (*it2).second;
@@ -193,13 +171,7 @@ bool MIPGSMDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 
 	uint64_t sourceID = pEncMsg->getSourceID();
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, GSMStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, GSMStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	it = m_gsmStates.find(sourceID);
+	auto it = m_gsmStates.find(sourceID);
 	GSMStateInfo *pGSMInf = 0;
 
 	if (it == m_gsmStates.end()) // no entry present yet, add one

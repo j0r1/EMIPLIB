@@ -28,12 +28,6 @@
 
 #include "mipdebug.h"
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-using namespace stdext;
-#else
-using namespace __gnu_cxx;
-#endif // Win32
-
 #define MIPAUDIO3DBASE_ERRSTR_CANTNORMALIZEFRONTDIRECTION	"Can't normalize front direction"
 #define MIPAUDIO3DBASE_ERRSTR_CANTNORMALIZERIGHTDIRECTION	"Can't normalize right direction"
 
@@ -49,11 +43,7 @@ MIPAudio3DBase::~MIPAudio3DBase()
 
 bool MIPAudio3DBase::setSourcePosition(uint64_t sourceID, real_t pos2[3])
 {
-#if (defined(WIN32) || defined(_WIN32_WCE))
-	hash_map<uint64_t, PositionalInfo>::iterator it = m_posInfo.find(sourceID);
-#else
-	hash_map<uint64_t, PositionalInfo, hash<uint32_t> >::iterator it = m_posInfo.find(sourceID);
-#endif // WIN32 || _WIN32_WCE
+	auto it = m_posInfo.find(sourceID);
 	MIPTime curTime = MIPTime::getCurrentTime();
 	
 	// Check coordinate system
@@ -212,27 +202,14 @@ void MIPAudio3DBase::expirePositionalInfo()
 	if (curTime.getValue() - m_lastExpireTime.getValue() < 60.0) // clean up source table every minute
 		return;
 
-#if (defined(WIN32) || defined(_WIN32_WCE))
-	hash_map<uint64_t, PositionalInfo>::iterator it;
-#else
-	hash_map<uint64_t, PositionalInfo, hash<uint32_t> >::iterator it;
-#endif // WIN32 || _WIN32_WCE
-	
-	it = m_posInfo.begin();
+	auto it = m_posInfo.begin();
 	while (it != m_posInfo.end())
 	{
 		if ((curTime.getValue() - (*it).second.getLastUpdateTime().getValue() ) < 60.0)
 			it++;
 		else
 		{
-#if (defined(WIN32) || defined(_WIN32_WCE))
-			hash_map<uint64_t, PositionalInfo>::iterator it2;
-#else
-			hash_map<uint64_t, PositionalInfo, hash<uint32_t> >::iterator it2;
-#endif // WIN32 || _WIN32_WCE
-
-		//	std::cerr << "Cleaning  up: " << (*it).first << std::endl;
-			it2 = it;
+			auto it2 = it;
 			it++;
 			m_posInfo.erase(it2);
 		}
@@ -241,11 +218,7 @@ void MIPAudio3DBase::expirePositionalInfo()
 
 bool MIPAudio3DBase::getPositionalInfo(uint64_t sourceID, real_t *azimuth2, real_t *elevation2, real_t *distance2)
 {
-#if (defined(WIN32) || defined(_WIN32_WCE))
-	hash_map<uint64_t, PositionalInfo>::iterator it = m_posInfo.find(sourceID);
-#else
-	hash_map<uint64_t, PositionalInfo, hash<uint32_t> >::iterator it = m_posInfo.find(sourceID);
-#endif // WIN32 || _WIN32_WCE
+	auto it = m_posInfo.find(sourceID);
 	if (it == m_posInfo.end())
 		return false;
 

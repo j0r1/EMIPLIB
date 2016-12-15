@@ -33,11 +33,7 @@
 #include "mipconfig.h"
 #include "mipcomponent.h"
 #include "miptime.h"
-#if defined(WIN32) || defined(_WIN32_WCE)
-	#include <hash_map>
-#else
-	#include <ext/hash_map>
-#endif // Win32
+#include <unordered_map>
 #include <cmath>
 #include <list>
 
@@ -215,11 +211,7 @@ private:
 		MIPTime m_syncOffset;
 	};
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	stdext::hash_map<uint32_t, SSRCInfo> m_sourceTable;
-#else
-	__gnu_cxx::hash_map<uint32_t, SSRCInfo> m_sourceTable;
-#endif // Win32
+	std::unordered_map<uint32_t, SSRCInfo> m_sourceTable;
 
 	MIPRTPPacketDecoder *m_pDecoders[MIPRTPDECODER_MAXPAYLOADDECODERS];
 

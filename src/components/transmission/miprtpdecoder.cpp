@@ -38,12 +38,6 @@
 
 using namespace jrtplib;
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-using namespace stdext;
-#else
-using namespace __gnu_cxx;
-#endif // Win32
-
 #define MIPRTPDECODER_ERRSTR_NOTINIT				"Not initialized"
 #define MIPRTPDECODER_ERRSTR_BADMESSAGE				"Bad message"
 #define MIPRTPDECODER_ERRSTR_NOPACKETDECODERINSTALLED		"No RTP packet decoder installed for received payload type"
@@ -331,18 +325,14 @@ void MIPRTPDecoder::cleanUpSourceTable()
 	if ((curTime.getValue() - m_prevCleanTableTime.getValue()) < 60.0) // only cleanup every 60 seconds
 		return;
 	
-	hash_map<uint32_t, SSRCInfo>::iterator it;
-	
-	it = m_sourceTable.begin();
+	auto it = m_sourceTable.begin();
 	while (it != m_sourceTable.end())
 	{
 		if ((curTime.getValue() - (*it).second.getLastAccessTime().getValue() ) < 60.0)
 			it++;
 		else
 		{
-			hash_map<uint32_t, SSRCInfo>::iterator it2;
-
-			it2 = it;
+			auto it2 = it;
 			it++;
 			if (m_pSynchronizer && (*it2).second.getSyncStreamID() >= 0)
 			{
@@ -359,7 +349,7 @@ void MIPRTPDecoder::cleanUpSourceTable()
 bool MIPRTPDecoder::lookUpStreamTime(uint32_t ssrc, uint32_t timestamp, const uint8_t *pCName, size_t cnameLength, real_t timestampUnit, MIPTime &streamTime, bool &shouldSync)
 {
 	MIPTime curTime = MIPTime::getCurrentTime();
-	hash_map<uint32_t, SSRCInfo>::iterator it = m_sourceTable.find(ssrc);
+	auto it = m_sourceTable.find(ssrc);
 	
 	if (it == m_sourceTable.end())
 	{

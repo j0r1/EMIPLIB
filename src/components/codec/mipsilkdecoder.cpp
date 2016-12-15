@@ -33,12 +33,6 @@
 
 #include "mipdebug.h"
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-using namespace stdext;
-#else
-using namespace __gnu_cxx;
-#endif // Win32
-
 #define MIPSILKDECODER_ERRSTR_NOTINIT					"Not initialized"
 #define MIPSILKDECODER_ERRSTR_ALREADYINIT				"Already initialized"
 #define MIPSILKDECODER_ERRSTR_BADMESSAGE				"Bad message"
@@ -89,13 +83,7 @@ bool MIPSILKDecoder::destroy()
 		return false;
 	}
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, SILKStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, SILKStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	for (it = m_silkStates.begin() ; it != m_silkStates.end() ; it++)
+	for (auto it = m_silkStates.begin() ; it != m_silkStates.end() ; it++)
 		delete (*it).second;
 	m_silkStates.clear();
 
@@ -121,22 +109,12 @@ void MIPSILKDecoder::expire()
 	if ((curTime.getValue() - m_lastExpireTime.getValue()) < 60.0)
 		return;
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, SILKStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, SILKStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	it = m_silkStates.begin();
+	auto it = m_silkStates.begin();
 	while (it != m_silkStates.end())
 	{
 		if ((curTime.getValue() - (*it).second->getLastUpdateTime().getValue()) > 60.0)
 		{
-#if defined(WIN32) || defined(_WIN32_WCE)
-			hash_map<uint64_t, SILKStateInfo *>::iterator it2 = it;
-#else
-			hash_map<uint64_t, SILKStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it2 = it;
-#endif // Win32
+			auto it2 = it;
 			it++;
 	
 			delete (*it2).second;
@@ -174,13 +152,7 @@ bool MIPSILKDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIP
 
 	uint64_t sourceID = pEncMsg->getSourceID();
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, SILKStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, SILKStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	it = m_silkStates.find(sourceID);
+	auto it = m_silkStates.find(sourceID);
 	SILKStateInfo *pInf = 0;
 
 	if (it == m_silkStates.end()) // no entry present yet, add one

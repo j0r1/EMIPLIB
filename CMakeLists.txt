@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0026 OLD)
 
 project(emiplib)
@@ -215,6 +215,12 @@ else ()
 	set(TMP OFF)
 endif ()
 emiplib_support_option("Older libavcodec API" EMIPLIB_SUPPORT_AVCODEC_OLD MIPCONFIG_SUPPORT_AVCODEC_OLD ${TMP} "// Using a recent libavcodec version")
+if (LIBAVCODEC_FOUND AND LIBAVCODEC_AVCODEC_INIT)
+	set(TMP ON)
+else()
+	set(TMP OFF)
+endif()
+emiplib_support_option("Does the avcodec_init function exist" EMIPLIB_SUPPORT_AVCODEC_INIT MIPCONFIG_SUPPORT_AVCODEC_AVCODECINIT ${TMP} "// No support for the avcodec_init function")
 
 find_package(Qt3)
 if (QT_FOUND)

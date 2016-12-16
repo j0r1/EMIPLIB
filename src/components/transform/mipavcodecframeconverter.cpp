@@ -470,7 +470,9 @@ void MIPAVCodecFrameConverter::clearCache()
 
 void MIPAVCodecFrameConverter::initAVCodec()
 {
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_AVCODECINIT
 	avcodec_init();
+#endif // MIPCONFIG_SUPPORT_AVCODEC_AVCODECINIT
 	avcodec_register_all();
 	av_log_set_level(AV_LOG_QUIET);
 }

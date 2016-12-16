@@ -228,9 +228,11 @@ bool MIPAVCodecEncoder::getFrameRate(real_t framerate, int *numerator, int *deno
 
 void MIPAVCodecEncoder::initAVCodec()
 {
+#ifdef MIPCONFIG_SUPPORT_AVCODEC_AVCODECINIT
 	avcodec_init();
+#endif // MIPCONFIG_SUPPORT_AVCODEC_AVCODECINIT
 	avcodec_register_all();
-//	av_log_set_level(AV_LOG_QUIET);
+	av_log_set_level(AV_LOG_QUIET);
 }
 
 #endif // MIPCONFIG_SUPPORT_AVCODEC

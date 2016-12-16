@@ -68,10 +68,16 @@
 #include "mipaudiomixer.h"
 #include "mipencodedaudiomessage.h"
 #include "mipmessagedumper.h"
+#include "miprtpopusdecoder.h"
+#include "miprtpopusencoder.h"
+#include "mipopusdecoder.h"
+#include "mipopusencoder.h"
 #include <jrtplib3/rtpsession.h>
 #include <jrtplib3/rtpsessionparams.h>
 #include <jrtplib3/rtperrors.h>
 #include <jrtplib3/rtpudpv4transmitter.h>
+
+//#include <iostream>
 
 #include "mipdebug.h"
 
@@ -84,6 +90,8 @@ using namespace jrtplib;
 #define MIPAUDIOSESSION_ERRSTR_NOSPEEX						"Can't use Speex codec since no Speex support was compiled in"
 #define MIPAUDIOSESSION_ERRSTR_NOLPC						"Can't use LPC codec since no LPC support was compiled in"
 #define MIPAUDIOSESSION_ERRSTR_NOGSM						"Can't use GSM codec since no GSM support was compiled in"
+#define MIPAUDIOSESSION_ERRSTR_NOOPUS						"Can't use Opus codec since no Opus support was compiled in"
+#define MIPAUDIOSESSION_ERRSTR_EQUALPAYLOADTYPES				"Incoming payload types for Speex and Opus must be different"
 
 MIPAudioSession::MIPAudioSession()
 {
@@ -138,6 +146,8 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		else // ultra wide band
 			sampRate = 32000;
 	}
+	else if (pParams2->getCompressionType() == MIPAudioSessionParams::Opus)
+		sampRate = 48000;
 	else if (pParams2->getCompressionType() == MIPAudioSessionParams::L16Mono)
 		sampRate = 44100;
 	else
@@ -441,6 +451,39 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 			pRTPEnc->setPayloadType(11);
 		}
 		break;
+		case MIPAudioSessionParams::Opus:
+		{
+#ifdef MIPCONFIG_SUPPORT_OPUS
+			MIPOpusEncoder *pOpusEnc = new MIPOpusEncoder();
+			storeComponent(pOpusEnc);
+	
+			if (!pOpusEnc->init(sampRate, 1, MIPOpusEncoder::VoIP, MIPTime(0.020), pParams2->getOpusBandwidth()))
+			{
+				setErrorString(pOpusEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pOpusEnc);
+
+			MIPRTPOpusEncoder *pRTPEnc = new MIPRTPOpusEncoder();
+			storeComponent(pRTPEnc);
+		
+			if (!pRTPEnc->init())
+			{
+				setErrorString(pRTPEnc->getErrorString());
+				deleteAll();
+				return false;
+			}
+			addLink(pActiveChain, &pPrevComponent, pRTPEnc);
+
+			pRTPEnc->setPayloadType(pParams2->getOpusOutgoingPayloadType());
+#else
+			setErrorString(MIPAUDIOSESSION_ERRSTR_NOOPUS);
+			deleteAll();
+			return false;
+#endif // MIPCONFIG_SUPPORT_OPUS
+		}
+		break;
 		case MIPAudioSessionParams::ULaw:
 		default:
 		{
@@ -589,6 +632,15 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		return false;
 	}	
 
+#if defined(MIPCONFIG_SUPPORT_SPEEX) && defined(MIPCONFIG_SUPPORT_OPUS)
+	if (pParams2->getSpeexIncomingPayloadType() == pParams2->getOpusIncomingPayloadType())
+	{
+		setErrorString(MIPAUDIOSESSION_ERRSTR_EQUALPAYLOADTYPES);
+		deleteAll();
+		return false;
+	}
+#endif // MIPCONFIG_SUPPORT_SPEEX && MIPCONFIG_SUPPORT_OPUS
+
 #ifdef MIPCONFIG_SUPPORT_SPEEX
 	MIPRTPSpeexDecoder *pRTPSpeexDec = new MIPRTPSpeexDecoder();
 	storePacketDecoder(pRTPSpeexDec);
@@ -624,6 +676,18 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		return false;
 	}
 #endif // MIPCONFIG_SUPPORT_GSM
+
+#ifdef MIPCONFIG_SUPPORT_OPUS
+	MIPRTPOpusDecoder *pRTPOpusDec = new MIPRTPOpusDecoder();
+	storePacketDecoder(pRTPOpusDec);
+	
+	if (!pRTPDec->setPacketDecoder(pParams2->getOpusIncomingPayloadType(), pRTPOpusDec))
+	{
+		setErrorString(pRTPDec->getErrorString());
+		deleteAll();
+		return false;
+	}
+#endif // MIPCONFIG_SUPPORT_OPUS
 
 	MIPRTPALawDecoder *pRTPALawDec = new MIPRTPALawDecoder();
 	storePacketDecoder(pRTPALawDec);
@@ -690,6 +754,20 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	pActiveChain->addConnection(pSpeexDec, pSampConv, false);
 #endif // MIPCONFIG_SUPPORT_SPEEX
 	
+#ifdef MIPCONFIG_SUPPORT_OPUS
+	MIPOpusDecoder *pOpusDec = new MIPOpusDecoder();
+	storeComponent(pOpusDec);
+	
+	if (!pOpusDec->init(sampRate, 1, false))
+	{
+		setErrorString(pOpusDec->getErrorString());
+		deleteAll();
+		return false;
+	}
+	pActiveChain->addConnection(pMediaBuf, pOpusDec, false, MIPMESSAGE_TYPE_AUDIO_ENCODED, MIPENCODEDAUDIOMESSAGE_TYPE_OPUS);
+	pActiveChain->addConnection(pOpusDec, pSampConv, false);
+#endif // MIPCONFIG_SUPPORT_OPUS
+
 #ifdef MIPCONFIG_SUPPORT_LPC
 	MIPLPCDecoder *pLPCDec = new MIPLPCDecoder();
 	storeComponent(pLPCDec);
@@ -1177,7 +1255,10 @@ void MIPAudioSession::deleteAll()
 	std::list<MIPComponent *>::const_iterator it;
 
 	for (it = m_components.begin() ; it != m_components.end() ; it++)
+	{
+		//std::cout << "Deleting " << (*it)->getComponentName() << std::endl;
 		delete (*it);
+	}
 	m_components.clear();
 	
 	std::list<MIPRTPPacketDecoder *>::const_iterator it2;

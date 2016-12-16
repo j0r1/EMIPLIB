@@ -48,7 +48,9 @@
  * 	\brief Subtype for encoded audio messages containing LPC data.
  * \def MIPENCODEDAUDIOMESSAGE_TYPE_SILK
  * 	\brief Subtype for encoded audio messages containing SILK data.
-*/
+ * \def MIPENCODEDAUDIOMESSAGE_TYPE_OPUS
+ * 	\brief Subtype for encoded audio messages containing Opus data.
+ */
 
 #define MIPENCODEDAUDIOMESSAGE_TYPE_SPEEX							0x00000001
 #define MIPENCODEDAUDIOMESSAGE_TYPE_ULAW							0x00000002
@@ -56,6 +58,7 @@
 #define MIPENCODEDAUDIOMESSAGE_TYPE_GSM								0x00000008
 #define MIPENCODEDAUDIOMESSAGE_TYPE_LPC								0x00000010
 #define MIPENCODEDAUDIOMESSAGE_TYPE_SILK							0x00000020
+#define MIPENCODEDAUDIOMESSAGE_TYPE_OPUS							0x00000040
 
 /** Container for encoded audio data.
  */

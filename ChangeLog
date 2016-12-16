@@ -2,6 +2,10 @@
 
                               EMIPLIB ChangeLog
 
+Version ?, ?
+ * Added support for the Opus audio codec.
+ * Added MIPOutputMessageQueue, which performs functions that many
+   components need.
 
 Version 1.1.1, November 2011
  * Fixed a bug in the CMake configuration: was unable to handle

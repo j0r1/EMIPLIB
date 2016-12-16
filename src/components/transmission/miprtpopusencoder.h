@@ -23,33 +23,43 @@
 */
 
 /**
- * \file miprtpencoder.h
+ * \file miprtpopusencoder.h
  */
 
-#ifndef MIPRTPENCODER_H
+#ifndef MIPRTPOPUSENCODER_H
 
-#define MIPRTPENCODER_H
+#define MIPRTPOPUSENCODER_H
 
 #include "mipconfig.h"
-#include "mipoutputmessagequeue.h"
 
-/** Base class for RTP encoders.
- *  Base class for RTP encoders. Contains a member function to set the payload type.
+#ifdef MIPCONFIG_SUPPORT_OPUS
+
+#include "miprtpencoder.h"
+#include <list>
+
+class MIPRTPSendMessage;
+
+/** Creates RTP packets for Opus compressed audio packets.
+ *  This component accepts incoming Opus compressed audio packets and generates 
+ *  MIPRTPSendMessage objects which can then be transferred to a MIPRTPComponent instance.
  */
-class EMIPLIB_IMPORTEXPORT MIPRTPEncoder : public MIPOutputMessageQueue
+class EMIPLIB_IMPORTEXPORT MIPRTPOpusEncoder : public MIPRTPEncoder
 {
 public:
-	MIPRTPEncoder(const std::string &compName) : MIPOutputMessageQueue(compName)				{ m_payloadType = 0; }
-	~MIPRTPEncoder()											{ }
+	MIPRTPOpusEncoder();
+	~MIPRTPOpusEncoder();
 
-	/** Sets the payload type. */
-	void setPayloadType(uint8_t payloadType) 								{ m_payloadType = payloadType; }
+	/** Initializes the encoder. */
+	bool init();
 
-	/** Returns the payload type. */
-	uint8_t getPayloadType() const										{ return m_payloadType; }
+	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 private:
-	uint8_t m_payloadType;
+	void cleanUp();
+
+	bool m_init;
 };
 
-#endif // MIPRTPENCODER_H
+#endif // MIPCONFIG_SUPPORT_OPUS
+
+#endif // MIPRTPOPUSENCODER_H
 

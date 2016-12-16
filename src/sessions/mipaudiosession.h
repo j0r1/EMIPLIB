@@ -70,7 +70,9 @@ public:
 		/** Speex compression. */
 		Speex,
 		/** L16 mono. */
-		L16Mono
+		L16Mono,
+		/** Opus compression. */
+		Opus
 	};
 
 	/** If Speex compression is used, this is sed to select speex encoding type. */
@@ -101,6 +103,8 @@ public:
 		m_speexMode = WideBand;
 		m_speexIncomingPT = 96;
 		m_speexOutgoingPT = 96;
+		m_opusIncomingPT = 97;
+		m_opusOutgoingPT = 97;
 #ifdef _WIN32_WCE
 		m_inputMultiplier = 3;
 		m_outputMultiplier = 2;
@@ -110,6 +114,8 @@ public:
 #endif // _WIN32_WCE
 		m_compType = ULaw;
 		m_disableInterChainTimer = false;
+
+		m_opusBandwidth = 16000; // results in a few kilobytes per second (with RTP overhead)
 	}
 	~MIPAudioSessionParams()							{ }
 	
@@ -157,6 +163,15 @@ public:
 	 *  setDisableInterChainTimer for more information.
 	 */
 	bool getDisableInterChainTimer() const						{ return m_disableInterChainTimer; }
+
+	/** Returns the codec bandwidth used if the Opus codec is selected (default is 16000 bits per second, 0 means that the codec default is used). */
+	int getOpusBandwidth() const							{ return m_opusBandwidth; }
+
+	/** Incoming packets with this payload type will be interpreted as Opus packets. */
+	uint8_t getOpusIncomingPayloadType() const					{ return m_opusIncomingPT; }
+
+	/** This payload type will be set on outgoing Opus packets. */
+	uint8_t getOpusOutgoingPayloadType() const					{ return m_opusOutgoingPT; }
 
 	/** Sets the ID of the input device (only used on Win32/WinCE). */
 	void setInputDevice(unsigned int ID)						{ m_inputDevID = ID; }
@@ -206,6 +221,15 @@ public:
 	 *  will then control the output chain. 
 	 */
 	void setDisableInterChainTimer(bool f)						{ m_disableInterChainTimer = f; }
+
+	/** This will interpret incoming packets with payload type \c pt as Opus packets. */
+	void setOpusIncomingPayloadType(uint8_t pt)					{ m_opusIncomingPT = pt; }
+	
+	/** Sets the payload type for outgoing Opus packets. */
+	void setOpusOutgoingPayloadType(uint8_t pt)					{ m_opusOutgoingPT = pt; }
+
+	/** Specifies the bandwidth the Opus codec may use (between 6000 and 510000), specify 0 for the codec default. */
+	void setOpusBandwidth(int b)							{ m_opusBandwidth = b; }
 private:
 	unsigned int m_inputDevID, m_outputDevID;
 	std::string m_inputDevName, m_outputDevName;
@@ -217,6 +241,8 @@ private:
 	CompressionType m_compType;
 	uint8_t m_speexOutgoingPT, m_speexIncomingPT;
 	bool m_disableInterChainTimer;
+	int m_opusBandwidth;
+	uint8_t m_opusOutgoingPT, m_opusIncomingPT;
 };
 
 /** Creates a VoIP session.

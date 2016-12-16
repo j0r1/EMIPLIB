@@ -102,6 +102,18 @@ if (EMIPLIB_SUPPORT_SPEEX AND SPEEX_FOUND)
 	list(APPEND EMIPLIB_EXTERNAL_INCLUDES ${SPEEX_INCLUDE_DIRS})
 endif (EMIPLIB_SUPPORT_SPEEX AND SPEEX_FOUND)
 
+find_package(Opus)
+if (OPUS_FOUND)
+	set(TMP ON)
+else (OPUS_FOUND)
+	set(TMP OFF)
+endif (OPUS_FOUND)
+emiplib_support_option("Support for Opus audio codec" EMIPLIB_SUPPORT_OPUS MIPCONFIG_SUPPORT_OPUS ${TMP} "// No Opus support")
+if (EMIPLIB_SUPPORT_OPUS AND OPUS_FOUND)
+	list(APPEND EMIPLIB_LINK_LIBS ${OPUS_LIBRARIES})
+	list(APPEND EMIPLIB_INTERNAL_INCLUDES ${OPUS_INCLUDE_DIRS})
+endif (EMIPLIB_SUPPORT_OPUS AND OPUS_FOUND)
+
 find_package(ALSA)
 #if (ALSA_FOUND)
 #	set(TMP ON)
@@ -263,6 +275,7 @@ set(EMIPLIB_INTERNAL_INCLUDES ${EMIPLIB_INTERNAL_INCLUDES}
 	"${PROJECT_SOURCE_DIR}/src/components/transmission"
 	"${PROJECT_SOURCE_DIR}/src/components/transform"
 	"${PROJECT_SOURCE_DIR}/src/components/codec"
+	"${PROJECT_SOURCE_DIR}/src/components/util"
 	"${PROJECT_SOURCE_DIR}/src/sessions"
 	"${PROJECT_SOURCE_DIR}/src/util"
 	"${PROJECT_SOURCE_DIR}/src/thirdparty/gsm/inc"

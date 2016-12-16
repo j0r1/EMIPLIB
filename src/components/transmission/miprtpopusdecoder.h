@@ -23,33 +23,34 @@
 */
 
 /**
- * \file miprtpencoder.h
+ * \file miprtpopusdecoder.h
  */
 
-#ifndef MIPRTPENCODER_H
+#ifndef MIPRTPOPUSDECODER_H
 
-#define MIPRTPENCODER_H
+#define MIPRTPOPUSDECODER_H
 
 #include "mipconfig.h"
-#include "mipoutputmessagequeue.h"
 
-/** Base class for RTP encoders.
- *  Base class for RTP encoders. Contains a member function to set the payload type.
+#ifdef MIPCONFIG_SUPPORT_OPUS
+
+#include "miprtppacketdecoder.h"
+
+/** This class decodes incoming RTP data into Opus encoded audio messages.
+ *  This class takes MIPRTPReceiveMessages as input and generates 
+ *  Opus encoded audio messages. 
  */
-class EMIPLIB_IMPORTEXPORT MIPRTPEncoder : public MIPOutputMessageQueue
+class EMIPLIB_IMPORTEXPORT MIPRTPOpusDecoder : public MIPRTPPacketDecoder
 {
 public:
-	MIPRTPEncoder(const std::string &compName) : MIPOutputMessageQueue(compName)				{ m_payloadType = 0; }
-	~MIPRTPEncoder()											{ }
-
-	/** Sets the payload type. */
-	void setPayloadType(uint8_t payloadType) 								{ m_payloadType = payloadType; }
-
-	/** Returns the payload type. */
-	uint8_t getPayloadType() const										{ return m_payloadType; }
+	MIPRTPOpusDecoder();
+	~MIPRTPOpusDecoder();
 private:
-	uint8_t m_payloadType;
+	bool validatePacket(const jrtplib::RTPPacket *pRTPPack, real_t &timestampUnit, real_t timestampUnitEstimate);
+	void createNewMessages(const jrtplib::RTPPacket *pRTPPack, std::list<MIPMediaMessage *> &messages, std::list<uint32_t> &timestamps);
 };
 
-#endif // MIPRTPENCODER_H
+#endif // MIPCONFIG_SUPPORT_OPUS
+
+#endif // MIPRTPOPUSDECODER_H
 

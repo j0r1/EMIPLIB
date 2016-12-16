@@ -76,6 +76,8 @@ components/transmission/miprtpgsmencoder.h
 components/transmission/miprtpvideodecoder.h
 components/transmission/miprtpsilkdecoder.h
 components/transmission/miprtpsilkencoder.h
+components/transmission/miprtpopusencoder.h
+components/transmission/miprtpopusdecoder.h
 components/transform/mipaudio3dbase.h
 components/transform/miphrirlisten.h
 components/transform/mipaudiosplitter.h
@@ -102,6 +104,9 @@ components/codec/miplpcencoder.h
 components/codec/miptinyjpegdecoder.h
 components/codec/mipsilkdecoder.h
 components/codec/mipsilkencoder.h
+components/codec/mipopusencoder.h
+components/codec/mipopusdecoder.h
+components/util/mipoutputmessagequeue.h
 sessions/mipaudiosession.h
 sessions/mipvideosession.h
 util/miprtpsynchronizer.h
@@ -170,6 +175,8 @@ components/transmission/miprtpl16decoder.cpp
 components/transmission/miprtpulawdecoder.cpp
 components/transmission/miprtpsilkdecoder.cpp
 components/transmission/miprtpsilkencoder.cpp
+components/transmission/miprtpopusencoder.cpp
+components/transmission/miprtpopusdecoder.cpp
 components/transform/mipaudiosplitter.cpp
 components/transform/mipspeexechocanceller.cpp
 components/transform/mipaudiodistancefade.cpp
@@ -195,6 +202,9 @@ components/codec/mipspeexencoder.cpp
 components/codec/mipgsmencoder.cpp
 components/codec/mipsilkdecoder.cpp
 components/codec/mipsilkencoder.cpp
+components/codec/mipopusencoder.cpp
+components/codec/mipopusdecoder.cpp
+components/util/mipoutputmessagequeue.cpp
 sessions/mipvideosession.cpp
 sessions/mipaudiosession.cpp
 util/mipsignalwaiter.cpp

@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0026 OLD)
 
 project(emiplib)
-set(VERSION 1.2.0)
+set(VERSION_MAJOR 1)
+set(VERSION_MINOR 2)
+set(VERSION_DEBUG 0)
+set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_DEBUG}")
 
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFile)
@@ -309,6 +312,7 @@ endif (UNIX OR EMIPLIB_COMPILE_STATIC)
 
 configure_file("${PROJECT_SOURCE_DIR}/src/core/mipconfig.h.in" "${PROJECT_BINARY_DIR}/src/core/mipconfig.h")
 configure_file("${PROJECT_SOURCE_DIR}/src/core/miptypes.h.in" "${PROJECT_BINARY_DIR}/src/core/miptypes.h")
+configure_file("${PROJECT_SOURCE_DIR}/src/core/mipversioninternal.h.in" "${PROJECT_BINARY_DIR}/src/core/mipversioninternal.h")
 
 add_subdirectory(src)
 add_subdirectory(examples)

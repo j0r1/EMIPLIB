@@ -65,12 +65,8 @@ them without any problem.
 The library home page can be found at the following location:
 http://research.edm.uhasselt.be/emiplib/
 
-There is a mailing list available for EMIPLIB. To subscribe to it, just 
-send an e-mail to emiplib-subscribe@edm.uhasselt.be and you'll receive 
-additional instructions.
-
-If you don't like to post your question to the mailing list, you can also
-send a more private mail to emiplibinfo@edm.uhasselt.be.
+Questions, comments and bug reports can be sent to
+jori.liesenborgs@gmail.com
 
 5. ACKNOWLEDGMENTS
 
@@ -88,5 +84,4 @@ uses the Tiny Jpeg Decoder by Luc Saillard. Thanks for making this
 publically available. Please see the source code in 
 src/thirdparty/tinyjpeg for more information about copyright and
 disclaimer.
-
 

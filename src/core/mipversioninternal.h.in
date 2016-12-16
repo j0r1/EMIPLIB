@@ -22,36 +22,12 @@
 
 */
 
-#include "mipconfig.h"
-#include "mipversion.h"
-#include "mipcompat.h"
-#include "mipversioninternal.h"
-#include <stdio.h>
+#ifndef MIPVERSIONINTERNAL_H
 
-#include "mipdebug.h"
+#define MIPVERSIONINTERNAL_H
 
-MIPVersion::MIPVersion()
-{
-	m_major = MIPVERSION_MAJOR;
-	m_minor = MIPVERSION_MINOR;
-	m_debug = MIPVERSION_DEBUG;
-#ifdef MIPCONFIG_GPL
-	m_license = std::string("GPL");
-#else
-	m_license = std::string("LGPL");
-#endif // MIPCONFIG_GPL
-}
+#define MIPVERSION_MAJOR ${VERSION_MAJOR}
+#define MIPVERSION_MINOR ${VERSION_MINOR}
+#define MIPVERSION_DEBUG ${VERSION_DEBUG}
 
-MIPVersion::~MIPVersion()
-{
-}
-
-std::string MIPVersion::getVersionString() const
-{
-	char str[16];
-	
-	MIP_SNPRINTF(str, 16, "%d.%d.%d", m_major, m_minor, m_debug);
-
-	return std::string(str);
-}
-
+#endif // MIPVERSIONINTERNAL_H

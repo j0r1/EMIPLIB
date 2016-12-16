@@ -36,7 +36,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <asm/types.h>
-#include <linux/videodev.h>
+#include <linux/videodev2.h>
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/mman.h>

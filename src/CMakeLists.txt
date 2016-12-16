@@ -23,7 +23,6 @@ core/miprawaudiomessage.h
 core/miptypes_win.h
 ${PROJECT_BINARY_DIR}/src/core/mipconfig.h
 ${PROJECT_BINARY_DIR}/src/core/miptypes.h
-components/input/mipv4linput.h
 components/input/mipjackinput.h
 components/input/mipdirectshowcapture.h
 components/input/mipsndfileinput.h
@@ -129,7 +128,6 @@ components/input/mipv4l2input.cpp
 components/input/mipfrequencygenerator.cpp
 components/input/mipwavinput.cpp
 components/input/mipaudiofileinput.cpp
-components/input/mipv4linput.cpp
 components/input/mipwinmminput.cpp 
 components/input/mipyuv420fileinput.cpp
 components/output/mipjackoutput.cpp

@@ -1,4 +1,4 @@
-#include <linux/videodev.h>
+#include <linux/videodev2.h>
 #include <sys/ioctl.h>
 
 int main(void)

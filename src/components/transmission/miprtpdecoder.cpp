@@ -353,7 +353,7 @@ bool MIPRTPDecoder::lookUpStreamTime(uint32_t ssrc, uint32_t timestamp, const ui
 	
 	if (it == m_sourceTable.end())
 	{
-		m_sourceTable[ssrc] = SSRCInfo(timestampUnit);
+		m_sourceTable[ssrc] = SSRCInfo(timestamp);
 		m_sourceTable[ssrc].setLastAccessTime(curTime);
 		m_pSSRCInfo = &(m_sourceTable[ssrc]);
 		streamTime = MIPTime(0);

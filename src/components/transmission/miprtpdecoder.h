@@ -73,8 +73,11 @@ public:
 	 *                       to synchronize different streams from the same participant.
 	 *  \param pRTPSess If specified, the timestamp unit returned by an MIPRTPPacketDecoder instance
 	 *                  will be stored in the RTPSourceData instance of the corresponding SSRC.
+	 *  \param fixedJitterBuffer If larger than zero, a fixed amount (which will never be adjusted)
+	 *                           will be used as the jitter buffer.
 	 */
-	bool init(bool calcStreamTime = true, MIPRTPSynchronizer *pSynchronizer = 0, jrtplib::RTPSession *pRTPSess = 0);
+	bool init(bool calcStreamTime = true, MIPRTPSynchronizer *pSynchronizer = 0, jrtplib::RTPSession *pRTPSess = 0, 
+		  MIPTime fixedJitterBuffer = MIPTime(0));
 
 	/** Installs a default RTP packet decoder (for all payload types).
 	 *  Installs a default RTP packet decoder. Use a null pointer to clear all entries.
@@ -222,6 +225,9 @@ private:
 	jrtplib::RTPSession *m_pRTPSess;
 	MIPTime m_totalComponentDelay;
 	MIPTime m_maxJitterBuffer;
+
+	bool m_useFixedJitterBuffer;
+	MIPTime m_fixedJitterBuffer;
 };
 
 #endif // MIPRTPDECODER_H

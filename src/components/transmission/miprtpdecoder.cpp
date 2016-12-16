@@ -52,7 +52,7 @@ MIPRTPDecoder::~MIPRTPDecoder()
 	cleanUp();
 }
 
-bool MIPRTPDecoder::init(bool calcStreamTime, MIPRTPSynchronizer *pSynchronizer, RTPSession *pRTPSess)
+bool MIPRTPDecoder::init(bool calcStreamTime, MIPRTPSynchronizer *pSynchronizer, RTPSession *pRTPSess, MIPTime fixedJitterBuffer)
 {
 	if (m_init)
 		cleanUp();
@@ -69,6 +69,16 @@ bool MIPRTPDecoder::init(bool calcStreamTime, MIPRTPSynchronizer *pSynchronizer,
 	for (int i = 0 ; i < MIPRTPDECODER_MAXPAYLOADDECODERS ; i++)
 		m_pDecoders[i] = 0;
 		
+	if (fixedJitterBuffer.getValue() > 1e-5) // only accept positive values
+	{
+		m_useFixedJitterBuffer = true;
+		m_fixedJitterBuffer = fixedJitterBuffer;
+	}
+	else
+	{
+		m_useFixedJitterBuffer = false;
+		m_fixedJitterBuffer = MIPTime(0);
+	}
 	m_init = true;
 	return true;
 }
@@ -429,109 +439,116 @@ bool MIPRTPDecoder::adjustToPlaybackTime(MIPTime jitterValue, MIPTime &streamTim
 	
 	// Jitter buffer
 
-	MIPTime diff = streamTime;
-	diff -= m_playbackOffset;
-//	std::cerr << "Diff:            " << diff.getString() << std::endl;
-	
-	m_pSSRCInfo->addInsertTime(diff);
-
-//	std::cerr << "Insert average:  " << m_pSSRCInfo->getInsertTimeAverage().getString() << std::endl;
-//	std::cerr << "Insert variance: " << m_pSSRCInfo->getInsertTimeVariance().getString() << std::endl;
-//	std::cerr << "Jitter:          " << jitterValue.getString() << std::endl;
-	
-	real_t insertDiff = m_pSSRCInfo->getInsertTimeAverage().getValue();
-	real_t variance = m_pSSRCInfo->getInsertTimeVariance().getValue();
-//	real_t jitter = jitterValue.getValue();
-//
-//	if (jitter > variance)
-//		variance = jitter;
-
-	//real_t offset = insertDiff - 2.0*variance;
-	real_t offset = insertDiff - 3.0*variance; // TODO: which is best
-
-	// Limit the maximum offset
-	if (m_maxJitterBuffer.getValue() > 0 && offset > m_maxJitterBuffer.getValue())
-		offset = m_maxJitterBuffer.getValue();
-
-	if (m_pSSRCInfo->getNumberOfInsertTimes() == MIPRTPDECODER_HISTLEN) // need several packets for a good estimate
+	if (!m_useFixedJitterBuffer)
 	{
-		if (offset < MINOFFSET) // need more buffering
-		{
-			MIPTime curTime = MIPTime::getCurrentTime();
-	
-			if ((curTime.getValue() - m_pSSRCInfo->getLastOffsetAdjustTime().getValue()) > 0.200)
-			{
-				// we'll use 5 msec boundary
+		MIPTime diff = streamTime;
+		diff -= m_playbackOffset;
+	//	std::cerr << "Diff:            " << diff.getString() << std::endl;
 		
-				real_t diff = MINOFFSET - offset;
-				int64_t diffi = ((int64_t)((diff*200.0)+0.5));
-	
-				if (diffi > 0)
-				{
-					diff = ((real_t)diffi)/200.0;
-	
-					MIPTime newOffset = m_pSSRCInfo->getPlaybackOffset();
-					newOffset += MIPTime(diff);
-	
+		m_pSSRCInfo->addInsertTime(diff);
+
 	//	std::cerr << "Insert average:  " << m_pSSRCInfo->getInsertTimeAverage().getString() << std::endl;
 	//	std::cerr << "Insert variance: " << m_pSSRCInfo->getInsertTimeVariance().getString() << std::endl;
 	//	std::cerr << "Jitter:          " << jitterValue.getString() << std::endl;
 		
-					m_pSSRCInfo->setPlaybackOffset(newOffset);
-	//				std::cerr << "Increasing playback offset by " << MIPTime(diff).getString() << std::endl;
-	//				std::cerr << "New offset is " << newOffset.getString() << std::endl;
+		real_t insertDiff = m_pSSRCInfo->getInsertTimeAverage().getValue();
+		real_t variance = m_pSSRCInfo->getInsertTimeVariance().getValue();
+	//	real_t jitter = jitterValue.getValue();
+	//
+	//	if (jitter > variance)
+	//		variance = jitter;
+
+		//real_t offset = insertDiff - 2.0*variance;
+		real_t offset = insertDiff - 3.0*variance; // TODO: which is best
+
+		// Limit the maximum offset
+		if (m_maxJitterBuffer.getValue() > 0 && offset > m_maxJitterBuffer.getValue())
+			offset = m_maxJitterBuffer.getValue();
+
+		if (m_pSSRCInfo->getNumberOfInsertTimes() == MIPRTPDECODER_HISTLEN) // need several packets for a good estimate
+		{
+			if (offset < MINOFFSET) // need more buffering
+			{
+				MIPTime curTime = MIPTime::getCurrentTime();
+		
+				if ((curTime.getValue() - m_pSSRCInfo->getLastOffsetAdjustTime().getValue()) > 0.200)
+				{
+					// we'll use 5 msec boundary
+			
+					real_t diff = MINOFFSET - offset;
+					int64_t diffi = ((int64_t)((diff*200.0)+0.5));
+		
+					if (diffi > 0)
+					{
+						diff = ((real_t)diffi)/200.0;
+		
+						MIPTime newOffset = m_pSSRCInfo->getPlaybackOffset();
+						newOffset += MIPTime(diff);
+		
+		//	std::cerr << "Insert average:  " << m_pSSRCInfo->getInsertTimeAverage().getString() << std::endl;
+		//	std::cerr << "Insert variance: " << m_pSSRCInfo->getInsertTimeVariance().getString() << std::endl;
+		//	std::cerr << "Jitter:          " << jitterValue.getString() << std::endl;
+			
+						m_pSSRCInfo->setPlaybackOffset(newOffset);
+		//				std::cerr << "Increasing playback offset by " << MIPTime(diff).getString() << std::endl;
+		//				std::cerr << "New offset is " << newOffset.getString() << std::endl;
+					}
 				}
 			}
-		}
-		else // perhaps we kan decrease the buffering somewhat, but we'll only make gradual adjustments every 5 seconds
-		{
-			MIPTime curTime = MIPTime::getCurrentTime();
-			real_t delay;
-			real_t ins = insertDiff;
-	
-			if (ins < 0)
-				ins = 0;
-	
-			delay = 500.0/(1.0+100.0*ins);
-			if (delay < 5.0)
-				delay = 5.0;
-			else if (delay > 60.0)
-				delay = 60.0;
-	
-			if ((curTime.getValue() - m_pSSRCInfo->getLastOffsetAdjustTime().getValue()) > delay)
+			else // perhaps we kan decrease the buffering somewhat, but we'll only make gradual adjustments every 5 seconds
 			{
-//				std::cout << "Delay: " << MIPTime(delay).getString() << std::endl;
-				
-				// we'll use 5 msec boundary
+				MIPTime curTime = MIPTime::getCurrentTime();
+				real_t delay;
+				real_t ins = insertDiff;
 		
-				real_t diff = offset - MINOFFSET;
-				
-				if (diff > 0.005)
+				if (ins < 0)
+					ins = 0;
+		
+				delay = 500.0/(1.0+100.0*ins);
+				if (delay < 5.0)
+					delay = 5.0;
+				else if (delay > 60.0)
+					delay = 60.0;
+		
+				if ((curTime.getValue() - m_pSSRCInfo->getLastOffsetAdjustTime().getValue()) > delay)
 				{
-					real_t diff2 = ((real_t)((int64_t)((diff*200.0)+0.5)))/200.0;
-		
-					if (diff2 > diff)
-						diff2 -= 0.005;
+	//				std::cout << "Delay: " << MIPTime(delay).getString() << std::endl;
 					
-					MIPTime newOffset = m_pSSRCInfo->getPlaybackOffset();
-					newOffset -= MIPTime(diff2);
-	
-	//	std::cerr << "Insert average:  " << m_pSSRCInfo->getInsertTimeAverage().getString() << std::endl;
-	//	std::cerr << "Insert variance: " << m_pSSRCInfo->getInsertTimeVariance().getString() << std::endl;
-	//	std::cerr << "Jitter:          " << jitterValue.getString() << std::endl;
+					// we'll use 5 msec boundary
+			
+					real_t diff = offset - MINOFFSET;
+					
+					if (diff > 0.005)
+					{
+						real_t diff2 = ((real_t)((int64_t)((diff*200.0)+0.5)))/200.0;
+			
+						if (diff2 > diff)
+							diff2 -= 0.005;
+						
+						MIPTime newOffset = m_pSSRCInfo->getPlaybackOffset();
+						newOffset -= MIPTime(diff2);
 		
-					m_pSSRCInfo->setPlaybackOffset(newOffset);
-	//				std::cerr << "Decreasing playback offset by " << MIPTime(diff2).getString() << std::endl;
-	//				std::cerr << "New offset is " << newOffset.getString() << std::endl;
-				}
-				else
-				{
-					// reinstall old offset so the adjustment time is initialized again
-					MIPTime oldOffset = m_pSSRCInfo->getPlaybackOffset();
-					m_pSSRCInfo->setPlaybackOffset(oldOffset);
+		//	std::cerr << "Insert average:  " << m_pSSRCInfo->getInsertTimeAverage().getString() << std::endl;
+		//	std::cerr << "Insert variance: " << m_pSSRCInfo->getInsertTimeVariance().getString() << std::endl;
+		//	std::cerr << "Jitter:          " << jitterValue.getString() << std::endl;
+			
+						m_pSSRCInfo->setPlaybackOffset(newOffset);
+		//				std::cerr << "Decreasing playback offset by " << MIPTime(diff2).getString() << std::endl;
+		//				std::cerr << "New offset is " << newOffset.getString() << std::endl;
+					}
+					else
+					{
+						// reinstall old offset so the adjustment time is initialized again
+						MIPTime oldOffset = m_pSSRCInfo->getPlaybackOffset();
+						m_pSSRCInfo->setPlaybackOffset(oldOffset);
+					}
 				}
 			}
 		}
+	}
+	else
+	{
+		streamTime += m_fixedJitterBuffer;
 	}
 	
 	MIPTime x = streamTime;

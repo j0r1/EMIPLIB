@@ -118,7 +118,8 @@ bool MIPVideoMixer::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 
 	// search for the right stream	
 	
-	int64_t frameNum = (int64_t)(offsetTime.getValue()/m_frameTime.getValue())+m_curInterval;
+	//int64_t frameNum = (int64_t)(offsetTime.getValue()/m_frameTime.getValue())+m_curInterval;
+	int64_t frameNum = (int64_t)(offsetTime.getValue()/m_frameTime.getValue() + 0.5)+m_curInterval; // round to nearest
 	std::list<SourceStream *>::iterator streamIt;
 	bool found = false;
 	uint64_t sourceID = pVidMsg->getSourceID();

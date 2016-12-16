@@ -6,6 +6,10 @@ Version ?, ?
  * Added support for the Opus audio codec.
  * Added MIPOutputMessageQueue, which performs functions that many
    components need.
+ * Fixed small bug in MIPRTPDecoder: used 'timestampUnit' instead
+   of 'timestamp' when calling the SSRCInfo constructor.
+ * Small adjustment in MIPVideoMixer: rounding when calculating
+   frame number.
 
 Version 1.1.1, November 2011
  * Fixed a bug in the CMake configuration: was unable to handle

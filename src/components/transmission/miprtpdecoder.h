@@ -100,6 +100,8 @@ public:
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 	bool processFeedback(const MIPComponentChain &chain, int64_t feedbackChainID, MIPFeedback *feedback);
 protected:
+	/** This virtual function is called when a new MIPMediaMessage is produced by an MIPRTPPacketDecoder
+	 *  instance. */
 	virtual void onNewMediaMessage(uint32_t ssrc, uint32_t rtpTimestamp, MIPMediaMessage *pMsg)		{ }
 private:
 	void clearMessages();

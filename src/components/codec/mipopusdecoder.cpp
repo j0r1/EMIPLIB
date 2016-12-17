@@ -46,7 +46,7 @@ MIPOpusDecoder::OpusStateInfo::~OpusStateInfo()
 	opus_decoder_destroy(pState);
 }
 
-MIPOpusDecoder::MIPOpusDecoder() : MIPOutputMessageQueue("MIPOpusDecoder")
+MIPOpusDecoder::MIPOpusDecoder() : MIPOutputMessageQueueWithState("MIPOpusDecoder")
 {
 	m_init = false;
 }
@@ -81,8 +81,8 @@ bool MIPOpusDecoder::init(int outputSamplingRate, int channels, bool useFloat)
 	m_outputChannels = channels;
 	m_useFloat = useFloat;
 
-	MIPOutputMessageQueue::init();
-	MIPOutputMessageQueue::setExpirationDelay(60.0);
+	MIPOutputMessageQueueWithState::init(60.0);
+
 	m_init = true;
 	return true;
 }
@@ -95,8 +95,7 @@ bool MIPOpusDecoder::destroy()
 		return false;
 	}
 
-	MIPOutputMessageQueue::clearMessages();
-	MIPOutputMessageQueue::clearStates();
+	MIPOutputMessageQueueWithState::clear();
 
 	m_init = false;
 
@@ -139,7 +138,7 @@ bool MIPOpusDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIP
 
 		pStateInfo = new OpusStateInfo(pDecoder);
 
-		if (!MIPOutputMessageQueue::addState(sourceID, pStateInfo))
+		if (!MIPOutputMessageQueueWithState::addState(sourceID, pStateInfo))
 			return false; // shouldn't happen, error message already set
 	}
 	else
@@ -187,7 +186,7 @@ bool MIPOpusDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIP
 
 	pNewMsg->copyMediaInfoFrom(*pEncMsg); // copy source ID and message time
 
-	MIPOutputMessageQueue::addToOutputQueue(pNewMsg, true);
+	MIPOutputMessageQueueWithState::addToOutputQueue(pNewMsg, true);
 
 	return true;
 }

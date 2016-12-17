@@ -33,52 +33,54 @@
 #include "mipconfig.h"
 #include "mipcomponent.h"
 #include "miptime.h"
-#include <unordered_map>
 #include <list>
 
 class MIPMessage;
 
-class EMIPLIB_IMPORTEXPORT MIPStateInfo
-{
-public:
-	MIPStateInfo();
-	virtual ~MIPStateInfo();
-
-	MIPTime getLastUpdateTime() const							{ return m_lastTime; }
-	void setUpdateTime()									{ m_lastTime = MIPTime::getCurrentTime(); }
-private:
-	MIPTime m_lastTime;
-};
-
+/** Helper class to server as base class for components which need an
+ *  output queue of messages.
+ *  Helper class to server as base class for components which need an
+ *  output queue of messages. In this version, you should write your
+ *  own 'push' method, which first calls MIPOutputMessageQueue::checkIteration and stores
+ *  outgoing messages using the MIPOutputMessageQueue::addToOutputQueue method. This
+ *  way, a single incoming MIPMessage instance can cause multiple outgoing
+ *  messages. If you're certain that for each incoming message there will
+ *  only be a single outgoing message, MIPOutputMessageQueueSimple may be
+ *  more appropriate.
+ */
 class EMIPLIB_IMPORTEXPORT MIPOutputMessageQueue : public MIPComponent
 {
 protected:
-	MIPOutputMessageQueue(const std::string &componentName);
+	/** Constructor of the class, which passes a specific component name to the MIPComponent constructor. */
+ 	MIPOutputMessageQueue(const std::string &componentName);
 public:
 	~MIPOutputMessageQueue();
-
-	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 protected:
+	/** Initialize this component.
+	 *  Initialize the component. This function should be called during the
+	 *  initialization of you own component. */
 	void init();
-	void checkIteration(int64_t iteration);
-	void clearMessages();
-	void addToOutputQueue(MIPMessage *pMsg, bool deleteMessage);
 
-	void setExpirationDelay(real_t delay);
-	void clearStates();
-	MIPStateInfo *findState(uint64_t id);
-	bool addState(uint64_t id, MIPStateInfo *pState);
+	/** Clears the messages in the output queue.
+	 *  Clears the messages in the output queue, should be called to free up memory
+	 *  during the de-initialization of your component. */
+	void clearMessages();
+
+	/** Call this at the start of your 'push' method to make sure that the output
+	 *  message queue is cleared when a new iteration of your component chain is
+	 *  executed. */
+	void checkIteration(int64_t iteration);
+
+	/** Add the specified message to the output queue, indicating if the message
+	 *  should be deleted when the output messages queue is cleared for a new
+	 *  iteration. */
+	void addToOutputQueue(MIPMessage *pMsg, bool deleteMessage);
 private:
-	void expire();
+	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 
 	std::list<std::pair<MIPMessage *, bool> > m_messages;
 	std::list<std::pair<MIPMessage *, bool> >::const_iterator m_msgIt;
 	int64_t m_prevIteration;
-
-	bool m_useExpiration;
-	double m_expirationDelay;
-	MIPTime m_lastExpireTime;
-	std::unordered_map<uint64_t, MIPStateInfo *> m_states;
 };
 
 #endif // MIPOUTPUTMESSAGEQUEUE_H

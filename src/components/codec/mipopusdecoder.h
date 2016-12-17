@@ -34,7 +34,7 @@
 
 #ifdef MIPCONFIG_SUPPORT_OPUS
 
-#include "mipoutputmessagequeue.h"
+#include "mipoutputmessagequeuewithstate.h"
 #include "miptime.h"
 
 class MIPAudioMessage;
@@ -45,7 +45,7 @@ class MIPAudioMessage;
  *  The component generates floating point mono raw audio messages or signed 16 bit native endian
  *  encoded raw audio messages.
  */
-class EMIPLIB_IMPORTEXPORT MIPOpusDecoder : public MIPOutputMessageQueue
+class EMIPLIB_IMPORTEXPORT MIPOpusDecoder : public MIPOutputMessageQueueWithState
 {
 public:
 	MIPOpusDecoder();

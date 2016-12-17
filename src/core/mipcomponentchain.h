@@ -161,6 +161,8 @@ private:
 	jthread::JMutex m_loopMutex;
 	jthread::JMutex m_chainMutex;
 	bool m_stopLoop;
+
+	uint32_t m_dummy;
 };
 
 #endif // MIPCOMPONENTCHAIN_H

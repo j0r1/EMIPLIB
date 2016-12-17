@@ -115,6 +115,7 @@ public:
 private:
 	jthread::JMutex m_componentMutex;
 	std::string m_componentName;
+	uint32_t m_dummy;
 };
 
 #endif // MIPCOMPONENT_H

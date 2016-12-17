@@ -24,6 +24,7 @@
 
 #include "mipconfig.h"
 #include "mipcomponent.h"
+#include "miptime.h"
 #include <cstdlib>
 #include <iostream>
 
@@ -31,6 +32,12 @@
 
 MIPComponent::MIPComponent(const std::string &name)
 {
+
+	// We're forwarding this getCurrentTime call to something that needs initialization,
+	// so we'll just call it as soon as possible here, so that the initialization is
+	// already performed by the time we're using threads
+	m_dummy = (uint32_t)MIPTime::getCurrentTime().getSeconds();
+
 	int status;
 	
 	if ((status = m_componentMutex.Init()) < 0)

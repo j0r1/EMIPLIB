@@ -99,6 +99,8 @@ public:
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 	bool processFeedback(const MIPComponentChain &chain, int64_t feedbackChainID, MIPFeedback *feedback);
+protected:
+	virtual void onNewMediaMessage(uint32_t ssrc, uint32_t rtpTimestamp, MIPMediaMessage *pMsg)		{ }
 private:
 	void clearMessages();
 	void cleanUp();

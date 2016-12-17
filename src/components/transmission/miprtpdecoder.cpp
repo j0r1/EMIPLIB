@@ -255,6 +255,8 @@ bool MIPRTPDecoder::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 		
 		pNewMsg->setSourceID(sourceID);
 		pNewMsg->setTime(streamTime);
+
+		onNewMediaMessage(ssrc, *it2, pNewMsg);
 		
 		m_messages.push_back(pNewMsg);
 	}

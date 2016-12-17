@@ -36,7 +36,7 @@
 
 #include "mipcomponent.h"
 #include "miptime.h"
-#include <asoundlib.h>
+#include <alsa/asoundlib.h>
 #include <jthread/jthread.h>
 #include <string>
 

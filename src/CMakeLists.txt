@@ -108,6 +108,9 @@ components/codec/mipsilkencoder.h
 components/codec/mipopusencoder.h
 components/codec/mipopusdecoder.h
 components/util/mipoutputmessagequeue.h
+components/util/mipoutputmessagequeuewithstate.h
+components/util/mipoutputmessagequeuesimple.h
+components/util/mipoutputmessagequeuewithstatesimple.h
 sessions/mipaudiosession.h
 sessions/mipvideosession.h
 util/miprtpsynchronizer.h
@@ -207,6 +210,9 @@ components/codec/mipsilkencoder.cpp
 components/codec/mipopusencoder.cpp
 components/codec/mipopusdecoder.cpp
 components/util/mipoutputmessagequeue.cpp
+components/util/mipoutputmessagequeuewithstate.cpp
+components/util/mipoutputmessagequeuesimple.cpp
+components/util/mipoutputmessagequeuewithstatesimple.cpp
 sessions/mipvideosession.cpp
 sessions/mipaudiosession.cpp
 util/mipsignalwaiter.cpp

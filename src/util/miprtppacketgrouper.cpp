@@ -40,6 +40,7 @@ bool MIPRTPPacketGrouper::init(uint32_t ssrc, int bufSize)
 	m_partSizes.resize(bufSize);
 	m_markers.resize(bufSize);
 	m_firstPartMarkers.resize(bufSize);
+	m_receiveTimes.resize(bufSize);
 
 	m_startPosition = -1;
 	m_ssrc = ssrc;
@@ -60,6 +61,7 @@ void MIPRTPPacketGrouper::clear()
 	m_markers.resize(0);
 	m_partSizes.resize(0);
 	m_firstPartMarkers.resize(0);
+	m_receiveTimes.resize(0);
 
 	m_startPosition = -1;
 	m_ssrc = 0;
@@ -73,6 +75,7 @@ bool MIPRTPPacketGrouper::processPacket(const RTPPacket *pPack, bool isFirstFram
 		return false;
 	}
 
+	real_t receiveTime = pPack->GetReceiveTime().GetDouble();
 	uint32_t seqNr = pPack->GetExtendedSequenceNumber();
 	size_t bufSize = m_extendedSequenceNumbers.size();
 	bool veryFirstPacket = false;
@@ -90,6 +93,7 @@ bool MIPRTPPacketGrouper::processPacket(const RTPPacket *pPack, bool isFirstFram
 			m_partSizes[i] = 0;
 			m_markers[i] = false;
 			m_firstPartMarkers[i] = false;
+			m_receiveTimes[i] = 0;
 		}
 
 		// store the current sequence number again
@@ -132,6 +136,7 @@ bool MIPRTPPacketGrouper::processPacket(const RTPPacket *pPack, bool isFirstFram
 			m_packetParts[foundIdx] = new uint8_t[packLen];
 			m_markers[foundIdx] = pPack->HasMarker();
 			m_firstPartMarkers[foundIdx] = isFirstFramePart;
+			m_receiveTimes[foundIdx] = receiveTime;
 
 			memcpy(m_packetParts[foundIdx], pPack->GetPayloadData(), packLen);
 
@@ -145,15 +150,17 @@ bool MIPRTPPacketGrouper::processPacket(const RTPPacket *pPack, bool isFirstFram
 				{
 					std::vector<uint8_t *> parts;
 					std::vector<size_t> partSizes;
+					std::vector<real_t> receiveTimes;
 					uint32_t packetTimestamp = 0;
 
-					checkCompletePacket(prevIdx, parts, partSizes, packetTimestamp);
+					checkCompletePacket(prevIdx, parts, partSizes, receiveTimes, packetTimestamp);
 
 					if (parts.size() != 0)
 					{
 						m_partQueue.push_back(parts);
 						m_partSizeQueue.push_back(partSizes);
 						m_timestampQueue.push_back(packetTimestamp);
+						m_receiveTimesQueue.push_back(receiveTimes);
 					}
 				}
 			}
@@ -162,15 +169,17 @@ bool MIPRTPPacketGrouper::processPacket(const RTPPacket *pPack, bool isFirstFram
 			{
 				std::vector<uint8_t *> parts;
 				std::vector<size_t> partSizes;
+				std::vector<real_t> receiveTimes;
 				uint32_t packetTimestamp = 0;
 
-				checkCompletePacket(foundIdx, parts, partSizes, packetTimestamp);
+				checkCompletePacket(foundIdx, parts, partSizes, receiveTimes, packetTimestamp);
 
 				if (parts.size() != 0)
 				{
 					m_partQueue.push_back(parts);
 					m_partSizeQueue.push_back(partSizes);
 					m_timestampQueue.push_back(packetTimestamp);
+					m_receiveTimesQueue.push_back(receiveTimes);
 				}
 			}
 
@@ -184,15 +193,17 @@ bool MIPRTPPacketGrouper::processPacket(const RTPPacket *pPack, bool isFirstFram
 				{
 					std::vector<uint8_t *> parts;
 					std::vector<size_t> partSizes;
+					std::vector<real_t> receiveTimes;
 					uint32_t packetTimestamp = 0;
 
-					checkCompletePacket(nextIdx, parts, partSizes, packetTimestamp);
+					checkCompletePacket(nextIdx, parts, partSizes, receiveTimes, packetTimestamp);
 
 					if (parts.size() != 0)
 					{
 						m_partQueue.push_back(parts);
 						m_partSizeQueue.push_back(partSizes);
 						m_timestampQueue.push_back(packetTimestamp);
+						m_receiveTimesQueue.push_back(receiveTimes);
 					}
 				}
 			}
@@ -228,6 +239,7 @@ bool MIPRTPPacketGrouper::processPacket(const RTPPacket *pPack, bool isFirstFram
 					m_partSizes[i] = 0;
 					m_markers[i] = false;
 					m_firstPartMarkers[i] = false;
+					m_receiveTimes[i] = 0;
 				}
 			}
 			else
@@ -248,6 +260,7 @@ bool MIPRTPPacketGrouper::processPacket(const RTPPacket *pPack, bool isFirstFram
 					m_partSizes[m_startPosition] = 0;
 					m_markers[m_startPosition] = false;
 					m_firstPartMarkers[m_startPosition] = false;
+					m_receiveTimes[m_startPosition] = 0;
 
 					m_startPosition = (m_startPosition+1)%bufSize;
 				}
@@ -258,7 +271,7 @@ bool MIPRTPPacketGrouper::processPacket(const RTPPacket *pPack, bool isFirstFram
 	return true;
 }
 
-void MIPRTPPacketGrouper::checkCompletePacket(int index, std::vector<uint8_t *> &parts, std::vector<size_t> &partSizes, uint32_t &packetTimestamp)
+void MIPRTPPacketGrouper::checkCompletePacket(int index, std::vector<uint8_t *> &parts, std::vector<size_t> &partSizes, std::vector<real_t> &receiveTimes, uint32_t &packetTimestamp)
 {
 	int startIdx = -1;
 	int endIdx = -1;
@@ -358,6 +371,7 @@ void MIPRTPPacketGrouper::checkCompletePacket(int index, std::vector<uint8_t *> 
 
 	parts.resize(0);
 	partSizes.resize(0);
+	receiveTimes.resize(0);
 
 	if (startIdx != -1 && endIdx != -1)
 	{
@@ -370,6 +384,7 @@ void MIPRTPPacketGrouper::checkCompletePacket(int index, std::vector<uint8_t *> 
 		{
 			parts.push_back(m_packetParts[idx]);
 			partSizes.push_back(m_partSizes[idx]);
+			receiveTimes.push_back(m_receiveTimes[idx]);
 
 			m_packetParts[idx] = 0;
 			m_skipFlags[idx] = true;
@@ -431,6 +446,30 @@ void MIPRTPPacketGrouper::getNextQueuedPacket(std::vector<uint8_t *> &parts, std
 		m_partQueue.pop_front();
 		m_partSizeQueue.pop_front();
 		m_timestampQueue.pop_front();
+		m_receiveTimesQueue.pop_front(); // don't forget to pop this!
+	}
+}
+
+void MIPRTPPacketGrouper::getNextQueuedPacket(std::vector<uint8_t *> &parts, std::vector<size_t> &partSizes, std::vector<real_t> &receiveTimes, uint32_t &timestamp)
+{
+	if (m_partQueue.empty())
+	{
+		parts.resize(0);
+		partSizes.resize(0);
+		receiveTimes.resize(0);
+		timestamp = 0;
+	}
+	else
+	{
+		parts = *(m_partQueue.begin());
+		partSizes = *(m_partSizeQueue.begin());
+		timestamp = *(m_timestampQueue.begin());
+		receiveTimes = *(m_receiveTimesQueue.begin());
+
+		m_partQueue.pop_front();
+		m_partSizeQueue.pop_front();
+		m_timestampQueue.pop_front();
+		m_receiveTimesQueue.pop_front();
 	}
 }
 

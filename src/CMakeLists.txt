@@ -78,6 +78,7 @@ components/transmission/miprtpsilkdecoder.h
 components/transmission/miprtpsilkencoder.h
 components/transmission/miprtpopusencoder.h
 components/transmission/miprtpopusdecoder.h
+components/transmission/miprtpjpegdecoder.h
 components/transform/mipaudio3dbase.h
 components/transform/miphrirlisten.h
 components/transform/mipaudiosplitter.h
@@ -177,6 +178,7 @@ components/transmission/miprtpsilkdecoder.cpp
 components/transmission/miprtpsilkencoder.cpp
 components/transmission/miprtpopusencoder.cpp
 components/transmission/miprtpopusdecoder.cpp
+components/transmission/miprtpjpegdecoder.cpp
 components/transform/mipaudiosplitter.cpp
 components/transform/mipspeexechocanceller.cpp
 components/transform/mipaudiodistancefade.cpp

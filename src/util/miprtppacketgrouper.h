@@ -86,10 +86,11 @@ public:
 	 *  \param partSizes A corresponding list of sizes of these payloads.
 	 *  \param timestamp Specifies the common RTP timestamp of all these fragments.
 	 */
-	void getNextQueuedPacket(std::vector<uint8_t *> &parts, std::vector<size_t> &partSizes, uint32_t &timestamp);
+	void getNextQueuedPacket(std::vector<uint8_t *> &parts, std::vector<size_t> &partSizes,  uint32_t &timestamp);
+	void getNextQueuedPacket(std::vector<uint8_t *> &parts, std::vector<size_t> &partSizes, std::vector<real_t> &receiveTimes, uint32_t &timestamp);
 private:
 	//void printTable();
-	void checkCompletePacket(int index, std::vector<uint8_t *> &parts, std::vector<size_t> &partSizes, uint32_t &packetTimestamp);
+	void checkCompletePacket(int index, std::vector<uint8_t *> &parts, std::vector<size_t> &partSizes, std::vector<real_t> &receiveTimes, uint32_t &packetTimestamp);
 	void checkMaximumQueueLength();
 
 	std::vector<uint32_t> m_extendedSequenceNumbers;
@@ -99,11 +100,13 @@ private:
 	std::vector<size_t> m_partSizes;
 	std::vector<bool> m_markers;
 	std::vector<bool> m_firstPartMarkers;
+	std::vector<real_t> m_receiveTimes;
 	int m_startPosition;
 	uint32_t m_ssrc;
 
 	std::list<std::vector<uint8_t *> > m_partQueue;
 	std::list<std::vector<size_t> > m_partSizeQueue;
+	std::list<std::vector<real_t> > m_receiveTimesQueue;
 	std::list<uint32_t> m_timestampQueue;
 };
 

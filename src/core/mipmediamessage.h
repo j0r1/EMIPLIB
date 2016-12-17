@@ -66,14 +66,20 @@ public:
 	/** Returns the timing information. */
 	MIPTime getTime() const											{ return m_time; }
 
+	/** Returns the time at which the data in this message was received on the local PC, or zero if not set. */
+	MIPTime getReceiveTime() const										{ return m_receiveTime; }
+
 	/** Sets the source ID. */
 	void setSourceID(uint64_t id)										{ m_sourceID = id; }
 
 	/** Sets the timing information. */
 	void setTime(MIPTime t)											{ m_time = t; }
 
+	/** Sets the time at which the data in the message was received on the local PC. */
+	void setReceiveTime(MIPTime t)										{ m_receiveTime = t; }
+
 	/** Copies the source ID and timing information from another message. */
-	void copyMediaInfoFrom(const MIPMediaMessage &msg)							{ m_sourceID = msg.m_sourceID; m_time = msg.m_time; }
+	void copyMediaInfoFrom(const MIPMediaMessage &msg)							{ m_sourceID = msg.m_sourceID; m_time = msg.m_time; m_receiveTime = msg.m_receiveTime; }
 
 	/** Virtual function to allow copies of subclass instances to be made. */
 	virtual MIPMediaMessage *createCopy() const								{ return 0; }
@@ -93,6 +99,7 @@ private:
 			
 	uint64_t m_sourceID;
 	MIPTime m_time;
+	MIPTime m_receiveTime;
 };
 
 #endif // MIPMEDIAMESSAGE_H

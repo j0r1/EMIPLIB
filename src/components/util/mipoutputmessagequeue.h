@@ -33,11 +33,7 @@
 #include "mipconfig.h"
 #include "mipcomponent.h"
 #include "miptime.h"
-#if defined(WIN32) || defined(_WIN32_WCE)
-	#include <hash_map>
-#else
-	#include <ext/hash_map>
-#endif // Win32
+#include <unordered_map>
 #include <list>
 
 class MIPMessage;
@@ -82,11 +78,7 @@ private:
 	bool m_useExpiration;
 	double m_expirationDelay;
 	MIPTime m_lastExpireTime;
-#if defined(WIN32) || defined(_WIN32_WCE)
-	stdext::hash_map<uint64_t, MIPStateInfo *> m_states;
-#else
-	__gnu_cxx::hash_map<uint64_t, MIPStateInfo *, __gnu_cxx::hash<uint32_t> > m_states;
-#endif // Win32
+	std::unordered_map<uint64_t, MIPStateInfo *> m_states;
 };
 
 #endif // MIPOUTPUTMESSAGEQUEUE_H

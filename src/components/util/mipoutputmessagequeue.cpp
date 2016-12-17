@@ -30,12 +30,6 @@
 
 #include "mipdebug.h"
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-using namespace stdext;
-#else
-using namespace __gnu_cxx;
-#endif // Win32
-
 #define MIPOUTPUTMESSAGEQUEUE_ERRSTR_STATEEXISTS				"A state is already present for this source ID"
 #define MIPOUTPUTMESSAGEQUEUE_ERRSTR_STATEZERO					"The specified state is null, which is not allowed"
 
@@ -146,28 +140,16 @@ void MIPOutputMessageQueue::setExpirationDelay(real_t delay)
 
 void MIPOutputMessageQueue::clearStates()
 {
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, MIPStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, MIPStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
 	//std::cerr << "Clearing all decoder states" << std::endl;
 
-	for (it = m_states.begin() ; it != m_states.end() ; it++)
+	for (auto it = m_states.begin() ; it != m_states.end() ; it++)
 		delete it->second;
 	m_states.clear();
 }
 
 MIPStateInfo *MIPOutputMessageQueue::findState(uint64_t id)
 {
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, MIPStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, MIPStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	it = m_states.find(id);
+	auto it = m_states.find(id);
 
 	if (it == m_states.end())
 	{
@@ -188,13 +170,7 @@ bool MIPOutputMessageQueue::addState(uint64_t id, MIPStateInfo *pState)
 		return false;
 	}
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, MIPStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, MIPStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
-	it = m_states.find(id);
+	auto it = m_states.find(id);
 
 	if (it != m_states.end())
 	{
@@ -222,15 +198,9 @@ void MIPOutputMessageQueue::expire()
 	if (diff < m_expirationDelay)
 		return;
 
-#if defined(WIN32) || defined(_WIN32_WCE)
-	hash_map<uint64_t, MIPStateInfo *>::iterator it;
-#else
-	hash_map<uint64_t, MIPStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it;
-#endif // Win32
-
 	//std::cerr << "Checking expiration times" << std::endl;
 
-	it = m_states.begin();
+	auto it = m_states.begin();
 	while (it != m_states.end())
 	{
 		real_t entryDiff = curTime.getValue() - it->second->getLastUpdateTime().getValue();
@@ -239,11 +209,7 @@ void MIPOutputMessageQueue::expire()
 
 		if (entryDiff > m_expirationDelay)
 		{
-#if defined(WIN32) || defined(_WIN32_WCE)
-			hash_map<uint64_t, MIPStateInfo *>::iterator it2 = it;
-#else
-			hash_map<uint64_t, MIPStateInfo *, __gnu_cxx::hash<uint32_t> >::iterator it2 = it;
-#endif // Win32
+			auto it2 = it;
 			it++;
 
 			//std::cerr << "Expiring " << it2->first << std::endl;

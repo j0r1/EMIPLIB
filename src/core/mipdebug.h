@@ -30,7 +30,7 @@
 
 #ifdef MIPDEBUG
 
-#include "rtptypes.h"
+#include "miptypes.h"
 
 void *operator new(size_t s,char filename[],int line);
 void *operator new[](size_t s,char filename[],int line);

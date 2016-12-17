@@ -55,7 +55,7 @@ protected:
 	 *               to raw data or encoded (compressed) data.
 	 *  \param msgSubtype The subtype of the message.
 	 */
-	MIPMediaMessage(MediumType mType, bool isRaw, uint32_t msgSubtype) : MIPMessage(calcType(mType,isRaw),msgSubtype), m_time(0)
+	MIPMediaMessage(MediumType mType, bool isRaw, uint32_t msgSubtype) : MIPMessage(calcType(mType,isRaw),msgSubtype), m_time(0), m_receiveTime(0)
 														{ m_sourceID = 0; }
 public:
 	~MIPMediaMessage()											{ }

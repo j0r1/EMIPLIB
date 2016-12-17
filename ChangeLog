@@ -2,14 +2,25 @@
 
                               EMIPLIB ChangeLog
 
-Version ?, ?
+Version 1.2.0, ?
  * Added support for the Opus audio codec.
  * Added MIPOutputMessageQueue, which performs functions that many
    components need.
  * Fixed small bug in MIPRTPDecoder: used 'timestampUnit' instead
    of 'timestamp' when calling the SSRCInfo constructor.
+ * Added possibility to use a fixed jitter buffering time to
+   MIPRTPDecoder, instead of the dynamic one used by default.
  * Small adjustment in MIPVideoMixer: rounding when calculating
    frame number.
+ * Added MIPRTPJPEGDecoder class, to interpret JPEG data in an RTP
+   packets as a JPEG encoded frame (see RFC 2435)
+ * Added a field to MIPMediaMessage to store the receive time if
+   available. It's up to the MIPRTPPacketDecoder to set this, since
+   this class creates the MIPMediaMessage instance.
+ * Added a virtual function onNewMediaMessage to MIPRTPDecoder
+   which gets called when a new MIPMediaMessage is obtained from
+   the MIPRTPPacketDecoder class.
+ * Added soundvolume.cpp example.
 
 Version 1.1.1, November 2011
  * Fixed a bug in the CMake configuration: was unable to handle

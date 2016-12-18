@@ -45,6 +45,7 @@ components/output/mipvideoframestorage.h
 components/output/mipaudiotrackoutput.h
 components/output/mipwavoutput.h
 components/output/mipwinmmoutput.h 
+components/output/mippulseoutput.h 
 components/timer/mipinterchaintimer.h
 components/timer/mipaveragetimer.h
 components/timer/mippusheventtimer.h
@@ -151,6 +152,7 @@ components/output/mipaudiotrackoutput.cpp
 components/output/mipwavoutput.cpp
 components/output/mipsdlaudiooutput.cpp
 components/output/mipwinmmoutput.cpp
+components/output/mippulseoutput.cpp
 components/timer/mipaveragetimer.cpp
 components/timer/mippusheventtimer.cpp
 components/timer/mipinterchaintimer.cpp

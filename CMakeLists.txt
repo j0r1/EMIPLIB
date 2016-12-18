@@ -74,6 +74,8 @@ list(APPEND EMIPLIB_EXTERNAL_INCLUDES "${JRTPLIB_INCLUDE_DIRS}")
 list(APPEND EMIPLIB_LINK_LIBS "${JTHREAD_LIBRARIES}")
 list(APPEND EMIPLIB_LINK_LIBS "${JRTPLIB_LIBRARIES}")
 
+option(EMIPLIB_COMPILE_TESTS "Compile various tests in the 'tests' subdirectory" NO)
+
 emiplib_support_option("Support for GPL components. This changes the license to GPL instead of LGPL."
 	               EMIPLIB_GPL MIPCONFIG_GPL OFF "// No GPL components will be compiled")
 emiplib_support_option("Support for the internal GSM codec" EMIPLIB_SUPPORT_GSM MIPCONFIG_SUPPORT_GSM ON "// No GSM support")
@@ -249,6 +251,18 @@ if (EMIPLIB_SUPPORT_QT3 AND QT_FOUND)
 	list(APPEND EMIPLIB_EXTERNAL_INCLUDES ${QT_INCLUDE_DIR})
 endif (EMIPLIB_SUPPORT_QT3 AND QT_FOUND)
 
+find_package(PulseAudio)
+if (PULSEAUDIO_FOUND)
+	set(TMP ON)
+else (PULSEAUDIO_FOUND)
+	set(TMP OFF)
+endif (PULSEAUDIO_FOUND)
+emiplib_support_option("Support for PulseAudio input/output" EMIPLIB_SUPPORT_PULSEAUDIO MIPCONFIG_SUPPORT_PULSEAUDIO ${TMP} "// No support for PulseAudio input/output")
+if (EMIPLIB_SUPPORT_PULSEAUDIO AND PULSEAUDIO_FOUND)
+	list(APPEND EMIPLIB_LINK_LIBS ${PULSEAUDIO_LIBRARIES})
+	list(APPEND EMIPLIB_EXTERNAL_INCLUDES ${PULSEAUDIO_INCLUDE_DIRS})
+endif (EMIPLIB_SUPPORT_PULSEAUDIO AND PULSEAUDIO_FOUND)
+
 if (CMAKE_CROSSCOMPILING)
 	option (EMIPLIB_USE_BIGENDIAN "Target platform is big endian" ON)
 	if (EMIPLIB_USE_BIGENDIAN)
@@ -316,6 +330,10 @@ configure_file("${PROJECT_SOURCE_DIR}/src/core/mipversioninternal.h.in" "${PROJE
 
 add_subdirectory(src)
 add_subdirectory(examples)
+
+if (EMIPLIB_COMPILE_TESTS)
+	add_subdirectory(tests)
+endif()
 
 if (UNIX)
 	get_target_property(EMIPLIB_LOCAL_LIBRARY_NAME emiplib-shared LOCATION)

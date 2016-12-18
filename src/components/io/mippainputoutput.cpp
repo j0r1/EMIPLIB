@@ -32,13 +32,13 @@
 #include "mipstreambuffer.h"
 
 //#include <string.h>
-//#include <iostream>
+#include <iostream>
 
 #include "mipdebug.h"
 
 #define MIPPAINPUTOUTPUT_ERRSTR_ALREADYOPENED			"A device has already been opened"
 #define MIPPAINPUTOUTPUT_ERRSTR_BUFFERTOOSMALL			"The specified buffer size is too small"
-#define MIPPAINPUTOUTPUT_ERRSTR_CANTOPEN			"Unable to open the device: "
+#define MIPPAINPUTOUTPUT_ERRSTR_CANTOPEN			"Unable to open the device (was the portaudio engine initialized?): "
 #define MIPPAINPUTOUTPUT_ERRSTR_UNSUPPORTEDCHANNELS		"Only mono or stereo sound is supported"
 #define MIPPAINPUTOUTPUT_ERRSTR_NOTOPENED			"No device has been opened yet"
 #define MIPPAINPUTOUTPUT_ERRSTR_BADMESSAGE			"An invalid message was received"
@@ -251,8 +251,32 @@ bool MIPPAInputOutput::push(const MIPComponentChain &chain, int64_t iteration, M
 			return false;
 		}
 
-		if (m_pOutputBuffer->getAmountBuffered() > 5*m_blockBytes) // TODO: make this configurable
+		int numBuffered = m_pOutputBuffer->getAmountBuffered();
+		if (numBuffered > 5*m_blockBytes) // TODO: make this configurable
+		{
+#ifdef MIPDEBUG
+			std::cerr << "MIPPAInputOutput: Too many blocks buffered, resetting" << std::endl;
+#endif // MIPDEBUG
 			m_pOutputBuffer->clear();
+		}
+
+#if 0
+		static int prevBuffered = -1;
+		static int count = 0;
+
+		if (prevBuffered != numBuffered)
+		{
+			std::cerr << "\r\nm_pOutputBuffer->getAmountBuffered() == " << numBuffered << std::endl;
+			prevBuffered = numBuffered;
+			count = 1;
+		}
+		else
+		{
+			count++;
+			std::cerr << " (" << count << ")\r          ";
+			std::cerr.flush();
+		}
+#endif
 
 		m_pOutputBuffer->write(pAudioMsg->getFrames(), m_blockBytes);
 	}

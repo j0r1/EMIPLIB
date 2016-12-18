@@ -4,8 +4,9 @@
 
 Version 1.2.0, ?
  * Added support for the Opus audio codec.
- * Added MIPOutputMessageQueue, which performs functions that many
-   components need.
+ * Added MIPOutputMessageQueue, MIPOutputMessageQueueSimple,
+   MIPOutputMessageQueueWithState and MIPOutputMessageQueueWithStateSimple
+   which perform functions that many components need.
  * Fixed small bug in MIPRTPDecoder: used 'timestampUnit' instead
    of 'timestamp' when calling the SSRCInfo constructor.
  * Added possibility to use a fixed jitter buffering time to

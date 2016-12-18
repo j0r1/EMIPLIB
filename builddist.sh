@@ -29,6 +29,7 @@ rm -f `find . -name ".git*"`
 rm -f builddist.sh
 rm -rf sphinxdoc
 rm -f TODO
+rm -rf homepage
 	
 cd ..
 

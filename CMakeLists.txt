@@ -23,7 +23,6 @@ else()
 	endif()
 endif()
 
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
 set (_DEFAULT_LIBRARY_INSTALL_DIR lib)
@@ -74,8 +73,18 @@ list(APPEND EMIPLIB_EXTERNAL_INCLUDES "${JRTPLIB_INCLUDE_DIRS}")
 list(APPEND EMIPLIB_LINK_LIBS "${JTHREAD_LIBRARIES}")
 list(APPEND EMIPLIB_LINK_LIBS "${JRTPLIB_LIBRARIES}")
 
-option(EMIPLIB_COMPILE_TESTS "Compile various tests in the 'tests' subdirectory" NO)
+# Make sure jrtplib is recent enough
+set(INCLUDE_DIRECTORIES_SAVED "${INCLUDE_DIRECTORIES}")
+set(INCLUDE_DIRECTORIES "${EMIPLIB_EXTERNAL_INCLUDES}")
+try_compile(JRTP_RESULT "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}/tools/jrtplibversion.cpp" 
+            LINK_LIBRARIES "${EMIPLIB_LINK_LIBS}" 
+            OUTPUT_VARIABLE OUTVAR)
+set(INCLUDE_DIRECTORIES "${INCLUDE_DIRECTORIES_SAVED}")
+if (NOT JRTP_RESULT)
+	message(FATAL_ERROR "JRTPLIB was detected, but the version does not seem to be recent enough.\nCompilation log:\n${OUTVAR}\n")
+endif()
 
+option(EMIPLIB_COMPILE_TESTS "Compile various tests in the 'tests' subdirectory" NO)
 emiplib_support_option("Support for GPL components. This changes the license to GPL instead of LGPL."
 	               EMIPLIB_GPL MIPCONFIG_GPL OFF "// No GPL components will be compiled")
 emiplib_support_option("Support for the internal GSM codec" EMIPLIB_SUPPORT_GSM MIPCONFIG_SUPPORT_GSM ON "// No GSM support")

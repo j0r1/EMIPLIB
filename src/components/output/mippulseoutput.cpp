@@ -165,6 +165,11 @@ bool MIPPulseOutput::push(const MIPComponentChain &chain, int64_t iteration, MIP
 
 	MIPRawFloatAudioMessage *audioMessageFloat = (MIPRawFloatAudioMessage *)pMsg;
 	const float *pFrames = audioMessageFloat->getFrames();
+
+	int errCode = 0;
+	uint64_t latencyUSec = pa_simple_get_latency(m_pStream, &errCode);
+	//if (errCode == 0)
+	//	std::cout << "latencyUSec = " << latencyUSec << std::endl;
 	
 	// write output
 	pa_simple_write(m_pStream, pFrames, sizeof(float)*num*m_channels, nullptr);

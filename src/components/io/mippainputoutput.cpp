@@ -31,6 +31,9 @@
 #include "mipsystemmessage.h"
 #include "mipstreambuffer.h"
 
+//#include <string.h>
+//#include <iostream>
+
 #include "mipdebug.h"
 
 #define MIPPAINPUTOUTPUT_ERRSTR_ALREADYOPENED			"A device has already been opened"
@@ -285,6 +288,15 @@ bool MIPPAInputOutput::pull(const MIPComponentChain &chain, int64_t iteration, M
 		m_gotMsg = true;
 		*pMsg = m_pMsg;
 	}
+
+	/*
+	PaStreamInfo streamInfo;
+	memcpy(&streamInfo, Pa_GetStreamInfo(m_pStream), sizeof(PaStreamInfo));
+
+	std::cout << "Pa_GetStreamInfo inputLatency  = " << streamInfo.inputLatency << std::endl;
+	std::cout << "                 outputLatency = " << streamInfo.outputLatency << std::endl;
+	*/
+
 	return true;
 }
 

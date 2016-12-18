@@ -176,7 +176,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	pInputComponent = pInput;
 #else
 
-#ifdef MIPCONFIG_SUPPORT_OSS	
+#ifndef MIPCONFIG_SUPPORT_PORTAUDIO
 	MIPOSSInputOutput *pIOComp = 0;
 	
 	if (pParams2->getInputDeviceName() == pParams2->getOutputDeviceName())
@@ -250,7 +250,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	pActiveChain = m_pIOChain;
 	pPrevComponent = pInput;
 
-#endif // MIPCONFIG_SUPPORT_OSS
+#endif // !MIPCONFIG_SUPPORT_PORTAUDIO
 	
 #endif // MIPCONFIG_SUPPORT_WINMM
 
@@ -861,7 +861,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	}
 #else
 
-#ifdef MIPCONFIG_SUPPORT_OSS
+#ifndef MIPCONFIG_SUPPORT_PORTAUDIO
 	MIPOSSInputOutput *pOutput;
 	
 	if (singleThread)
@@ -887,7 +887,7 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	MIPPAInputOutput *pOutput = pIOComp;
 
 	destType = MIPRAWAUDIOMESSAGE_TYPE_S16;
-#endif // MIPCONFIG_SUPPORT_OSS
+#endif // !MIPCONFIG_SUPPORT_PORTAUDIO
 
 #endif // WIN32 || _WIN32_WCE
 	

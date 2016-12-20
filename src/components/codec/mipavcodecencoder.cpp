@@ -32,15 +32,15 @@
 
 #include "mipdebug.h"
 
-#define MIPAVCODECENCODER_ERRSTR_NOTINIT					"Not initialized"
+#define MIPAVCODECENCODER_ERRSTR_NOTINIT						"Not initialized"
 #define MIPAVCODECENCODER_ERRSTR_ALREADYINIT					"Already initialized"
 #define MIPAVCODECENCODER_ERRSTR_BADFRAMERATE					"Bad framerate"
 #define MIPAVCODECENCODER_ERRSTR_CANTFINDCODEC					"Can't find codec"
 #define MIPAVCODECENCODER_ERRSTR_CANTCREATECONTEXT				"Can't create context"
 #define MIPAVCODECENCODER_ERRSTR_CANTINITCONTEXT				"Can't init context"
-#define MIPAVCODECENCODER_ERRSTR_BADMESSAGE					"Bad message"
+#define MIPAVCODECENCODER_ERRSTR_BADMESSAGE						"Bad message"
 #define MIPAVCODECENCODER_ERRSTR_BADDIMENSIONS					"Invalid image width or height"
-#define MIPAVCODECENCODER_ERRSTR_CANTENCODE					"Error encoding frame"
+#define MIPAVCODECENCODER_ERRSTR_CANTENCODE						"Error encoding frame"
 #define MIPAVCODECENCODER_ERRSTR_CANTFILLPICTURE				"Can't fill picture"
 
 MIPAVCodecEncoder::MIPAVCodecEncoder() : MIPComponent("MIPAVCodecEncoder")
@@ -69,45 +69,41 @@ bool MIPAVCodecEncoder::init(int width, int height, real_t framerate, int bitrat
 		return false;
 	}
 		
-	m_pCodec = avcodec_find_encoder(CODEC_ID_H263P);
+	m_pCodec = avcodec_find_encoder(AV_CODEC_ID_H263P);
 	if (m_pCodec == 0)
 	{
 		setErrorString(MIPAVCODECENCODER_ERRSTR_CANTFINDCODEC);
 		return false;
 	}
 	
-	m_pContext = avcodec_alloc_context();
+	m_pContext = avcodec_alloc_context3(m_pCodec);
 	
-	avcodec_get_context_defaults(m_pContext);
 	m_pContext->width = width;
 	m_pContext->height = height;
-	m_pContext->pix_fmt = PIX_FMT_YUV420P;
-#if LIBAVCODEC_VERSION_INT > 0x0409
+	m_pContext->pix_fmt = AV_PIX_FMT_YUV420P;
 	m_pContext->time_base.num = denominator; // time_base = 1/framerate
 	m_pContext->time_base.den = numerator;
-#else
-	m_pContext->frame_rate = numerator;
-	m_pContext->frame_rate_base = denominator;
-#endif // LIBAVCODEC_VERSION_INT > 0x0409
 	if (bitrate > 0)
 	{
 		m_pContext->bit_rate = bitrate;
 		m_pContext->bit_rate_tolerance = bitrate/20; // 5%
 	}
 	
-	if (avcodec_open(m_pContext, m_pCodec) < 0)
+	if (avcodec_open2(m_pContext, m_pCodec, nullptr) < 0)
 	{
 		m_pCodec = 0;
 		setErrorString(MIPAVCODECENCODER_ERRSTR_CANTINITCONTEXT);
 		return false;
 	}
 
-	m_pFrame = avcodec_alloc_frame();
-	avcodec_get_frame_defaults(m_pFrame);
+	m_pFrame = av_frame_alloc();
+	m_pFrame->format = m_pContext->pix_fmt;
+	m_pFrame->width = m_pContext->width;
+	m_pFrame->height = m_pContext->height;
 	
 	m_width = width;
 	m_height = height;
-	m_bufSize = (width*height*3)/2;
+	m_bufSize = width*height*3; // Should be more than enough, is uncompressed rgb size
 	m_pData = new uint8_t [m_bufSize];
 	m_pMsg = new MIPEncodedVideoMessage(MIPENCODEDVIDEOMESSAGE_TYPE_H263P, width, height, m_pData, 0, true);
 	m_gotMessage = false;
@@ -125,7 +121,7 @@ bool MIPAVCodecEncoder::destroy()
 
 	avcodec_close(m_pContext);
 	av_free(m_pContext);
-	av_free(m_pFrame);
+	av_frame_free(&m_pFrame);
 	m_pCodec = 0;
 	
 	if (m_pMsg)
@@ -159,23 +155,44 @@ bool MIPAVCodecEncoder::push(const MIPComponentChain &chain, int64_t iteration, 
 		return false;
 	}
 
-	if (avpicture_fill((AVPicture *)m_pFrame, (uint8_t *)pVideoMsg->getImageData(), PIX_FMT_YUV420P, m_width, m_height) < 0)
+	if (avpicture_fill((AVPicture *)m_pFrame, (uint8_t *)pVideoMsg->getImageData(), AV_PIX_FMT_YUV420P, m_width, m_height) < 0)
 	{
 		setErrorString(MIPAVCODECENCODER_ERRSTR_CANTFILLPICTURE);
 		return false;
 	}
 	
 	int status;
+	int gotOutput = 1;
+
+	AVPacket pkt;
+
+	av_init_packet(&pkt);
+	pkt.data = nullptr;
+	pkt.size = 0;
 	
-	if ((status = avcodec_encode_video(m_pContext, m_pData, m_bufSize, m_pFrame)) < 0)
+	if ((status = avcodec_encode_video2(m_pContext, &pkt, m_pFrame, &gotOutput)) < 0)
 	{
 		setErrorString(MIPAVCODECENCODER_ERRSTR_CANTENCODE);
 		return false;
 	}
 	
-	m_pMsg->setDataLength(status);
+	if (!gotOutput)
+	{
+		setErrorString("TODO: currently can't handle incomplete frames");
+		return false;
+	}
+
+	m_pMsg->setDataLength(pkt.size);
+
+	int copyLength = m_bufSize;
+	if (pkt.size < copyLength)
+		copyLength = pkt.size;
+
+	memcpy(m_pData, pkt.data, copyLength);
 	m_pMsg->copyMediaInfoFrom(*pVideoMsg);
 	
+	av_packet_unref(&pkt);
+
 	m_gotMessage = false;
 
 	return true;

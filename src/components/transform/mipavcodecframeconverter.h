@@ -38,16 +38,11 @@
 #include "miptime.h"
 #include <unordered_map>
 
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	#include <ffmpeg/avcodec.h>	
-	#include <ffmpeg/avutil.h>	
-#else
-	extern "C" 
-	{	
-		#include <libavcodec/avcodec.h>
-		#include <libswscale/swscale.h>
-	}
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+extern "C" 
+{	
+	#include <libavcodec/avcodec.h>
+	#include <libswscale/swscale.h>
+}
 
 #include <list>
 
@@ -95,12 +90,8 @@ private:
 	int m_targetWidth;
 	int m_targetHeight;
 	uint32_t m_targetSubtype;
-	PixelFormat m_targetPixFmt;
+	AVPixelFormat m_targetPixFmt;
 
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	void *m_pTargetAVFrame;
-	void *m_pSrcAVFrame;
-#else 
 	class ConvertCache 
 	{
 	public:
@@ -134,7 +125,6 @@ private:
 	};
 	std::unordered_map<uint64_t, ConvertCache *> m_convertCache;
 	MIPTime m_lastExpireTime;
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 };
 
 #endif // MIPCONFIG_SUPPORT_AVCODEC

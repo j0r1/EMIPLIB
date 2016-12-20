@@ -29,15 +29,19 @@
 #include "mipavcodecdecoder.h"
 #include "mipencodedvideomessage.h"
 #include "miprawvideomessage.h"
+#include <vector>
 
 #include "mipdebug.h"
 
-#define MIPAVCODECDECODER_ERRSTR_NOTINIT				"Not initialized"
+using namespace std;
+
+#define MIPAVCODECDECODER_ERRSTR_NOTINIT					"Not initialized"
 #define MIPAVCODECDECODER_ERRSTR_ALREADYINIT				"Already initialized"
-#define MIPAVCODECDECODER_ERRSTR_BADMESSAGE				"Bad message"
+#define MIPAVCODECDECODER_ERRSTR_BADMESSAGE					"Bad message"
 #define MIPAVCODECDECODER_ERRSTR_CANTINITAVCODEC			"Can't initialize avcodec library"
-#define MIPAVCODECDECODER_ERRSTR_CANTCREATENEWDECODER			"Can't create new decoder"
+#define MIPAVCODECDECODER_ERRSTR_CANTCREATENEWDECODER		"Can't create new decoder"
 #define MIPAVCODECDECODER_ERRSTR_CANTFINDCODEC				"Can't find codec"
+#define MIPAVCODECDECODER_ERRSTR_CANTCREATECONTEXT			"Can't create context for codec"
 
 MIPAVCodecDecoder::MIPAVCodecDecoder() : MIPComponent("MIPAVCodecDecoder")
 {
@@ -57,18 +61,14 @@ bool MIPAVCodecDecoder::init(bool waitForKeyframe)
 		return false;
 	}
 
-	m_pCodec = avcodec_find_decoder(CODEC_ID_H263);
+	m_pCodec = avcodec_find_decoder(AV_CODEC_ID_H263);
 	if (m_pCodec == 0)
 	{
 		setErrorString(MIPAVCODECDECODER_ERRSTR_CANTFINDCODEC);
 		return false;
 	}
 
-	m_pFrame = avcodec_alloc_frame();
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	m_pFrameYUV420P = avcodec_alloc_frame();
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
-	avcodec_get_frame_defaults(m_pFrame);
+	m_pFrame = av_frame_alloc();
 	
 	m_lastIteration = -1;
 	m_msgIt = m_messages.begin();
@@ -87,14 +87,11 @@ bool MIPAVCodecDecoder::destroy()
 	}
 
 	for (auto it = m_decoderStates.begin() ; it != m_decoderStates.end() ; it++)
-		delete (*it).second;
+		delete it->second;
 	m_decoderStates.clear();
 
 	clearMessages();
-	av_free(m_pFrame);
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	av_free(m_pFrameYUV420P);
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+	av_frame_free(&m_pFrame);
 			
 	m_init = false;
 
@@ -137,25 +134,28 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 	{
 		AVCodecContext *pContext;
 
-		pContext = avcodec_alloc_context();
-		avcodec_get_context_defaults(pContext);
+		pContext = avcodec_alloc_context3(m_pCodec);
+		if (!pContext)
+		{
+			setErrorString(MIPAVCODECDECODER_ERRSTR_CANTCREATECONTEXT);
+			return false;
+		}
+		
 		pContext->width = 0; // let the codec work out the dimensions
 		pContext->height = 0;
-		if (avcodec_open(pContext, m_pCodec) < 0)
+
+		if (avcodec_open2(pContext, m_pCodec, nullptr) < 0)
 		{
+			av_free(pContext);
 			setErrorString(MIPAVCODECDECODER_ERRSTR_CANTCREATENEWDECODER);
 			return false;
 		}
 		
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-		pInf = new DecoderInfo(width, height, pContext);
-#else
 		// We'll allocate this later, when we know the dimensions of the video frame
 		//SwsContext *pSwsContext = sws_getContext(width, height, pContext->pix_fmt, width, height, PIX_FMT_YUV420P, SWS_FAST_BILINEAR, 0, 0, 0);
-
 		//pInf = new DecoderInfo(width, height, pContext, pSwsContext);
+
 		pInf = new DecoderInfo(width, height, pContext, 0);
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		m_decoderStates[sourceID] = pInf;
 	}
 	else
@@ -173,17 +173,12 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 	int framecomplete = 1;
 	int status;
 
-	uint8_t *pTmp = new uint8_t[pEncMsg->getDataLength() + FF_INPUT_BUFFER_PADDING_SIZE];
+	vector<uint8_t> tmp(pEncMsg->getDataLength() + AV_INPUT_BUFFER_PADDING_SIZE);
+	uint8_t *pTmp = &tmp[0];
+
 	memcpy(pTmp, pEncMsg->getImageData(), pEncMsg->getDataLength());
-	memset(pTmp + pEncMsg->getDataLength(), 0, FF_INPUT_BUFFER_PADDING_SIZE);
+	memset(pTmp + pEncMsg->getDataLength(), 0, AV_INPUT_BUFFER_PADDING_SIZE);
 	
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	if ((status = avcodec_decode_video(pInf->getContext(), m_pFrame, &framecomplete, pTmp, (int)pEncMsg->getDataLength())) < 0)
-	{	
-		delete [] pTmp;
-		return true; // unable to decode it, ignore
-	}
-#else
 	AVPacket avPacket;
 
 	av_init_packet(&avPacket);
@@ -191,14 +186,13 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 	avPacket.size = (int)pEncMsg->getDataLength();
 	avPacket.data = pTmp;
 
+	// TODO: avcodec_decode_video2 is deprecated, use avcodec_send_packet and
+	//       avcodec_receive_frame instead
 	if ((status = avcodec_decode_video2(pInf->getContext(), m_pFrame, &framecomplete, &avPacket)) < 0)
 	{	
-		delete [] pTmp;
-		return true; // unable to decode it, ignore
+		// unable to decode it, ignore
+		return true; 
 	}
-#endif
-
-	delete [] pTmp;
 
 	if (framecomplete)
 	{
@@ -225,16 +219,12 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 			size_t dataSize = (width*height*3)/2;
 			uint8_t *pData = new uint8_t [dataSize];
 
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-			avpicture_fill((AVPicture *)m_pFrameYUV420P, pData, PIX_FMT_YUV420P, width, height);
-			img_convert((AVPicture *)m_pFrameYUV420P, PIX_FMT_YUV420P, (AVPicture*)m_pFrame, pInf->getContext()->pix_fmt, width, height);
-#else
 			SwsContext *pSwsContext = pInf->getSwsContext();
 
 			// TODO: check if width and height changed somehow?
 			if (pSwsContext == 0)
 			{
-				pSwsContext = sws_getContext(width, height, pInf->getContext()->pix_fmt, width, height, PIX_FMT_YUV420P, SWS_FAST_BILINEAR, 0, 0, 0);
+				pSwsContext = sws_getContext(width, height, pInf->getContext()->pix_fmt, width, height, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, 0, 0, 0);
 
 				pInf->setSwsContext(pSwsContext);
 			}
@@ -250,7 +240,6 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 			dstStrides[2] = width/2;
 
 			sws_scale(pSwsContext, m_pFrame->data, m_pFrame->linesize, 0, height, pDstPointers, dstStrides);
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		
 			MIPRawYUV420PVideoMessage *pNewMsg = new MIPRawYUV420PVideoMessage(width, height, pData, true);
 

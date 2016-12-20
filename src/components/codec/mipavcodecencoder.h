@@ -36,13 +36,9 @@
 
 #include "mipcomponent.h"
 
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-#include <ffmpeg/avcodec.h>
-#else
 extern "C" {
-#include <libavcodec/avcodec.h>
+	#include <libavcodec/avcodec.h>
 }
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 
 class MIPEncodedVideoMessage;
 

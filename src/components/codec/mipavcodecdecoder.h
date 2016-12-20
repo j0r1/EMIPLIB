@@ -37,16 +37,12 @@
 #include "mipcomponent.h"
 #include "miptime.h"
 
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	#include <ffmpeg/avcodec.h>
-#else
-	extern "C" 
-	{	
-		#include <libavcodec/avcodec.h>
-		#include <libswscale/swscale.h>
-		#include <libavformat/avformat.h>
-	}
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+extern "C" 
+{	
+	#include <libavcodec/avcodec.h>
+	#include <libswscale/swscale.h>
+	#include <libavformat/avformat.h>
+}
 
 #include <unordered_map>
 #include <list>
@@ -88,19 +84,13 @@ private:
 	class DecoderInfo
 	{
 	public:
-#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
 		DecoderInfo(int w, int h, AVCodecContext *pContext, SwsContext *pSwsContext)
-#else
-		DecoderInfo(int w, int h, AVCodecContext *pContext)
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		{
 			m_width = w;
 			m_height = h;
 			m_pContext = pContext;
 			m_lastTime = MIPTime::getCurrentTime();
-#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
 			m_pSwsContext = pSwsContext;
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 			m_gotKeyframe = false;
 		}
 
@@ -108,19 +98,15 @@ private:
 		{
 			avcodec_close(m_pContext);
 			av_free(m_pContext);
-#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
 			if (m_pSwsContext)
 				sws_freeContext(m_pSwsContext);
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		}
 
 		int getWidth() const							{ return m_width; }
 		int getHeight() const							{ return m_height; }
 		AVCodecContext *getContext()						{ return m_pContext; }
-#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
 		SwsContext *getSwsContext()						{ return m_pSwsContext; }
 		void setSwsContext(SwsContext *pCtx)					{ m_pSwsContext = pCtx; }
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		bool receivedKeyframe() const						{ return m_gotKeyframe; }
 		void setReceivedKeyframe(bool f)					{ m_gotKeyframe = f; }
 
@@ -130,9 +116,7 @@ private:
 		int m_width, m_height;
 		AVCodecContext *m_pContext;
 		MIPTime m_lastTime;
-#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
 		SwsContext *m_pSwsContext;
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 		bool m_gotKeyframe;
 	};
 	
@@ -142,9 +126,6 @@ private:
 	
 	AVCodec *m_pCodec;
 	AVFrame *m_pFrame;
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	AVFrame *m_pFrameYUV420P;
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 
 	std::list<MIPRawYUV420PVideoMessage *> m_messages;
 	std::list<MIPRawYUV420PVideoMessage *>::const_iterator m_msgIt;

@@ -59,20 +59,16 @@ bool MIPAVCodecFrameConverter::init(int targetWidth, int targetHeight, uint32_t 
 	switch(targetSubtype)
 	{
 	case MIPRAWVIDEOMESSAGE_TYPE_YUV420P:
-		m_targetPixFmt = PIX_FMT_YUV420P;
+		m_targetPixFmt = AV_PIX_FMT_YUV420P;
 		break;
 	case MIPRAWVIDEOMESSAGE_TYPE_YUYV:
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-		m_targetPixFmt = PIX_FMT_YUV422;
-#else
-		m_targetPixFmt = PIX_FMT_YUYV422;
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
+		m_targetPixFmt = AV_PIX_FMT_YUYV422;
 		break;
 	case MIPRAWVIDEOMESSAGE_TYPE_RGB24:
-		m_targetPixFmt = PIX_FMT_RGB24;
+		m_targetPixFmt = AV_PIX_FMT_RGB24;
 		break;
 	case MIPRAWVIDEOMESSAGE_TYPE_RGB32:
-		m_targetPixFmt = PIX_FMT_RGBA;
+		m_targetPixFmt = AV_PIX_FMT_RGBA;
 		break;
 	default:
 		setErrorString(MIPAVCODECFRAMECONVERTER_ERRSTR_INVALIDSUBTYPE);
@@ -98,13 +94,6 @@ bool MIPAVCodecFrameConverter::init(int targetWidth, int targetHeight, uint32_t 
 		m_targetHeight = targetHeight;
 	}
 
-
-
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	m_pTargetAVFrame = avcodec_alloc_frame();
-	m_pSrcAVFrame = avcodec_alloc_frame();
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
-
 	m_lastIteration = -1;
 	m_init = true;
 	m_msgIt = m_messages.begin();
@@ -121,13 +110,6 @@ bool MIPAVCodecFrameConverter::destroy()
 
 	clearMessages();
 	clearCache();
-
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	if (m_pTargetAVFrame)
-		av_free(m_pTargetAVFrame);
-	if (m_pSrcAVFrame)
-		av_free(m_pSrcAVFrame);
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
 
 	m_init = false;
 	
@@ -177,81 +159,21 @@ bool MIPAVCodecFrameConverter::push(const MIPComponentChain &chain, int64_t iter
 		targetHeight = height;
 	}
 
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_OLD
-	PixelFormat srcPixFmt;
-
-	if (subType == MIPRAWVIDEOMESSAGE_TYPE_YUV420P)
-	{
-		MIPRawYUV420PVideoMessage *pRawMsg = (MIPRawYUV420PVideoMessage *)pVideoMsg;
-
-		srcPixFmt = PIX_FMT_YUV420P;
-		avpicture_fill((AVPicture *)m_pSrcAVFrame, (uint8_t *)pRawMsg->getImageData(), PIX_FMT_YUV420P, width, height);
-	}
-	else if (subType == MIPRAWVIDEOMESSAGE_TYPE_RGB24)
-	{
-		MIPRawRGBVideoMessage *pRawMsg = (MIPRawRGBVideoMessage *)pVideoMsg;
-
-		srcPixFmt = PIX_FMT_RGB24;
-		avpicture_fill((AVPicture *)m_pSrcAVFrame, (uint8_t *)pRawMsg->getImageData(), PIX_FMT_RGB24, width, height);
-	}
-	else if (subType == MIPRAWVIDEOMESSAGE_TYPE_RGB32)
-	{
-		MIPRawRGBVideoMessage *pRawMsg = (MIPRawRGBVideoMessage *)pVideoMsg;
-
-		srcPixFmt = PIX_FMT_RGBA;
-		avpicture_fill((AVPicture *)m_pSrcAVFrame, (uint8_t *)pRawMsg->getImageData(), PIX_FMT_RGBA, width, height);
-	}
-	else // MIPRAWVIDEOMESSAGE_TYPE_YUYV
-	{
-		MIPRawYUYVVideoMessage *pRawMsg = (MIPRawYUYVVideoMessage *)pVideoMsg;
-
-		srcPixFmt = PIX_FMT_YUV422;
-		avpicture_fill((AVPicture *)m_pSrcAVFrame, (uint8_t *)pRawMsg->getImageData(), PIX_FMT_YUV422, width, height);
-	}
-
-	uint8_t *pData = 0;
-
-	if (m_targetSubtype == MIPRAWVIDEOMESSAGE_TYPE_YUV420P)
-	{
-		pData = new uint8_t[(targetWidth*targetHeight*3)/2];
-		pNewMsg = new MIPRawYUV420PVideoMessage(targetWidth, targetHeight, pData, true);
-	}
-	else if (m_targetSubtype == MIPRAWVIDEOMESSAGE_TYPE_RGB24)
-	{
-		pData = new uint8_t[targetWidth*targetHeight*3];
-		pNewMsg = new MIPRawRGBVideoMessage(targetWidth, targetHeight, pData, false, true);
-	}
-	else if (m_targetSubtype == MIPRAWVIDEOMESSAGE_TYPE_RGB32)
-	{
-		pData = new uint8_t[targetWidth*targetHeight*4];
-		pNewMsg = new MIPRawRGBVideoMessage(targetWidth, targetHeight, pData, true, true);
-	}
-	else // MIPRAWVIDEOMESSAGE_TYPE_YUYV
-	{
-		pData = new uint8_t[targetWidth*targetHeight*2];
-		pNewMsg = new MIPRawYUYVVideoMessage(targetWidth, targetHeight, pData, true);
-	}
-	avpicture_fill((AVPicture *)m_pTargetAVFrame, pData, m_targetPixFmt, targetWidth, targetHeight);
-
-	img_convert((AVPicture *)m_pTargetAVFrame, m_targetPixFmt, (AVPicture *)m_pSrcAVFrame, srcPixFmt, targetWidth, targetHeight);
-
-#else // swscale version
-
 	ConvertCache *pCache = 0;
 
 	auto it = m_convertCache.find(sourceID);
 	if (it == m_convertCache.end()) // no entry found
 	{
-		PixelFormat srcPixFmt;
+		AVPixelFormat srcPixFmt;
 
 		if (subType == MIPRAWVIDEOMESSAGE_TYPE_YUV420P)
-			srcPixFmt = PIX_FMT_YUV420P;
+			srcPixFmt = AV_PIX_FMT_YUV420P;
 		else if (subType == MIPRAWVIDEOMESSAGE_TYPE_RGB24)
-			srcPixFmt = PIX_FMT_RGB24;
+			srcPixFmt = AV_PIX_FMT_RGB24;
 		else if (subType == MIPRAWVIDEOMESSAGE_TYPE_RGB32)
-			srcPixFmt = PIX_FMT_RGBA;
+			srcPixFmt = AV_PIX_FMT_RGBA;
 		else
-			srcPixFmt = PIX_FMT_YUYV422;
+			srcPixFmt = AV_PIX_FMT_YUYV422;
 
 		SwsContext *pSwsContext = sws_getContext(width, height, srcPixFmt, targetWidth, targetHeight, m_targetPixFmt, SWS_FAST_BILINEAR, 0, 0, 0);
 
@@ -385,8 +307,6 @@ bool MIPAVCodecFrameConverter::push(const MIPComponentChain &chain, int64_t iter
 		pNewMsg = new MIPRawYUYVVideoMessage(targetWidth, targetHeight, pData, true);
 	}
 
-#endif // MIPCONFIG_SUPPORT_AVCODEC_OLD
-
 	pNewMsg->copyMediaInfoFrom(*pVideoMsg);
 
 	m_messages.push_back(pNewMsg);
@@ -435,7 +355,6 @@ void MIPAVCodecFrameConverter::clearMessages()
 
 void MIPAVCodecFrameConverter::expire()
 {
-#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
 	MIPTime curTime = MIPTime::getCurrentTime();
 	if ((curTime.getValue() - m_lastExpireTime.getValue()) < 60.0)
 		return;
@@ -456,16 +375,13 @@ void MIPAVCodecFrameConverter::expire()
 	}
 	
 	m_lastExpireTime = curTime;
-#endif // ! MIPCONFIG_SUPPORT_AVCODEC_OLD
 }
 
 void MIPAVCodecFrameConverter::clearCache()
 {
-#ifndef MIPCONFIG_SUPPORT_AVCODEC_OLD
 	for (auto it = m_convertCache.begin() ; it != m_convertCache.end() ; it++)
 		delete (*it).second;
 	m_convertCache.clear();
-#endif // ! MIPCONFIG_SUPPORT_AVCODEC_OLD
 }
 
 void MIPAVCodecFrameConverter::initAVCodec()

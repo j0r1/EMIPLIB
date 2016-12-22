@@ -479,7 +479,7 @@ void *MIPV4L2Input::Thread()
 				memset(&buffer, 0, sizeof(struct v4l2_buffer));
 				buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 				buffer.memory = V4L2_MEMORY_USERPTR;
-				buffer.m.userptr = (unsigned long)pBuffers[0];
+				buffer.m.userptr = (unsigned long)pBuffers[i];
 				buffer.length = m_frameSize;
 				buffer.index = i;
 

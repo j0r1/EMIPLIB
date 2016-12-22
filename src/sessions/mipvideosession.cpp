@@ -75,7 +75,8 @@ MIPVideoSession::~MIPVideoSession()
 	deleteAll();
 }
 
-bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchronizer *pSync, RTPSession *pRTPSession)
+bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchronizer *pSync, RTPSession *pRTPSession,
+                           bool autoStart)
 {
 	if (m_init)
 	{
@@ -418,12 +419,34 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 	m_pOutputChain->addConnection(m_pMixer, m_pStorage, true);
 #endif // MIPCONFIG_SUPPORT_QT5
 
+	m_init = true; // needed for startChain to work
+
+	if (autoStart)
+	{
+		if (!startChain()) // error string was already set
+		{
+			m_init = false;
+			deleteAll();
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+bool MIPVideoSession::startChain()
+{
+	if (!m_init)
+	{
+		setErrorString(MIPVIDEOSESSION_ERRSTR_NOTINIT);
+		return false;
+	}
+
 	if (m_pInputChain)
 	{
 		if (!m_pInputChain->start())
 		{
 			setErrorString(m_pInputChain->getErrorString());
-			deleteAll();
 			return false;
 		}
 	}
@@ -431,11 +454,8 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 	if (!m_pOutputChain->start())
 	{
 		setErrorString(m_pOutputChain->getErrorString());
-		deleteAll();
 		return false;
 	}
-	
-	m_init = true;
 	return true;
 }
 

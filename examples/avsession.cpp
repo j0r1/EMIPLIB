@@ -28,7 +28,7 @@ void checkRet(bool ret,const MIPErrorBase &obj)
 {
 	if (!ret)
 	{
-		std::cerr << obj.getErrorString() << std::endl;
+		std::cerr << "ERROR: " << obj.getErrorString() << std::endl;
 		_exit(-1);
 	}
 }
@@ -142,7 +142,23 @@ int main(int argc, char *argv[])
 	
 	std::cout << "Starting audio session at portbase " << audioPort << ", video session at portbase " << videoPort << std::endl;
 
+	// We're setting the last parameters to false here, and start the chains later
+	// This is important for the video session: we need to get the output component
+	// early on, so that we can use it in the constructor of MIPQt5OutputComponent
+	// and not miss a signal that there's a new source
+
+	ret = videoSess.init(&Vparams, nullptr, nullptr, false);
+	checkRet(ret, videoSess);
+
+	ret = audioSess.init(&Aparams, nullptr, nullptr, false);
+	checkRet(ret, audioSess);
+
+	uint8_t ipLocal[4] = { 127, 0, 0, 1 };
+	ret = videoSess.addDestination(RTPIPv4Address(ipLocal, videoPort));
+//	ret = audioSess.addDestination(RTPIPv4Address(ipLocal, audioPort));
+
 	std::string destStr;
+	std::cout << std::endl;
 	std::cout << "Enter destination IP, audio portbase and video portbase (format: a.b.c.d:AudioPort:VideoPort)" << std::endl;
 	std::cout << "(Note that video is automatically sent to yourself in this example)" << std::endl;
 	std::cin >> destStr;
@@ -154,23 +170,8 @@ int main(int argc, char *argv[])
 	if (status != 6)
 	{
 		std::cerr << "Bad destination" << std::endl;
-		return -1;
 	}
-
-	// We'll need to create the GUI very shortly after initializing the
-	// session, to make sure that we're not missing the Qt signal that a
-	// new source was added
-
-	ret = videoSess.init(&Vparams);
-	checkRet(ret, videoSess);
-
-	ret = audioSess.init(&Aparams);
-	checkRet(ret, audioSess);
-
-	uint8_t ipLocal[4] = { 127, 0, 0, 1 };
-	ret = videoSess.addDestination(RTPIPv4Address(ipLocal, videoPort));
-//	ret = audioSess.addDestination(RTPIPv4Address(ipLocal, audioPort));
-
+	else
 	{
 		uint8_t ip2[4];
 
@@ -188,10 +189,19 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
+			std::cout << std::endl;
 			std::cout << "Starting test GUI, close main window to exit..." << std::endl;
 			MIPQt5OutputMDIWidget testWidget(pOutputComp);
 
 			testWidget.show();
+			
+			// Start audio and video chains
+			ret = videoSess.startChain();
+			checkRet(ret, videoSess);
+
+			ret = audioSess.startChain();
+			checkRet(ret, audioSess);
+
 			app.exec();
 		}
 	}

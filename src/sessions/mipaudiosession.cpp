@@ -104,7 +104,8 @@ MIPAudioSession::~MIPAudioSession()
 	deleteAll();
 }
 
-bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchronizer *pSync, RTPSession *pRTPSession)
+bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchronizer *pSync, RTPSession *pRTPSession,
+                           bool autoStart)
 {
 	if (m_init)
 	{
@@ -903,19 +904,42 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	addLink(pActiveChain, &pPrevComponent, pSampEnc2, true);
 	addLink(pActiveChain, &pPrevComponent, pOutput, true);
 
-	if (!singleThread)	
+	// Flag is needed in startChain
+	m_singleThread = singleThread;
+
+	m_init = true; // this is needed for startChain to work
+	if (autoStart)
+	{
+		if (!startChain()) // error string has already been set in this case
+		{
+			m_init = false;
+			deleteAll();
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool MIPAudioSession::startChain()
+{
+	if (!m_init)
+	{
+		setErrorString(MIPAUDIOSESSION_ERRSTR_NOTINIT);
+		return false;
+	}
+
+	if (!m_singleThread)	
 	{
 		if (!m_pInputChain->start())
 		{
 			setErrorString(m_pInputChain->getErrorString());
-			deleteAll();
 			return false;
 		}
 	
 		if (!m_pOutputChain->start())
 		{
 			setErrorString(m_pOutputChain->getErrorString());
-			deleteAll();
 			return false;
 		}
 	}
@@ -924,12 +948,9 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 		if (!m_pIOChain->start())
 		{
 			setErrorString(m_pIOChain->getErrorString());
-			deleteAll();
 			return false;
 		}
 	}
-	
-	m_init = true;
 	return true;
 }
 

@@ -279,9 +279,16 @@ public:
 	 *                     the RTPSession instance is not deleted when the video session is destroyed.
 	 *                     The session has to be initialized, but the timestamp unit will still be 
 	 *                     adjusted.
+	 *  \param autoStart If `true`, the constructed chain is started before the function returns. If
+	 *                   `false` is specified instead, a call to MIPVideoSession::startChain is necessary.
  	 */
-	bool init(const MIPVideoSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0, jrtplib::RTPSession *pRTPSession = 0);
+	bool init(const MIPVideoSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0, jrtplib::RTPSession *pRTPSession = 0,
+	          bool autoStart = true);
 	
+	/** Starts the component chain that was constructed in the MIPVideoSession::init function, and
+	 *  is necessary if the `autoStart` parameter of that function was set to `false`. */
+	bool startChain();
+
 	/** Destroys the session. */
 	bool destroy();
 

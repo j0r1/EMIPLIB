@@ -1,8 +1,7 @@
 #include "mipconfig.h"
 
-#if defined(MIPCONFIG_SUPPORT_QT5) && defined(MIPCONFIG_SUPPORT_AVCODEC) && defined(MIPCONFIG_SUPPORT_VIDEO4LINUX)
+#if defined(MIPCONFIG_SUPPORT_QT5) && defined(MIPCONFIG_SUPPORT_AVCODEC)
 
-#include "mipv4l2input.h"
 #include "mipqt5outputwidget.h"
 #include "mipcomponentchain.h"
 #include "mipaveragetimer.h"
@@ -12,6 +11,7 @@
 #include "miprawvideomessage.h"
 #include "mipavcodecframeconverter.h"
 #include "mipoutputmessagequeuesimple.h"
+#include "mipyuv420fileinput.h"
 #include <QtGui/QApplication>
 #include <QtCore/QThread>
 #include <QtWidgets/QMainWindow>
@@ -116,12 +116,16 @@ private:
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
+
+	if (argc != 4)
+	{
+		cerr << "Usage: " << argv[0] << " file.yuv width height" << endl;
+		return -1;
+	}
 	
-	MIPTime interval(0.050); // We'll use 50 millisecond intervals
+	MIPTime interval(0.040); // We'll use 50 millisecond intervals
 	MIPAverageTimer timer(interval);
-	MIPV4L2Input videoIn;
-	MIPComponentAlias videoInAlias(&videoIn);
-	MIPTinyJPEGDecoder jpegDec;
+	MIPYUV420FileInput videoIn;
 	MIPQt5OutputComponent outputComp;
 	MIPAVCodecFrameConverter frameConv;
 	ChangeSourceComponent changeSource;
@@ -159,32 +163,27 @@ Please select a raw video message type to test:
 		}
 	}
 
-	checkError(videoIn.open(640, 480), videoIn);
-	checkError(jpegDec.init(), jpegDec);
+	checkError(videoIn.open(argv[1],atoi(argv[2]), atoi(argv[3])), videoIn);
 	checkError(frameConv.init(-1, -1, tgtSubType), frameConv);
 	checkError(outputComp.init(), outputComp);
 
 	checkError(chain.setChainStart(&timer), chain);
 	checkError(chain.addConnection(&timer, &videoIn), chain);
-
-	checkError(chain.addConnection(&videoIn, &jpegDec, false,
-			   MIPMESSAGE_TYPE_VIDEO_ENCODED, MIPENCODEDVIDEOMESSAGE_TYPE_JPEG), chain);
-	checkError(chain.addConnection(&videoIn, &videoInAlias, false, 0, 0), chain);
-	
-	uint32_t allowedSubtypes = MIPRAWVIDEOMESSAGE_TYPE_YUV420P | MIPRAWVIDEOMESSAGE_TYPE_RGB24 | MIPRAWVIDEOMESSAGE_TYPE_RGB32 | MIPRAWVIDEOMESSAGE_TYPE_YUYV;
-	checkError(chain.addConnection(&jpegDec, &frameConv, false, MIPMESSAGE_TYPE_VIDEO_RAW, allowedSubtypes), chain);
-	checkError(chain.addConnection(&videoInAlias, &frameConv, false, MIPMESSAGE_TYPE_VIDEO_RAW, allowedSubtypes), chain);
-
+	checkError(chain.addConnection(&videoIn, &frameConv), chain);
 	checkError(chain.addConnection(&frameConv, &changeSource), chain);
 	checkError(chain.addConnection(&changeSource, &outputComp), chain);
 
-	checkError(chain.start(), chain);
 	int status = 0;
 	
-	// This block makes sure that 'observer' is removed before the pointer to
+	// This block makes sure that the window is removed before the pointer to
 	// outputComp becomes invalid
 	{
 		MIPQt5OutputMDIWidget mainWin(&outputComp);
+
+		// Actually start the chain. Now that we've initialized the window, we
+		// can be sure that all Qt signals (about new source for example) will
+		// be received
+		checkError(chain.start(), chain);
 
 		mainWin.show();
 		status = app.exec();
@@ -194,4 +193,4 @@ Please select a raw video message type to test:
 	return status;
 }
 
-#endif // MIPCONFIG_SUPPORT_QT5 && MIPCONFIG_SUPPORT_AVCODEC && MIPCONFIG_SUPPORT_VIDEO4LINUX
+#endif // MIPCONFIG_SUPPORT_QT5 && MIPCONFIG_SUPPORT_AVCODEC 

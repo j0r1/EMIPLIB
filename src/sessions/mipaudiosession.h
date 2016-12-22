@@ -265,8 +265,15 @@ public:
 	 *                     the RTPSession instance is not deleted when the audio session is destroyed.
 	 *                     The session has to be initialized, but the timestamp unit will still be 
 	 *                     adjusted.
+	 *  \param autoStart If `true`, the constructed chain is started before the function returns. If
+	 *                   `false` is specified instead, a call to MIPAudioSession::startChain is necessary.
 	 */
-	bool init(const MIPAudioSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0, jrtplib::RTPSession *pRTPSession = 0);
+	bool init(const MIPAudioSessionParams *pParams = 0, MIPRTPSynchronizer *pSync = 0, jrtplib::RTPSession *pRTPSession = 0,
+			  bool autoStart = true);
+
+	/** Starts the component chain that was constructed in the MIPAudioSession::init function, and
+	 *  is necessary if the `autoStart` parameter of that function was set to `false`. */
+	bool startChain();
 
 	/** Destroys the session. */
 	bool destroy();
@@ -386,6 +393,7 @@ private:
 	InputChain *m_pInputChain;
 	OutputChain *m_pOutputChain;
 	IOChain *m_pIOChain;
+	bool m_singleThread;
 	
 	MIPRTPComponent *m_pRTPComp;
 	jrtplib::RTPSession *m_pRTPSession;

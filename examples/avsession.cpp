@@ -11,7 +11,7 @@
 #include <mipvideosession.h>
 #include <mipavcodecencoder.h>
 #include <mipaudiosession.h>
-#include <mipqt5outputwidget.h>
+#include <mipqt5output.h>
 #include <mippainputoutput.h>
 #include <iostream>
 #include <jrtplib3/rtpipv4address.h>

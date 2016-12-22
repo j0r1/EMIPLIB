@@ -2,7 +2,7 @@
 
 #if defined(MIPCONFIG_SUPPORT_QT5) && defined(MIPCONFIG_SUPPORT_AVCODEC)
 
-#include "mipqt5outputwidget.h"
+#include "mipqt5output.h"
 #include "mipcomponentchain.h"
 #include "mipaveragetimer.h"
 #include "miptinyjpegdecoder.h"

@@ -39,7 +39,7 @@ components/output/mipesdoutput.h
 components/output/mipopenaloutput.h
 components/output/mipalsaoutput.h
 components/output/mipmessagedumper.h
-components/output/mipqt5outputwidget.h
+components/output/mipqt5output.h
 components/output/mipsndfileoutput.h
 components/output/mipvideoframestorage.h
 components/output/mipaudiotrackoutput.h
@@ -146,7 +146,7 @@ components/output/mipopenaloutput.cpp
 components/output/mipalsaoutput.cpp
 components/output/mipmessagedumper.cpp
 components/output/mipsndfileoutput.cpp
-components/output/mipqt5outputwidget.cpp
+components/output/mipqt5output.cpp
 components/output/mipvideoframestorage.cpp
 components/output/mipaudiotrackoutput.cpp
 components/output/mipwavoutput.cpp

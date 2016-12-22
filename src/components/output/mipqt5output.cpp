@@ -1,4 +1,4 @@
-#include "mipqt5outputwidget.h"
+#include "mipqt5output.h"
 
 #ifdef MIPCONFIG_SUPPORT_QT5
 

@@ -44,7 +44,7 @@
 #include "mipcomponentalias.h"
 #include "mipavcodecdecoder.h"
 #include "mipvideomixer.h"
-#include "mipqt5outputwidget.h"
+#include "mipqt5output.h"
 #include "mipencodedvideomessage.h"
 #include "mipvideoframestorage.h"
 #include "miprawvideomessage.h"

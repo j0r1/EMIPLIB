@@ -13,31 +13,18 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <memory>
 #include <vector>
 
+#define MIPQT5OUTPUTCOMPONENT_ERRSTR_ALREADYINIT			"Qt5 output component is already initialized"
+#define MIPQT5OUTPUTCOMPONENT_ERRSTR_CANTINITMUTEX			"Can't initialize mutex: Error code "
+#define MIPQT5OUTPUTCOMPONENT_ERRSTR_NEGATIVETIMEOUT		"A positive timeout must be specified"
+#define MIPQT5OUTPUTCOMPONENT_ERRSTR_NOTINIT				"The Qt5 output component is not initialized yet"
+#define MIPQT5OUTPUTCOMPONENT_ERRSTR_BADMESSAGE				"Can't interpret message, must be a raw video message of YUV420, YUYV or RGB subtype"
+#define MIPQT5OUTPUTCOMPONENT_ERRSTR_NOPULL					"The Qt5 output component does not implement the pull method"
+
 using namespace std;
 using namespace jthread;
-
-#if 0 // debug code
-#include <dlfcn.h>
-#include <GL/glx.h>
-
-static GLXContext (*test_glXGetCurrentContext)(void) = nullptr;
-static void *test_library = nullptr;
-
-static void initGLFunctions()
-{
-	if (test_library)
-		return;
-
-	test_library = dlopen("libGL.so", RTLD_LAZY);
-	test_glXGetCurrentContext = (decltype(test_glXGetCurrentContext))dlsym(test_library, "glXGetCurrentContext");
-	cerr << "test_glXGetCurrentContext = " << (void*)test_glXGetCurrentContext << endl;
-}
-#endif 
 
 static const char s_vertexShader[] = R"XYZ( 
 attribute vec2 a_position;
@@ -119,18 +106,6 @@ void main()
 }
 )XYZ";
 
-#if 0
-string loadShader(const string &fileName)
-{
-	ifstream f;
-	stringstream ss;
-	f.open(fileName);
-
-	ss << f.rdbuf();
-	return ss.str();
-}
-#endif
-
 MIPQt5OutputWindow::MIPQt5OutputWindow(MIPQt5OutputComponent *pComp, uint64_t sourceID) 
 	: QOpenGLWindow(), 
 	m_init(false),
@@ -146,19 +121,8 @@ MIPQt5OutputWindow::MIPQt5OutputWindow(MIPQt5OutputComponent *pComp, uint64_t so
 {
 	assert(pComp);
 
-	// TODO: for debugging
-	//initGLFunctions();
-
 	QObject::connect(this, &MIPQt5OutputWindow::signalInternalNewFrame, this, &MIPQt5OutputWindow::slotInternalNewFrame);
 	pComp->registerWindow(this);
-
-	// TODO: for testing, to see if drawing changes when no data comes in
-#if 0
-	QTimer *pTimer = new QTimer(this);	
-	QObject::connect(pTimer, &QTimer::timeout, this, &QWindow::requestUpdate);
-	pTimer->setInterval(2000);
-	pTimer->start();
-#endif
 }
 
 MIPQt5OutputWindow::~MIPQt5OutputWindow()
@@ -200,8 +164,6 @@ void MIPQt5OutputWindow::injectFrame(MIPVideoMessage *pMsg)
 void MIPQt5OutputWindow::initializeGL()
 {
 	initializeOpenGLFunctions();
-
-	//cerr << "Context for " << getSourceID() << " = " << (void *)test_glXGetCurrentContext() << endl;
 
 	float vertices[] = { -1.0f, -1.0f,
 		                 -1.0f, 1.0f,
@@ -348,8 +310,6 @@ void MIPQt5OutputWindow::checkDisplayRoutines()
 		m_prevWidth = w;
 		m_prevHeight = h;
 
-		//cerr << "Upload context for " << getSourceID() << " = " << (void *)test_glXGetCurrentContext() << endl;
-
 		if (pMsg->getMessageType() == MIPMESSAGE_TYPE_VIDEO_RAW && pMsg->getMessageSubtype() == MIPRAWVIDEOMESSAGE_TYPE_YUV420P)
 		{
 			MIPRawYUV420PVideoMessage *pYUVMsg = static_cast<MIPRawYUV420PVideoMessage *>(pMsg);
@@ -413,20 +373,20 @@ void MIPQt5OutputWindow::resizeGL(int w, int h)
 
 // Object
 
-MIPQt5OutputObject::MIPQt5OutputObject()
+MIPQt5OutputSignallingObject::MIPQt5OutputSignallingObject()
 {
 }
 
-MIPQt5OutputObject::~MIPQt5OutputObject()
+MIPQt5OutputSignallingObject::~MIPQt5OutputSignallingObject()
 {
 }
 
-void MIPQt5OutputObject::callNewSource(quint64 sourceID)
+void MIPQt5OutputSignallingObject::callNewSource(quint64 sourceID)
 {
 	emit signalNewSource(sourceID);
 }
 
-void MIPQt5OutputObject::callRemovedSource(quint64 sourceID)
+void MIPQt5OutputSignallingObject::callRemovedSource(quint64 sourceID)
 {
 	emit signalRemovedSource(sourceID);
 }
@@ -446,7 +406,7 @@ bool MIPQt5OutputComponent::init(MIPTime sourceTimeout)
 {
 	if (m_pSignalObject)
 	{
-		setErrorString("TODO: already init");
+		setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_ALREADYINIT);
 		return false;
 	}
 
@@ -456,7 +416,7 @@ bool MIPQt5OutputComponent::init(MIPTime sourceTimeout)
 	
 		if ((status = m_mutex.Init()) < 0)
 		{
-			setErrorString("TODO: Can't initialize Qt5 component mutex: JMutex error code " + to_string(status));
+			setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_CANTINITMUTEX + to_string(status));
 			return false;
 		}
 	}
@@ -464,11 +424,11 @@ bool MIPQt5OutputComponent::init(MIPTime sourceTimeout)
 	MIPTime nul(0);
 	if (sourceTimeout <= nul)
 	{
-		setErrorString("TODO: negative timeout");
+		setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_NEGATIVETIMEOUT);
 		return false;
 	}
 
-	m_pSignalObject = new MIPQt5OutputObject();
+	m_pSignalObject = new MIPQt5OutputSignallingObject();
 	m_sourceTimeout = sourceTimeout;
 	return true;
 }
@@ -477,7 +437,7 @@ bool MIPQt5OutputComponent::destroy()
 {
 	if (!m_pSignalObject)
 	{
-		setErrorString("TODO: not init");
+		setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_NOTINIT);
 		return false;
 	}
 
@@ -491,11 +451,11 @@ bool MIPQt5OutputComponent::destroy()
 	return true;
 }
 
-MIPQt5OutputObject *MIPQt5OutputComponent::getSignallingObject()
+MIPQt5OutputSignallingObject *MIPQt5OutputComponent::getSignallingObject()
 {
 	if (!m_pSignalObject)
 	{
-		setErrorString("TODO: not init");
+		setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_NOTINIT);
 		return nullptr;
 	}
 	return m_pSignalObject;
@@ -505,7 +465,7 @@ bool MIPQt5OutputComponent::getCurrentlyKnownSourceIDs(std::list<uint64_t> &sour
 {
 	if (!m_pSignalObject)
 	{
-		setErrorString("TODO: not init");
+		setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_NOTINIT);
 		return false;
 	}
 
@@ -528,13 +488,14 @@ bool MIPQt5OutputComponent::push(const MIPComponentChain &chain, int64_t iterati
 {
 	assert(pMsg);
 
-	if (pMsg->getMessageType() != MIPMESSAGE_TYPE_VIDEO_RAW)
+	uint32_t subType = pMsg->getMessageSubtype();
+	if (!(pMsg->getMessageType() == MIPMESSAGE_TYPE_VIDEO_RAW && 
+		  (subType == MIPRAWVIDEOMESSAGE_TYPE_YUV420P || subType == MIPRAWVIDEOMESSAGE_TYPE_RGB32  ||
+	       subType == MIPRAWVIDEOMESSAGE_TYPE_RGB24 || subType == MIPRAWVIDEOMESSAGE_TYPE_YUYV) ) )
 	{
-		setErrorString("TODO: bad msg");
+		setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_BADMESSAGE);
 		return false;
 	}
-
-	// TODO: check subtype
 
 	// Find the window and just send a copy of the message, let the window handle it
 	MIPVideoMessage *pVidMsg = static_cast<MIPVideoMessage *>(pMsg);
@@ -610,7 +571,7 @@ bool MIPQt5OutputComponent::push(const MIPComponentChain &chain, int64_t iterati
 
 bool MIPQt5OutputComponent::pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg)
 {
-	setErrorString("TODO: no pull");
+	setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_NOPULL);
 	return false;
 }
 
@@ -641,14 +602,14 @@ void MIPQt5OutputComponent::unregisterWindow(MIPQt5OutputWindow *pWindow)
 
 MIPQt5OutputMDIWidget::MIPQt5OutputMDIWidget(MIPQt5OutputComponent *pComp) : m_pComponent(pComp)
 {
-	MIPQt5OutputObject *pObj = nullptr;
+	MIPQt5OutputSignallingObject *pObj = nullptr;
 	if (pComp)
 		pObj = pComp->getSignallingObject();
 
 	if (pObj)
 	{
-		QObject::connect(pObj, &MIPQt5OutputObject::signalNewSource, this, &MIPQt5OutputMDIWidget::slotNewSource);
-		QObject::connect(pObj, &MIPQt5OutputObject::signalRemovedSource, this, &MIPQt5OutputMDIWidget::slotRemovedSource);
+		QObject::connect(pObj, &MIPQt5OutputSignallingObject::signalNewSource, this, &MIPQt5OutputMDIWidget::slotNewSource);
+		QObject::connect(pObj, &MIPQt5OutputSignallingObject::signalRemovedSource, this, &MIPQt5OutputMDIWidget::slotRemovedSource);
 	}
 
 	m_pMdiArea = new QMdiArea(this);

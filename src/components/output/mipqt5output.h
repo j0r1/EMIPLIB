@@ -23,12 +23,12 @@
 */
 
 /**
- * \file mipqt5outputwidget.h
+ * \file mipqt5output.h
  */
 
-#ifndef MIPQT5OUTPUTWIDGET_H
+#ifndef MIPQT5OUTPUT_H
 
-#define MIPQT5OUTPUTWIDGET_H
+#define MIPQT5OUTPUT_H
 
 #include "mipconfig.h"
 
@@ -52,19 +52,29 @@ class QOpenGLShaderProgram;
 class QOpenGLBuffer;
 class QMdiArea;
 
+/** TODO
+ */
 class MIPQt5OutputWindow : public QOpenGLWindow, public QOpenGLFunctions
 {
 	Q_OBJECT
 private:
+	/** TODO */
 	MIPQt5OutputWindow(MIPQt5OutputComponent *pComp, uint64_t sourceID);
 public:
 	~MIPQt5OutputWindow();
+
+	/** TODO */
 	uint64_t getSourceID() const														{ return m_sourceID; }
 private slots:
 	void slotInternalNewFrame(MIPVideoMessage *pMsg);
 signals:
+	/** TODO */
 	void signalResizeWidth(int w);
+
+	/** TODO */
 	void signalResizeHeight(int h);
+
+	/** TODO */
 	void signalResize(int w, int h);
 
 	void signalInternalNewFrame(MIPVideoMessage *pMsg);
@@ -95,14 +105,18 @@ private:
 	friend class MIPQt5OutputComponent;
 };
 
-class MIPQt5OutputObject : public QObject
+/** TODO
+ */
+class MIPQt5OutputSignallingObject : public QObject
 {
 	Q_OBJECT
 private:
-	MIPQt5OutputObject();
-	~MIPQt5OutputObject();
+	MIPQt5OutputSignallingObject();
+	~MIPQt5OutputSignallingObject();
 signals:
+	/** TODO */
 	void signalNewSource(quint64 sourceID);
+	/** TODO */
 	void signalRemovedSource(quint64 sourceID);
 private:
 	void callNewSource(quint64 sourceID);
@@ -111,10 +125,13 @@ private:
 	friend class MIPQt5OutputComponent;
 };
 
+/** TODO
+ */
 class MIPQt5OutputMDIWidget : public QMainWindow
 {
 	Q_OBJECT
 public:
+	/** TODO */
 	MIPQt5OutputMDIWidget(MIPQt5OutputComponent *pComp);
 	~MIPQt5OutputMDIWidget();
 private slots:
@@ -126,19 +143,28 @@ private:
 	QMdiArea *m_pMdiArea;
 };
 
+/** TODO
+ */
 class MIPQt5OutputComponent : public MIPComponent
 {
 public:
 	MIPQt5OutputComponent();
 	~MIPQt5OutputComponent();
 
+	/** TODO */
 	bool init(MIPTime sourceTimeout = MIPTime(20.0));
+
+	/** TODO */
 	bool destroy();
 
 	// Don't delete this yourself!
-	MIPQt5OutputObject *getSignallingObject();
+	/** TODO */
+	MIPQt5OutputSignallingObject *getSignallingObject();
 
+	/** TODO */
 	MIPQt5OutputWindow *createWindow(uint64_t sourceID);
+
+	/** TODO */
 	bool getCurrentlyKnownSourceIDs(std::list<uint64_t> &sourceIDs);
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
@@ -149,7 +175,7 @@ private:
 
 	std::map<uint64_t, MIPTime> m_sourceTimes;
 	std::set<MIPQt5OutputWindow *> m_windows;
-	MIPQt5OutputObject *m_pSignalObject;
+	MIPQt5OutputSignallingObject *m_pSignalObject;
 	jthread::JMutex m_mutex;
 	MIPTime m_sourceTimeout;
 
@@ -158,4 +184,4 @@ private:
 
 #endif // MIPCONFIG_SUPPORT_QT5
 
-#endif // MIPQT5OUTPUTWIDGET_H
+#endif // MIPQT5OUTPUT_H

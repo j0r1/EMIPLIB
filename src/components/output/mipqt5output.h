@@ -132,13 +132,14 @@ public:
 	MIPQt5OutputComponent();
 	~MIPQt5OutputComponent();
 
-	bool init();
+	bool init(MIPTime sourceTimeout = MIPTime(20.0));
 	bool destroy();
 
 	// Don't delete this yourself!
 	MIPQt5OutputObject *getSignallingObject();
 
 	MIPQt5OutputWindow *createWindow(uint64_t sourceID);
+	bool getCurrentlyKnownSourceIDs(std::list<uint64_t> &sourceIDs);
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
@@ -150,6 +151,7 @@ private:
 	std::set<MIPQt5OutputWindow *> m_windows;
 	MIPQt5OutputObject *m_pSignalObject;
 	jthread::JMutex m_mutex;
+	MIPTime m_sourceTimeout;
 
 	friend class MIPQt5OutputWindow;
 };

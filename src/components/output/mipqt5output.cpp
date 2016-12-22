@@ -16,6 +16,7 @@
 #include <fstream>
 #include <sstream>
 #include <memory>
+#include <vector>
 
 using namespace std;
 using namespace jthread;
@@ -118,6 +119,7 @@ void main()
 }
 )XYZ";
 
+#if 0
 string loadShader(const string &fileName)
 {
 	ifstream f;
@@ -127,6 +129,7 @@ string loadShader(const string &fileName)
 	ss << f.rdbuf();
 	return ss.str();
 }
+#endif
 
 MIPQt5OutputWindow::MIPQt5OutputWindow(MIPQt5OutputComponent *pComp, uint64_t sourceID) 
 	: QOpenGLWindow(), 
@@ -432,13 +435,6 @@ void MIPQt5OutputObject::callRemovedSource(quint64 sourceID)
 
 MIPQt5OutputComponent::MIPQt5OutputComponent() : MIPComponent("MIPQt5OutputComponent"), m_pSignalObject(nullptr)
 {
-	int status;
-	
-	if ((status = m_mutex.Init()) < 0)
-	{
-		std::cerr << "Error: can't initialize Qt5 component mutex (JMutex error code " << status << ")" << std::endl;
-		exit(-1);
-	}
 }
 
 MIPQt5OutputComponent::~MIPQt5OutputComponent()
@@ -446,7 +442,7 @@ MIPQt5OutputComponent::~MIPQt5OutputComponent()
 	destroy();
 }
 
-bool MIPQt5OutputComponent::init()
+bool MIPQt5OutputComponent::init(MIPTime sourceTimeout)
 {
 	if (m_pSignalObject)
 	{
@@ -454,7 +450,26 @@ bool MIPQt5OutputComponent::init()
 		return false;
 	}
 
+	if (!m_mutex.IsInitialized())
+	{
+		int status;
+	
+		if ((status = m_mutex.Init()) < 0)
+		{
+			setErrorString("TODO: Can't initialize Qt5 component mutex: JMutex error code " + to_string(status));
+			return false;
+		}
+	}
+
+	MIPTime nul(0);
+	if (sourceTimeout <= nul)
+	{
+		setErrorString("TODO: negative timeout");
+		return false;
+	}
+
 	m_pSignalObject = new MIPQt5OutputObject();
+	m_sourceTimeout = sourceTimeout;
 	return true;
 }
 
@@ -486,11 +501,26 @@ MIPQt5OutputObject *MIPQt5OutputComponent::getSignallingObject()
 	return m_pSignalObject;
 }
 
+bool MIPQt5OutputComponent::getCurrentlyKnownSourceIDs(std::list<uint64_t> &sourceIDs)
+{
+	if (!m_pSignalObject)
+	{
+		setErrorString("TODO: not init");
+		return false;
+	}
+
+	m_mutex.Lock();
+	sourceIDs.clear();
+	for (auto &keyVal : m_sourceTimes)
+		sourceIDs.push_back(keyVal.first);
+	m_mutex.Unlock();
+
+	return true;
+}
+
 MIPQt5OutputWindow *MIPQt5OutputComponent::createWindow(uint64_t sourceID)
 {
-	MIPQt5OutputWindow *pWindow = nullptr;
-
-	pWindow = new MIPQt5OutputWindow(this, sourceID); // This registers itself with this instance
+	MIPQt5OutputWindow *pWindow = new MIPQt5OutputWindow(this, sourceID); // This registers itself with this instance
 	return pWindow;
 }
 
@@ -534,9 +564,11 @@ bool MIPQt5OutputComponent::push(const MIPComponentChain &chain, int64_t iterati
 	else
 		it->second = now;
 
-	// TODO: make this configurable
-	double timeout = 10.0; // remove stream if inactive for a certain period
+	double timeout = m_sourceTimeout.getValue(); // remove stream if inactive for a certain period
 
+	vector<uint64_t> timedOutSources;
+
+	m_mutex.Lock();
 	it = m_sourceTimes.begin();
 	while (it != m_sourceTimes.end())
 	{
@@ -546,9 +578,9 @@ bool MIPQt5OutputComponent::push(const MIPComponentChain &chain, int64_t iterati
 			auto it2 = it;
 			++it;
 			m_sourceTimes.erase(it2);
-
+			timedOutSources.push_back(sourceID);
+	
 			// Remove sourceID from m_windows
-			m_mutex.Lock();
 			auto iw = m_windows.begin();
 			while (iw != m_windows.end())
 			{
@@ -564,14 +596,15 @@ bool MIPQt5OutputComponent::push(const MIPComponentChain &chain, int64_t iterati
 				else
 					++iw;
 			}
-			m_mutex.Unlock();
-
-			m_pSignalObject->callRemovedSource(sourceID);
 		}
 		else
 			++it;
 	}
+	m_mutex.Unlock();
 	
+	for (uint64_t sourceID : timedOutSources)
+			m_pSignalObject->callRemovedSource(sourceID);
+
 	return true;
 }
 

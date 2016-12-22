@@ -198,6 +198,7 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 	{
 		bool skip = false;
 
+#if 0 // TODO: find something for this?
 		if (m_waitForKeyframe)
 		{
 			if (!pInf->getContext()->coded_frame->key_frame)
@@ -208,6 +209,7 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 			else
 				pInf->setReceivedKeyframe(true);
 		}
+#endif
 
 		if (!skip)
 		{
@@ -319,9 +321,6 @@ void MIPAVCodecDecoder::expire()
 
 void MIPAVCodecDecoder::initAVCodec()
 {
-#ifdef MIPCONFIG_SUPPORT_AVCODEC_AVCODECINIT
-	avcodec_init();
-#endif // MIPCONFIG_SUPPORT_AVCODEC_AVCODECINIT
 	avcodec_register_all();
 	av_log_set_level(AV_LOG_QUIET);
 }

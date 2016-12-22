@@ -61,11 +61,12 @@ class MIPRTPDummyDecoder;
 class MIPMediaBuffer;
 class MIPAVCodecDecoder;
 class MIPVideoMixer;
-class MIPQtOutput;
+class MIPQt5OutputComponent;
 class MIPVideoFrameStorage;
 class MIPTinyJPEGDecoder;
 class MIPAVCodecFrameConverter;
 class MIPComponentAlias;
+class QWidget;
 
 /** Parameters for a video session. */
 class EMIPLIB_IMPORTEXPORT MIPVideoSessionParams
@@ -336,6 +337,11 @@ public:
 	 */
 	bool getSourceIDs(std::list<uint64_t> &sourceIDs);
 
+	/** If the Qt5 output component is being used, this retrieves the output
+	 *  component, which can be used to render the incoming video frames (do _not_
+	 *  delete this component yourself, it is managed internally). */
+	MIPQt5OutputComponent *getQt5OutputComponent();
+
 	/** If the video frame storage component is being used, this function retrieves the last
 	 *  received video frame of a specific source.
 	 *  If the video frame storage component is being used, this function retrieves the last
@@ -420,7 +426,7 @@ private:
 	MIPComponentAlias *m_pBufferAlias;
 	MIPAVCodecDecoder *m_pAvcDec;
 	MIPVideoMixer *m_pMixer;
-	MIPQtOutput *m_pQtOutput;
+	MIPQt5OutputComponent *m_pOutputComponent;
 	MIPVideoFrameStorage *m_pStorage;
 	
 	friend class InputChain;

@@ -44,7 +44,7 @@
 #include "mipcomponentalias.h"
 #include "mipavcodecdecoder.h"
 #include "mipvideomixer.h"
-#include "mipqtoutput.h"
+#include "mipqt5outputwidget.h"
 #include "mipencodedvideomessage.h"
 #include "mipvideoframestorage.h"
 #include "miprawvideomessage.h"
@@ -61,7 +61,8 @@ using namespace jrtplib;
 #define MIPVIDEOSESSION_ERRSTR_ALREADYINIT					"Already initialized"
 #define MIPVIDEOSESSION_ERRSTR_NOQTSUPPORT					"No Qt support available"
 #define MIPVIDEOSESSION_ERRSTR_NOSTORAGE					"The Qt component is being used instead of the storage component"
-#define MIPVIDEOSESSION_ERRSTR_CONFLICTPAYLOADTYPEMAPPING			"The incoming payload types for H263 and internal video formats cannot be the same"
+#define MIPVIDEOSESSION_ERRSTR_NOOUTPUTCOMPONENT			"The Qt component is not being used"
+#define MIPVIDEOSESSION_ERRSTR_CONFLICTPAYLOADTYPEMAPPING	"The incoming payload types for H263 and internal video formats cannot be the same"
 
 MIPVideoSession::MIPVideoSession()
 {
@@ -308,7 +309,7 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 
 	if (pParams2->getUseQtOutput())
 	{
-#ifdef MIPCONFIG_SUPPORT_QT
+#ifdef MIPCONFIG_SUPPORT_QT5
 		m_pOutputFrameConverter = new MIPAVCodecFrameConverter();
 		if (!m_pOutputFrameConverter->init(-1, -1, MIPRAWVIDEOMESSAGE_TYPE_RGB32))
 		{
@@ -317,10 +318,10 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 			return false;
 		}
 
-		m_pQtOutput = new MIPQtOutput();
-		if (!m_pQtOutput->init())
+		m_pOutputComponent = new MIPQt5OutputComponent();
+		if (!m_pOutputComponent->init())
 		{
-			setErrorString(m_pQtOutput->getErrorString());
+			setErrorString(m_pOutputComponent->getErrorString());
 			deleteAll();
 			return false;
 		}
@@ -328,7 +329,7 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 		setErrorString(MIPVIDEOSESSION_ERRSTR_NOQTSUPPORT);
 		deleteAll();
 		return false;
-#endif // MIPCONFIG_SUPPORT_QT
+#endif // MIPCONFIG_SUPPORT_QT5
 	}
 	else
 	{
@@ -405,17 +406,17 @@ bool MIPVideoSession::init(const MIPVideoSessionParams *pParams, MIPRTPSynchroni
 	m_pOutputChain->addConnection(m_pMediaBuf, m_pBufferAlias, false, 0, 0); // extra link to creat equal length branches
 	m_pOutputChain->addConnection(m_pBufferAlias, m_pMixer, false, MIPMESSAGE_TYPE_VIDEO_RAW, MIPRAWVIDEOMESSAGE_TYPE_YUV420P);
  
-#ifdef MIPCONFIG_SUPPORT_QT
+#ifdef MIPCONFIG_SUPPORT_QT5
 	if (pParams2->getUseQtOutput())
 	{
 		m_pOutputChain->addConnection(m_pMixer, m_pOutputFrameConverter, true);
-		m_pOutputChain->addConnection(m_pOutputFrameConverter, m_pQtOutput, true);
+		m_pOutputChain->addConnection(m_pOutputFrameConverter, m_pOutputComponent, true);
 	}
 	else
 		m_pOutputChain->addConnection(m_pMixer, m_pStorage, true);
 #else
 	m_pOutputChain->addConnection(m_pMixer, m_pStorage, true);
-#endif // MIPCONFIG_SUPPORT_QT
+#endif // MIPCONFIG_SUPPORT_QT5
 
 	if (m_pInputChain)
 	{
@@ -746,7 +747,7 @@ void MIPVideoSession::zeroAll()
 	m_pBufferAlias = 0;
 	m_pAvcDec = 0;
 	m_pMixer = 0;
-	m_pQtOutput = 0;
+	m_pOutputComponent = 0;
 	m_pStorage = 0;
 }
 
@@ -770,10 +771,10 @@ void MIPVideoSession::deleteAll()
 		delete m_pInputFrameConverter;
 	if (m_pOutputFrameConverter)
 		delete m_pOutputFrameConverter;
-#ifdef MIPCONFIG_SUPPORT_QT
-	if (m_pQtOutput)
-		delete m_pQtOutput;
-#endif // MIPCONFIG_SUPPORT_QT
+#ifdef MIPCONFIG_SUPPORT_QT5
+	if (m_pOutputComponent)
+		delete m_pOutputComponent;
+#endif // MIPCONFIG_SUPPORT_QT5
 	if (m_pStorage)
 		delete m_pStorage;
 	if (m_pTimer)
@@ -889,6 +890,26 @@ bool MIPVideoSession::getVideoFrame(uint64_t sourceID, uint8_t **pData, int *pWi
 	*pHeight = h;
 
 	return true;
+}
+
+MIPQt5OutputComponent *MIPVideoSession::getQt5OutputComponent()
+{
+#ifdef MIPCONFIG_SUPPORT_QT5
+	if (!m_init)
+	{
+		setErrorString(MIPVIDEOSESSION_ERRSTR_NOTINIT);
+		return nullptr;
+	}
+	if (!m_pOutputComponent)
+	{
+		setErrorString(MIPVIDEOSESSION_ERRSTR_NOOUTPUTCOMPONENT);
+		return nullptr;
+	}
+	return m_pOutputComponent;
+#else
+	setErrorString(MIPVIDEOSESSION_ERRSTR_NOQTSUPPORT);
+	return nullptr;
+#endif
 }
 
 #endif // MIPCONFIG_SUPPORT_AVCODEC && (MIPCONFIG_SUPPORT_DIRECTSHOW || MIPCONFIG_SUPPORT_VIDEO4LINUX)

@@ -39,7 +39,7 @@ components/output/mipesdoutput.h
 components/output/mipopenaloutput.h
 components/output/mipalsaoutput.h
 components/output/mipmessagedumper.h
-components/output/mipqtoutput.h
+components/output/mipqt5outputwidget.h
 components/output/mipsndfileoutput.h
 components/output/mipvideoframestorage.h
 components/output/mipaudiotrackoutput.h
@@ -146,7 +146,7 @@ components/output/mipopenaloutput.cpp
 components/output/mipalsaoutput.cpp
 components/output/mipmessagedumper.cpp
 components/output/mipsndfileoutput.cpp
-components/output/mipqtoutput.cpp
+components/output/mipqt5outputwidget.cpp
 components/output/mipvideoframestorage.cpp
 components/output/mipaudiotrackoutput.cpp
 components/output/mipwavoutput.cpp
@@ -246,19 +246,6 @@ thirdparty/gsm/src/gsm_table.cpp
 thirdparty/lpc/lpccodec.cpp
 thirdparty/tinyjpeg/tinyjpeg.c
 thirdparty/tinyjpeg/jidctflt.c )
-
-if (EMIPLIB_SUPPORT_QT3)
-	if (QT_FOUND)
-		message(STATUS "Using Qt moc to generate mipqtoutput.moc")
-		execute_process(COMMAND ${QT_MOC_EXECUTABLE} -o${PROJECT_BINARY_DIR}/mipqtoutput.moc ${PROJECT_SOURCE_DIR}/src/components/output/mipqtoutput.cpp)
-	else (QT_FOUND)
-		message("Qt3 Support was requested, but Qt3 could not be found. Apart from "
-			"making sure that the header and libraries are listed in the additional "
-			"headers and libaries section, the Qt3 'moc' utility has to be run on "
-			"${PROJECT_SOURCE_DIR}/src/components/output/mipqtoutput.cpp to produce "
-			"the file ${PROJECT_BINARY_DIR}/mipqtoutput.moc")
-	endif (QT_FOUND)
-endif (EMIPLIB_SUPPORT_QT3)
 
 if (NOT UNIX AND WIN32)
 	set(CMAKE_DEBUG_POSTFIX _d)

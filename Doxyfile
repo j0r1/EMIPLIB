@@ -1983,7 +1983,7 @@ INCLUDE_FILE_PATTERNS  =
  PREDEFINED             = MIPCONFIG_SUPPORT_SNDFILE \
                           MIPCONFIG_SUPPORT_ALSA \
                           MIPCONFIG_SUPPORT_ESD \
-                          MIPCONFIG_SUPPORT_QT \
+                          MIPCONFIG_SUPPORT_QT5 \
                           MIPCONFIG_SUPPORT_SPEEX \
                           MIPCONFIG_SUPPORT_AVCODEC \
                           WIN32 \
@@ -2002,7 +2002,8 @@ INCLUDE_FILE_PATTERNS  =
  			  MIPCONFIG_SUPPORT_AUDIORECORDER \
 			  MIPCONFIG_SUPPORT_WINMM \
 			  MIPCONFIG_SUPPORT_SILK \
-			  MIPCONFIG_SUPPORT_OPUS
+			  MIPCONFIG_SUPPORT_OPUS \
+			  MIPCONFIG_SUPPORT_PULSEAUDIO
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

@@ -143,6 +143,22 @@ void MIPQt5OutputWindow::clearComponent()
 	m_mutex.unlock();
 }
 
+int MIPQt5OutputWindow::getVideoWidth()
+{
+	m_mutex.lock();
+	int w = m_prevWidth;
+	m_mutex.unlock();
+	return w;
+}
+
+int MIPQt5OutputWindow::getVideoHeight()
+{
+	m_mutex.lock();
+	int h = m_prevHeight;
+	m_mutex.unlock();
+	return h;
+}
+
 void MIPQt5OutputWindow::slotInternalNewFrame(MIPVideoMessage *pMsg)
 {
 	// Here, the data in pMsg is received in the main qt eventloop again
@@ -307,8 +323,10 @@ void MIPQt5OutputWindow::checkDisplayRoutines()
 			emit signalResize(w, h);
 		}
 
+		m_mutex.lock();
 		m_prevWidth = w;
 		m_prevHeight = h;
+		m_mutex.unlock();
 
 		if (pMsg->getMessageType() == MIPMESSAGE_TYPE_VIDEO_RAW && pMsg->getMessageSubtype() == MIPRAWVIDEOMESSAGE_TYPE_YUV420P)
 		{

@@ -52,29 +52,42 @@ class QOpenGLShaderProgram;
 class QOpenGLBuffer;
 class QMdiArea;
 
-/** TODO
+/** A `QWindow`-based output window that can display the video from a particular source.
+ *
+ *  This is a `QWindow`-based output window that can display the video from a particular 
+ *  source. An instance is retrieved by calling MIPQt5OutputComponent::createWindow.
+ *  The video data is shown using OpenGL.
+ *
+ *  Note that this is a `QWindow`-based window, not a `QWidget`-based one. To use it in a
+ *  `QWidget`-based application you'll need to wrap the window in a widget using the
+ *  `QWidget::createWindowContainer` function.
  */
 class MIPQt5OutputWindow : public QOpenGLWindow, public QOpenGLFunctions
 {
 	Q_OBJECT
 private:
-	/** TODO */
 	MIPQt5OutputWindow(MIPQt5OutputComponent *pComp, uint64_t sourceID);
 public:
 	~MIPQt5OutputWindow();
 
-	/** TODO */
+	/** Retrieves the source ID from which the video data is shown. */
 	uint64_t getSourceID() const														{ return m_sourceID; }
+
+	/** Retrieves the last known width of the video, or -1 if no frame was processed yet. */
+	int getVideoWidth();
+
+	/** Retrieves the last known height of the video, or -1 if no frame was processed yet. */
+	int getVideoHeight();
 private slots:
 	void slotInternalNewFrame(MIPVideoMessage *pMsg);
 signals:
-	/** TODO */
+	/** This Qt signal is triggered when the width of the video changes. */
 	void signalResizeWidth(int w);
 
-	/** TODO */
+	/** This Qt signal is triggered when the height of the video changes. */
 	void signalResizeHeight(int h);
 
-	/** TODO */
+	/** This Qt signal is triggered when the width, height or both of the video change. */
 	void signalResize(int w, int h);
 
 	void signalInternalNewFrame(MIPVideoMessage *pMsg);
@@ -105,13 +118,19 @@ private:
 	friend class MIPQt5OutputComponent;
 };
 
-/** TODO
+/** To easily visualise incoming video frames from multiple sources, this MDI widget
+ *  can be used.
+ *
+ *  To easily visualise incoming video frames from multiple sources, this MDI widget
+ *  can be used. The constructor takes a MIPQt5OutputComponent instance as a parameter,
+ *  and will show the video data that this component receives.  
  */
 class MIPQt5OutputMDIWidget : public QMainWindow
 {
 	Q_OBJECT
 public:
-	/** TODO */
+	/** Specify the MIPQt5OutputComponent instance as the argument to this constructor
+	 *  to indicate that the video streams received by that component should be shown. */
 	MIPQt5OutputMDIWidget(MIPQt5OutputComponent *pComp);
 	~MIPQt5OutputMDIWidget();
 private slots:
@@ -123,7 +142,18 @@ private:
 	QMdiArea *m_pMdiArea;
 };
 
-/** TODO
+/** This component can be used to show video streams if Qt5 support is enabled.
+ *
+ *  This component can be used to show video streams if Qt5 support is enabled. When
+ *  video data from a new source is detected, the Qt signal MIPQt5OutputComponent::signalNewSource
+ *  is triggered. To create a window with the video data for this source, use
+ *  the MIPQt5OutputComponent::createWindow function. When no data was received for
+ *  a specific source for a certain time, the MIPQt5OutputComponent::signalRemovedSource
+ *  signal is triggered.
+ *
+ *  For easy visualization you can pass this component to the constructor of
+ *  MIPQt5OutputMDIWidget. This will connect to the signals mentioned above and
+ *  create and remove windows with the video streams automatically.
  */
 class MIPQt5OutputComponent : public QObject, public MIPComponent
 {
@@ -132,24 +162,34 @@ public:
 	MIPQt5OutputComponent();
 	~MIPQt5OutputComponent();
 
-	/** TODO */
+	/** Initializes the component, specifying the timeout that should be used
+	 *  to detect if a source has become inactive (at which time the signal
+	 *  MIPQt5OutputComponent::signalRemovedSource will be triggered). */
 	bool init(MIPTime sourceTimeout = MIPTime(20.0));
 
-	/** TODO */
+	/** De-initialized the component. */
 	bool destroy();
 
-	/** TODO */
+	/** Creates a window for the specified source, in which the corresponding video 
+	 *  data will be shown. 
+	 *
+	 *  Creates a window for the specified source, in which the corresponding video 
+	 *  data will be shown. This is a `QWindow`-based window, not a `QWidget`-based one.
+	 *  To use this in a `QWidget`-based application, use `QWidget::createWindowContainer`
+	 *  to wrap the window in a widget. */
 	MIPQt5OutputWindow *createWindow(uint64_t sourceID);
 
-	/** TODO */
+	/** Retrieves a list of the sources that are currently sending data, or that
+	 *  have not yet been timed out. */
 	bool getCurrentlyKnownSourceIDs(std::list<uint64_t> &sourceIDs);
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
 signals:
-	/** TODO */
+	/** This Qt signal is triggered when data from a new source has been detected. */
 	void signalNewSource(quint64 sourceID);
-	/** TODO */
+
+	/** This Qt signal is triggered when a source was timed out. */
 	void signalRemovedSource(quint64 sourceID);
 private:
 	void registerWindow(MIPQt5OutputWindow *pWin);

@@ -43,7 +43,7 @@
 #define MIPAVCODECENCODER_ERRSTR_CANTENCODE						"Error encoding frame"
 #define MIPAVCODECENCODER_ERRSTR_CANTFILLPICTURE				"Can't fill picture"
 
-MIPAVCodecEncoder::MIPAVCodecEncoder() : MIPComponent("MIPAVCodecEncoder")
+MIPAVCodecEncoder::MIPAVCodecEncoder() : MIPOutputMessageQueue("MIPAVCodecEncoder")
 {
 	m_pCodec = 0;
 }
@@ -103,11 +103,9 @@ bool MIPAVCodecEncoder::init(int width, int height, real_t framerate, int bitrat
 	
 	m_width = width;
 	m_height = height;
-	m_bufSize = width*height*3; // Should be more than enough, is uncompressed rgb size
-	m_pData = new uint8_t [m_bufSize];
-	m_pMsg = new MIPEncodedVideoMessage(MIPENCODEDVIDEOMESSAGE_TYPE_H263P, width, height, m_pData, 0, true);
-	m_gotMessage = false;
 	
+	MIPOutputMessageQueue::init();
+
 	return true;
 }
 
@@ -124,17 +122,15 @@ bool MIPAVCodecEncoder::destroy()
 	av_frame_free(&m_pFrame);
 	m_pCodec = 0;
 	
-	if (m_pMsg)
-	{
-		delete m_pMsg;
-		m_pMsg = 0;
-	}
+	MIPOutputMessageQueue::clearMessages();
 
 	return true;
 }
 
 bool MIPAVCodecEncoder::push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg)
 {
+	MIPOutputMessageQueue::checkIteration(iteration);
+	
 	if (m_pCodec == 0)
 	{
 		setErrorString(MIPAVCODECENCODER_ERRSTR_NOTINIT);
@@ -182,40 +178,15 @@ bool MIPAVCodecEncoder::push(const MIPComponentChain &chain, int64_t iteration, 
 		return false;
 	}
 
-	m_pMsg->setDataLength(pkt.size);
-
-	int copyLength = m_bufSize;
-	if (pkt.size < copyLength)
-		copyLength = pkt.size;
-
-	memcpy(m_pData, pkt.data, copyLength);
-	m_pMsg->copyMediaInfoFrom(*pVideoMsg);
-	
+	uint8_t *pData = new uint8_t [pkt.size];
+	MIPEncodedVideoMessage *pNewMsg = new MIPEncodedVideoMessage(MIPENCODEDVIDEOMESSAGE_TYPE_H263P, m_width, m_height, pData, pkt.size, true);
+	memcpy(pData, pkt.data, pkt.size);
 	av_packet_unref(&pkt);
 
-	m_gotMessage = false;
+	pNewMsg->copyMediaInfoFrom(*pVideoMsg);
+	
+	MIPOutputMessageQueue::addToOutputQueue(pNewMsg, true);
 
-	return true;
-}
-
-bool MIPAVCodecEncoder::pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg)
-{
-	if (m_pCodec == 0)
-	{
-		setErrorString(MIPAVCODECENCODER_ERRSTR_NOTINIT);
-		return false;
-	}
-
-	if (m_gotMessage)
-	{
-		*pMsg = 0;
-		m_gotMessage = false;
-	}
-	else
-	{
-		*pMsg = m_pMsg;
-		m_gotMessage = true;
-	}
 	return true;
 }
 

@@ -34,7 +34,7 @@
 
 #ifdef MIPCONFIG_SUPPORT_AVCODEC
 
-#include "mipcomponent.h"
+#include "mipoutputmessagequeue.h"
 
 extern "C" {
 	#include <libavcodec/avcodec.h>
@@ -47,7 +47,7 @@ class MIPEncodedVideoMessage;
  *  raw video messages in YUV420P format and creates encoded video messages with
  *  subtype MIPENCODEDVIDEOMESSAGE_TYPE_H263P.
  */
-class EMIPLIB_IMPORTEXPORT MIPAVCodecEncoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAVCodecEncoder : public MIPOutputMessageQueue
 {
 public:
 	MIPAVCodecEncoder();
@@ -65,8 +65,9 @@ public:
 
 	/** De-initializes the encoder. */
 	bool destroy();
+
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
-	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
+	// pull is provided by MIPOutputMessageQueue
 
 	/** Initializes the libavcodec library.
 	 *  This function initializes the libavcodec library. The library should only be initialized once
@@ -74,16 +75,12 @@ public:
 	 */
 	static void initAVCodec();
 private:
-	bool getFrameRate(real_t framerate, int *numerator, int *denominator);
+	static bool getFrameRate(real_t framerate, int *numerator, int *denominator);
 
 	AVCodec *m_pCodec;
 	AVCodecContext *m_pContext;
 	AVFrame *m_pFrame;
 	int m_width, m_height;
-	MIPEncodedVideoMessage *m_pMsg;
-	uint8_t *m_pData;
-	int m_bufSize;
-	bool m_gotMessage;
 };
 
 #endif // MIPCONFIG_SUPPORT_AVCODEC

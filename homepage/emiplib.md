@@ -14,7 +14,7 @@ institute of the [Hasselt University](http://www.uhasselt.be). As the name sugge
 the goal of the library is to make it easier to stream several kinds of media, including (but 
 not limited to) audio and video. 			
 
-The latest version of the library is 1.1.1. You can take a look at the 
+The latest version of the library is 1.2.0. You can take a look at the 
 [ChangeLog](https://github.com/j0r1/EMIPLIB/blob/master/ChangeLog), or follow the
 development of the library [at GitHub](https://github.com/j0r1/EMIPLIB).
 
@@ -119,9 +119,9 @@ and [JRTPLIB](http://research.edm.uhasselt.be/jori/jrtplib/jrtplib.html)
 
 You can download the library source code here:
 
- - [emiplib-1.1.1.tar.bz2](http://research.edm.uhasselt.be/emiplib/emiplib-1.1.1.tar.bz2)
- - [emiplib-1.1.1.tar.gz](http://research.edm.uhasselt.be/emiplib/emiplib-1.1.1.tar.gz)
- - [emiplib-1.1.1.zip](http://research.edm.uhasselt.be/emiplib/emiplib-1.1.1.zip)
+ - [emiplib-1.2.0.tar.bz2](http://research.edm.uhasselt.be/emiplib/emiplib-1.2.0.tar.bz2)
+ - [emiplib-1.2.0.tar.gz](http://research.edm.uhasselt.be/emiplib/emiplib-1.2.0.tar.gz)
+ - [emiplib-1.2.0.zip](http://research.edm.uhasselt.be/emiplib/emiplib-1.2.0.zip)
 
 Documentation
 -------------

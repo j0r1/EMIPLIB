@@ -1,7 +1,11 @@
 
-EMIPLIB TODO list:
+ * If no messages are passed (e.g. when a source is no longer transmitting
+   data, the push member function will not be called, and no timeouts will
+   be performed
+   -> add a virtual function to indicate when a new iteration starts?
+   -> or just pass a nullptr message? (this would mean that _all_ existing
+      components need to be modified to be able to handle this)
 
- * Remove Video4Linux component
  * Add codecs for video.
  * Improve the ALSA output component.
  * Add 8-bit sample support to the ESD output component.

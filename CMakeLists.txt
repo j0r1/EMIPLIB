@@ -78,7 +78,7 @@ list(APPEND EMIPLIB_LINK_LIBS "${JRTPLIB_LIBRARIES}")
 
 # Make sure jrtplib is recent enough
 try_compile(JRTP_RESULT "${PROJECT_BINARY_DIR}/jrtplibversiontest" "${PROJECT_SOURCE_DIR}/tools/jrtplibversion" 
-	jrtplibversiontest OUTPUT_VARIABLE OUTVAR)
+    jrtplibversiontest CMAKE_FLAGS "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}" OUTPUT_VARIABLE OUTVAR)
 if (NOT JRTP_RESULT)
 	message(FATAL_ERROR "JRTPLIB was detected, but the version does not seem to be recent enough.\nCompilation log:\n${OUTVAR}\n")
 endif()

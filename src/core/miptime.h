@@ -142,11 +142,13 @@ inline bool MIPTime::operator>=(const MIPTime &t) const
 	return false;
 }
 
+#include <inttypes.h>
+
 inline std::string MIPTime::getString() const
 {
 	char str[256];
 
-	MIP_SNPRINTF(str, 255, "%Ld.%06Ld", (long long)getSeconds(), (long long)getMicroSeconds());
+	MIP_SNPRINTF(str, 255, "%" PRId64 ".%06d", getSeconds(), (int)getMicroSeconds());
 	
 	return std::string(str);
 }

@@ -14,11 +14,11 @@
 #ifdef MIPCONFIG_SUPPORT_WINMM
 	#include <mipwinmminput.h>
 #else
-#ifdef MIPCONFIG_SUPPORT_OSS
-	#include <mipossinputoutput.h>
-#else
+#ifdef MIPCONFIG_SUPPORT_PORTAUDIO
 	#include <mippainputoutput.h>
 	#define NEED_PA_INIT
+#else
+	#include <mipossinputoutput.h>
 #endif
 #endif 
 
@@ -59,10 +59,10 @@ private:
 #ifdef MIPCONFIG_SUPPORT_WINMM
 	MIPWinMMInput *m_pInput;
 #else
-#ifdef MIPCONFIG_SUPPORT_OSS
-	MIPOSSInputOutput *m_pInput;
-#else
+#ifdef MIPCONFIG_SUPPORT_PORTAUDIO
 	MIPPAInputOutput *m_pInput;
+#else
+	MIPOSSInputOutput *m_pInput;
 #endif
 #endif 
 	MIPSampleEncoder *m_pSampEnc;
@@ -103,17 +103,17 @@ bool SoundRecorder::init(const std::string &fname, int sampRate)
 		return false;
 	}
 #else
-#ifdef MIPCONFIG_SUPPORT_OSS
-	m_pInput = new MIPOSSInputOutput();
-	if (!m_pInput->open(sampRate, channels, interval, MIPOSSInputOutput::ReadOnly))
+#ifdef MIPCONFIG_SUPPORT_PORTAUDIO
+	m_pInput = new MIPPAInputOutput();
+	if (!m_pInput->open(sampRate, channels, interval, MIPPAInputOutput::ReadOnly))
 	{
 		setErrorString(m_pInput->getErrorString());
 		deleteAll();
 		return false;
 	}
 #else
-	m_pInput = new MIPPAInputOutput();
-	if (!m_pInput->open(sampRate, channels, interval, MIPPAInputOutput::ReadOnly))
+	m_pInput = new MIPOSSInputOutput();
+	if (!m_pInput->open(sampRate, channels, interval, MIPOSSInputOutput::ReadOnly))
 	{
 		setErrorString(m_pInput->getErrorString());
 		deleteAll();

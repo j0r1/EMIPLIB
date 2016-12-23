@@ -7,7 +7,7 @@
 
 #include <mipconfig.h>
 
-#if defined(WIN32) || defined(_WIN32_WCE) || defined(MIPCONFIG_SUPPORT_OSS)
+#if defined(WIN32) || defined(_WIN32_WCE) || defined(MIPCONFIG_SUPPORT_OSS) || defined(MIPCONFIG_SUPPORT_PORTAUDIO)
 
 #include <mipcomponentchain.h>
 #include <mipcomponent.h>
@@ -16,7 +16,12 @@
 #include <mipwavinput.h>
 #include <mipsampleencoder.h>
 #ifndef WIN32
+#ifdef MIPCONFIG_SUPPORT_PORTAUDIO
+	#define NEED_PA_INIT
+	#include <mippainputoutput.h>
+#else
 	#include <mipossinputoutput.h>
+#endif
 #else
 	#include <mipwinmmoutput.h>
 #endif 
@@ -71,6 +76,16 @@ private:
 
 int main(void)
 {
+#ifdef NEED_PA_INIT
+	std::string errStr;
+
+	if (!MIPPAInputOutput::initializePortAudio(errStr))
+	{
+		std::cerr << "Can't initialize PortAudio: " << errStr << std::endl;
+		return -1;
+	}
+#endif // NEED_PA_INIT
+
 	MIPTime interval(1.000); // one second intervals
 	MIPAverageTimer timer(interval);
 	MIPWAVInput sndFileInput1;
@@ -80,7 +95,11 @@ int main(void)
 	MIPAudioMixer mixer;
 	MIPSampleEncoder sampEnc;
 #ifndef WIN32
+#ifdef MIPCONFIG_SUPPORT_PORTAUDIO
+	MIPPAInputOutput sndCardOutput;
+#else
 	MIPOSSInputOutput sndCardOutput;
+#endif
 #else
 	MIPWinMMOutput sndCardOutput;
 #endif
@@ -122,10 +141,10 @@ int main(void)
 	// We'll open the file 'soundfile.wav'
 
 	returnValue = sndFileInput1.open("soundfile-16000-mono.wav", interval);
-	checkError(returnValue, sndFileInput2);
+	checkError(returnValue, sndFileInput1);
 
 	returnValue = sndFileInput2.open("soundfile-8000-mono.wav", interval);
-	checkError(returnValue, sndFileInput1);
+	checkError(returnValue, sndFileInput2);
 
 	// Get the parameters of the soundfile. We'll use these to initialize
 	// the soundcard output component further on.
@@ -147,9 +166,14 @@ int main(void)
 
 	// Initialize the sample encoder
 #ifndef WIN32
+#ifdef MIPCONFIG_SUPPORT_PORTAUDIO
+	// The PortAudio output component uses signed 16 bit samples
+	returnValue = sampEnc.init(MIPRAWAUDIOMESSAGE_TYPE_S16);
+#else
 	// The OSS component can use several encoding types. We'll ask
 	// the component to which format samples should be converted.
 	returnValue = sampEnc.init(sndCardOutput.getRawAudioSubtype());
+#endif
 #else
 	// The WinMM output component uses signed little endian 16 bit samples.
 	returnValue = sampEnc.init(MIPRAWAUDIOMESSAGE_TYPE_S16LE);
@@ -301,6 +325,11 @@ int main(void)
 
 	// We'll let the destructors of the components take care
 	// of their de-initialization.
+
+	sndCardOutput.close(); // In case we're using PortAudio
+#ifdef NEED_PA_INIT
+	MIPPAInputOutput::terminatePortAudio();
+#endif // NEED_PA_INIT
 
 	return 0;
 }

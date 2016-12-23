@@ -24,11 +24,11 @@
 #ifdef MIPCONFIG_SUPPORT_WINMM
 	#include <mipwinmmoutput.h>
 #else
-#ifdef MIPCONFIG_SUPPORT_OSS
-	#include <mipossinputoutput.h>
-#else
+#ifdef MIPCONFIG_SUPPORT_PORTAUDIO
 	#include <mippainputoutput.h>
 	#define NEED_PA_INIT
+#else
+	#include <mipossinputoutput.h>
 #endif
 #endif 
 #include <jrtplib3/rtpsession.h>
@@ -127,10 +127,10 @@ int main(void)
 #ifdef MIPCONFIG_SUPPORT_WINMM
 	MIPWinMMOutput sndCardOutput;
 #else
-#ifdef MIPCONFIG_SUPPORT_OSS
-	MIPOSSInputOutput sndCardOutput;
-#else
+#ifdef MIPCONFIG_SUPPORT_PORTAUDIO
 	MIPPAInputOutput sndCardOutput;
+#else
+	MIPOSSInputOutput sndCardOutput;
 #endif
 #endif
 	MyChain chain("Sound file player");
@@ -223,13 +223,13 @@ int main(void)
 	// The WinMM output component uses signed little endian 16 bit samples.
 	returnValue = sampEnc3.init(MIPRAWAUDIOMESSAGE_TYPE_S16LE);
 #else
-#ifdef MIPCONFIG_SUPPORT_OSS
+#ifdef MIPCONFIG_SUPPORT_PORTAUDIO
+	// The PortAudio output component uses signed 16 bit samples
+	returnValue = sampEnc3.init(MIPRAWAUDIOMESSAGE_TYPE_S16);
+#else
 	// The OSS component can use several encoding types. We'll ask
 	// the component to which format samples should be converted.
 	returnValue = sampEnc3.init(sndCardOutput.getRawAudioSubtype());
-#else
-	// The PortAudio output component uses signed 16 bit samples
-	returnValue = sampEnc3.init(MIPRAWAUDIOMESSAGE_TYPE_S16);
 #endif
 #endif
 	checkError(returnValue, sampEnc3);

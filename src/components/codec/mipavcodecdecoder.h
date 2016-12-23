@@ -34,7 +34,7 @@
 
 #ifdef MIPCONFIG_SUPPORT_AVCODEC
 
-#include "mipcomponent.h"
+#include "mipoutputmessagequeuewithstate.h"
 #include "miptime.h"
 
 extern "C" 
@@ -53,7 +53,7 @@ class MIPRawYUV420PVideoMessage;
  *  This component is a libavcodec based H.263+ decoder. It accepts encoded video messages with
  *  subtype MIPENCODEDVIDEOMESSAGE_TYPE_H263P and creates raw video messages in YUV420P format.
  */
-class EMIPLIB_IMPORTEXPORT MIPAVCodecDecoder : public MIPComponent
+class EMIPLIB_IMPORTEXPORT MIPAVCodecDecoder : public MIPOutputMessageQueueWithState
 {
 public:
 	MIPAVCodecDecoder();
@@ -69,8 +69,9 @@ public:
 
 	/** De-initialize the component. */
 	bool destroy();
+
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
-	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
+	// pull is provided by MIPOutputMessageQueueWithState
 
 	/** Initializes the libavcodec library.
 	 *  This function initializes the libavcodec library. The library should only be initialized once
@@ -78,10 +79,7 @@ public:
 	 */
 	static void initAVCodec();
 private:
-	void clearMessages();
-	void expire();
-
-	class DecoderInfo
+	class DecoderInfo : public MIPStateInfo
 	{
 	public:
 		DecoderInfo(int w, int h, AVCodecContext *pContext, SwsContext *pSwsContext)
@@ -89,7 +87,6 @@ private:
 			m_width = w;
 			m_height = h;
 			m_pContext = pContext;
-			m_lastTime = MIPTime::getCurrentTime();
 			m_pSwsContext = pSwsContext;
 			m_gotKeyframe = false;
 		}
@@ -102,35 +99,25 @@ private:
 				sws_freeContext(m_pSwsContext);
 		}
 
-		int getWidth() const							{ return m_width; }
-		int getHeight() const							{ return m_height; }
+		int getWidth() const								{ return m_width; }
+		int getHeight() const								{ return m_height; }
 		AVCodecContext *getContext()						{ return m_pContext; }
-		SwsContext *getSwsContext()						{ return m_pSwsContext; }
-		void setSwsContext(SwsContext *pCtx)					{ m_pSwsContext = pCtx; }
+		SwsContext *getSwsContext()							{ return m_pSwsContext; }
+		void setSwsContext(SwsContext *pCtx)				{ m_pSwsContext = pCtx; }
 		bool receivedKeyframe() const						{ return m_gotKeyframe; }
 		void setReceivedKeyframe(bool f)					{ m_gotKeyframe = f; }
-
-		MIPTime getLastUpdateTime() const					{ return m_lastTime; }
-		void setLastUpdateTime(MIPTime t)					{ m_lastTime = t; }
 	private:
 		int m_width, m_height;
 		AVCodecContext *m_pContext;
-		MIPTime m_lastTime;
 		SwsContext *m_pSwsContext;
 		bool m_gotKeyframe;
 	};
 	
 	bool m_init;
 	
-	std::unordered_map<uint64_t, DecoderInfo *> m_decoderStates;
-	
 	AVCodec *m_pCodec;
 	AVFrame *m_pFrame;
 
-	std::list<MIPRawYUV420PVideoMessage *> m_messages;
-	std::list<MIPRawYUV420PVideoMessage *>::const_iterator m_msgIt;
-	int64_t m_lastIteration;
-	MIPTime m_lastExpireTime;
 	bool m_waitForKeyframe;
 };
 

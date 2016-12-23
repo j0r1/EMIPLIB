@@ -43,7 +43,7 @@ using namespace std;
 #define MIPAVCODECDECODER_ERRSTR_CANTFINDCODEC				"Can't find codec"
 #define MIPAVCODECDECODER_ERRSTR_CANTCREATECONTEXT			"Can't create context for codec"
 
-MIPAVCodecDecoder::MIPAVCodecDecoder() : MIPComponent("MIPAVCodecDecoder")
+MIPAVCodecDecoder::MIPAVCodecDecoder() : MIPOutputMessageQueueWithState("MIPAVCodecDecoder")
 {
 	m_init = false;
 }
@@ -70,11 +70,11 @@ bool MIPAVCodecDecoder::init(bool waitForKeyframe)
 
 	m_pFrame = av_frame_alloc();
 	
-	m_lastIteration = -1;
-	m_msgIt = m_messages.begin();
-	m_lastExpireTime = MIPTime::getCurrentTime();
 	m_init = true;
 	m_waitForKeyframe = waitForKeyframe;
+
+	MIPOutputMessageQueueWithState::init(60.0); // TODO make this delay configurable
+
 	return true;
 }
 
@@ -86,11 +86,8 @@ bool MIPAVCodecDecoder::destroy()
 		return false;
 	}
 
-	for (auto it = m_decoderStates.begin() ; it != m_decoderStates.end() ; it++)
-		delete it->second;
-	m_decoderStates.clear();
+	MIPOutputMessageQueueWithState::clear();
 
-	clearMessages();
 	av_frame_free(&m_pFrame);
 			
 	m_init = false;
@@ -112,25 +109,15 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 		return false;
 	}
 
-	if (iteration != m_lastIteration)
-	{
-		m_lastIteration = iteration;
-		clearMessages();
-		expire();
-	}
+	MIPOutputMessageQueueWithState::checkIteration(iteration);
 
 	MIPEncodedVideoMessage *pEncMsg = (MIPEncodedVideoMessage *)pMsg;
-
 	uint64_t sourceID = pEncMsg->getSourceID();
+	int width = pEncMsg->getWidth();
+	int height =  pEncMsg->getHeight();
 
-	DecoderInfo *pInf = 0;
-	int width, height;
-
-	width = pEncMsg->getWidth();
-	height = pEncMsg->getHeight();
-
-	auto it = m_decoderStates.find(sourceID);
-	if (it == m_decoderStates.end()) // no entry found
+	DecoderInfo *pInf = (DecoderInfo *)MIPOutputMessageQueueWithState::findState(sourceID);
+	if (!pInf)
 	{
 		AVCodecContext *pContext;
 
@@ -156,18 +143,20 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 		//pInf = new DecoderInfo(width, height, pContext, pSwsContext);
 
 		pInf = new DecoderInfo(width, height, pContext, 0);
-		m_decoderStates[sourceID] = pInf;
+
+		if (!MIPOutputMessageQueueWithState::addState(sourceID, pInf))
+		{
+			delete pInf;
+			return true; // ignore this
+		}
 	}
 	else
 	{
-		pInf = (*it).second;
-	
 		if (!(pInf->getWidth() == width && pInf->getHeight() == height))
 		{
 			return true; // ignore message
 		}
-
-		pInf->setLastUpdateTime(MIPTime::getCurrentTime());
+		pInf->setUpdateTime();
 	}
 
 	int status;
@@ -249,74 +238,10 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 		pNewMsg->setSourceID(sourceID);
 		pNewMsg->setTime(pEncMsg->getTime());
 
-		m_messages.push_back(pNewMsg);
-		m_msgIt = m_messages.begin();
+		MIPOutputMessageQueueWithState::addToOutputQueue(pNewMsg, true);
 	}
 	
 	return true;
-}
-
-bool MIPAVCodecDecoder::pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg)
-{
-	if (!m_init)
-	{
-		setErrorString(MIPAVCODECDECODER_ERRSTR_NOTINIT);
-		return false;
-	}
-
-	if (iteration != m_lastIteration)
-	{
-		m_lastIteration = iteration;
-		clearMessages();
-		expire();
-	}
-
-	if (m_msgIt == m_messages.end())
-	{
-		*pMsg = 0;
-		m_msgIt = m_messages.begin();
-	}
-	else
-	{
-		*pMsg = *m_msgIt;
-		m_msgIt++;
-	}
-
-	return true;
-}
-
-void MIPAVCodecDecoder::clearMessages()
-{
-	std::list<MIPRawYUV420PVideoMessage *>::iterator it;
-
-	for (it = m_messages.begin() ; it != m_messages.end() ; it++)
-		delete (*it);
-	m_messages.clear();
-	m_msgIt = m_messages.begin();
-}
-
-void MIPAVCodecDecoder::expire()
-{
-	MIPTime curTime = MIPTime::getCurrentTime();
-	if ((curTime.getValue() - m_lastExpireTime.getValue()) < 60.0)
-		return;
-
-	auto it = m_decoderStates.begin();
-	while (it != m_decoderStates.end())
-	{
-		if ((curTime.getValue() - (*it).second->getLastUpdateTime().getValue()) > 60.0)
-		{
-			auto it2 = it;
-			it++;
-	
-			delete (*it2).second;
-			m_decoderStates.erase(it2);
-		}
-		else
-			it++;
-	}
-	
-	m_lastExpireTime = curTime;
 }
 
 void MIPAVCodecDecoder::initAVCodec()

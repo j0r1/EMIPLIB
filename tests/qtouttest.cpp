@@ -1,4 +1,5 @@
 #include "mipconfig.h"
+
 #include <iostream>
 
 using namespace std;
@@ -15,7 +16,7 @@ using namespace std;
 #include "mipavcodecframeconverter.h"
 #include "mipoutputmessagequeuesimple.h"
 #include "mipyuv420fileinput.h"
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 #include <QtCore/QThread>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMdiArea>

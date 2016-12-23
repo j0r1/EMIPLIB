@@ -15,7 +15,7 @@
 #include <mippainputoutput.h>
 #include <iostream>
 #include <jrtplib3/rtpipv4address.h>
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
 #include <stdlib.h>
 #ifndef WIN32

@@ -338,12 +338,14 @@ int MIPPAInputOutput::portAudioCallback(const void *pInput, void *pOutput, unsig
 					PaStreamCallbackFlags statusFlags)
 {
 	int numBytesRead = 0;
-	
+
 	if (m_pOutputBuffer)
+	{
 		numBytesRead = m_pOutputBuffer->read(pOutput, m_blockBytes);
 
-	if (numBytesRead < m_blockBytes)
-		memset(((uint8_t *)pOutput)+numBytesRead, 0, m_blockBytes-numBytesRead);
+		if (numBytesRead < m_blockBytes)
+			memset(((uint8_t *)pOutput)+numBytesRead, 0, m_blockBytes-numBytesRead);
+	}
 
 	if (m_pInputBuffer)
 		m_pInputBuffer->write(pInput, m_blockBytes);

@@ -33,21 +33,15 @@
 
 #include "mipdebug.h"
 
-#define MIPPULSEOUTPUT_ERRSTR_CLIENTALREADYOPEN		"Already opened a client"
-#define MIPPULSEOUTPUT_ERRSTR_CANTOPENCLIENT		"Error opening client"
+#define MIPPULSEOUTPUT_ERRSTR_CLIENTALREADYOPEN			"Already opened a client"
+#define MIPPULSEOUTPUT_ERRSTR_CANTOPENCLIENT			"Error opening client"
 #define MIPPULSEOUTPUT_ERRSTR_PULLNOTIMPLEMENTED		"Pull not implemented"
-#define MIPPULSEOUTPUT_ERRSTR_CANTREGISTERCHANNEL	"Unable to register a new port"
-#define MIPPULSEOUTPUT_ERRSTR_ARRAYTIMETOOSMALL		"Array time too small"
-#define MIPPULSEOUTPUT_ERRSTR_CLIENTNOTOPEN		"Client is not running"
-#define MIPPULSEOUTPUT_ERRSTR_BADMESSAGE			"Not a floating point raw audio message"
+#define MIPPULSEOUTPUT_ERRSTR_CLIENTNOTOPEN				"Client is not running"
+#define MIPPULSEOUTPUT_ERRSTR_BADMESSAGE				"Not a floating point raw audio message"
 #define MIPPULSEOUTPUT_ERRSTR_INCOMPATIBLESAMPLINGRATE	"Incompatible sampling rate"
-#define MIPPULSEOUTPUT_ERRSTR_NOTSTEREO			"Not stereo audio"
-#define MIPPULSEOUTPUT_ERRSTR_CANTGETPHYSICALPORTS	"Unable to obtain physical ports"
-#define MIPPULSEOUTPUT_ERRSTR_NOTENOUGHPORTS		"Less than two ports were found, not enough for stereo"
-#define MIPPULSEOUTPUT_ERRSTR_CANTCONNECTPORTS		"Unable to connect ports"
-#define MIPPULSEOUTPUT_ERRSTR_CANTACTIVATECLIENT		"Can't activate client"
-#define MIPPULSEOUTPUT_ERRSTR_BADSAMPLINGRATE "Invalid sampling rate specified, must be a positive number of maximum 48000"
-#define MIPPULSEOUTPUT_ERRSTR_BADCHANNELS "Invalid number of channels specified, must be one or two"
+#define MIPPULSEOUTPUT_ERRSTR_INCOMPATIBLECHANNELS		"Incompatible number of channels"
+#define MIPPULSEOUTPUT_ERRSTR_BADSAMPLINGRATE			"Invalid sampling rate specified, must be a positive number of maximum 48000"
+#define MIPPULSEOUTPUT_ERRSTR_BADCHANNELS				"Invalid number of channels specified, must be one or two"
 
 MIPPulseOutput::MIPPulseOutput() : MIPComponent("MIPPulseOutput")
 {
@@ -157,7 +151,7 @@ bool MIPPulseOutput::push(const MIPComponentChain &chain, int64_t iteration, MIP
 	}
 	if (audioMessage->getNumberOfChannels() != m_channels)
 	{
-		setErrorString(MIPPULSEOUTPUT_ERRSTR_NOTSTEREO);
+		setErrorString(MIPPULSEOUTPUT_ERRSTR_INCOMPATIBLECHANNELS);
 		return false;
 	}
 	

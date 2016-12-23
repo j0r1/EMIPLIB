@@ -40,9 +40,9 @@
 #include <jthread/jmutex.h>
 #include <string>
 
-/** A Pulse audio connection kit output component.
- *  This component uses the Pulse audio connection kit to provide audio output.
- *  It accepts stereo raw floating point audio messages and does not produce
+/** A PulseAudio output component.
+ *  This component uses PulseAudio to provide audio output.
+ *  It accepts raw floating point audio messages and does not produce
  *  any messages itself.
  */
 class EMIPLIB_IMPORTEXPORT MIPPulseOutput : public MIPComponent
@@ -56,7 +56,7 @@ public:
 	 *  \param sampleRate The sampling rate of the audio
 	 *  \param channels The number of channels of the audio
 	 *  \param interval Output is processed in blocks of this size.
-	 *  \param serverName Pulse server name to which the client should connect.
+	 *  \param serverName PulseAudio server name to which the client should connect.
 	 */
 	bool open(int sampleRate = 48000, int channels = 2, MIPTime interval = MIPTime(0.020),
 	          const std::string &serverName = std::string(""));

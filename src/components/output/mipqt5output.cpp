@@ -371,30 +371,11 @@ void MIPQt5OutputWindow::resizeGL(int w, int h)
 	glViewport(0, 0, w, h);
 }
 
-// Object
-
-MIPQt5OutputSignallingObject::MIPQt5OutputSignallingObject()
-{
-}
-
-MIPQt5OutputSignallingObject::~MIPQt5OutputSignallingObject()
-{
-}
-
-void MIPQt5OutputSignallingObject::callNewSource(quint64 sourceID)
-{
-	emit signalNewSource(sourceID);
-}
-
-void MIPQt5OutputSignallingObject::callRemovedSource(quint64 sourceID)
-{
-	emit signalRemovedSource(sourceID);
-}
-
 // Component
 
-MIPQt5OutputComponent::MIPQt5OutputComponent() : MIPComponent("MIPQt5OutputComponent"), m_pSignalObject(nullptr)
+MIPQt5OutputComponent::MIPQt5OutputComponent() : MIPComponent("MIPQt5OutputComponent")
 {
+	m_init = false;
 }
 
 MIPQt5OutputComponent::~MIPQt5OutputComponent()
@@ -404,7 +385,7 @@ MIPQt5OutputComponent::~MIPQt5OutputComponent()
 
 bool MIPQt5OutputComponent::init(MIPTime sourceTimeout)
 {
-	if (m_pSignalObject)
+	if (m_init)
 	{
 		setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_ALREADYINIT);
 		return false;
@@ -428,42 +409,31 @@ bool MIPQt5OutputComponent::init(MIPTime sourceTimeout)
 		return false;
 	}
 
-	m_pSignalObject = new MIPQt5OutputSignallingObject();
 	m_sourceTimeout = sourceTimeout;
+	m_init = true;
 	return true;
 }
 
 bool MIPQt5OutputComponent::destroy()
 {
-	if (!m_pSignalObject)
+	if (m_init)
 	{
 		setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_NOTINIT);
 		return false;
 	}
 
-	delete m_pSignalObject;
-	m_pSignalObject = 0;
-
 	// Make sure that when the widget is destroyed, this component is no longer contacted
+	m_mutex.Lock();
 	for (auto pWindow : m_windows)
 		pWindow->clearComponent();
+	m_mutex.Unlock();
 
 	return true;
 }
 
-MIPQt5OutputSignallingObject *MIPQt5OutputComponent::getSignallingObject()
-{
-	if (!m_pSignalObject)
-	{
-		setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_NOTINIT);
-		return nullptr;
-	}
-	return m_pSignalObject;
-}
-
 bool MIPQt5OutputComponent::getCurrentlyKnownSourceIDs(std::list<uint64_t> &sourceIDs)
 {
-	if (!m_pSignalObject)
+	if (!m_init)
 	{
 		setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_NOTINIT);
 		return false;
@@ -520,7 +490,7 @@ bool MIPQt5OutputComponent::push(const MIPComponentChain &chain, int64_t iterati
 	if (it == m_sourceTimes.end())
 	{
 		m_sourceTimes[sourceID] = now;
-		m_pSignalObject->callNewSource(sourceID);
+		emit signalNewSource(sourceID);
 	}
 	else
 		it->second = now;
@@ -564,8 +534,9 @@ bool MIPQt5OutputComponent::push(const MIPComponentChain &chain, int64_t iterati
 	m_mutex.Unlock();
 	
 	for (uint64_t sourceID : timedOutSources)
-			m_pSignalObject->callRemovedSource(sourceID);
-
+	{
+		emit signalRemovedSource(sourceID);
+	}
 	return true;
 }
 
@@ -602,14 +573,10 @@ void MIPQt5OutputComponent::unregisterWindow(MIPQt5OutputWindow *pWindow)
 
 MIPQt5OutputMDIWidget::MIPQt5OutputMDIWidget(MIPQt5OutputComponent *pComp) : m_pComponent(pComp)
 {
-	MIPQt5OutputSignallingObject *pObj = nullptr;
 	if (pComp)
-		pObj = pComp->getSignallingObject();
-
-	if (pObj)
 	{
-		QObject::connect(pObj, &MIPQt5OutputSignallingObject::signalNewSource, this, &MIPQt5OutputMDIWidget::slotNewSource);
-		QObject::connect(pObj, &MIPQt5OutputSignallingObject::signalRemovedSource, this, &MIPQt5OutputMDIWidget::slotRemovedSource);
+		QObject::connect(pComp, &MIPQt5OutputComponent::signalNewSource, this, &MIPQt5OutputMDIWidget::slotNewSource);
+		QObject::connect(pComp, &MIPQt5OutputComponent::signalRemovedSource, this, &MIPQt5OutputMDIWidget::slotRemovedSource);
 	}
 
 	m_pMdiArea = new QMdiArea(this);

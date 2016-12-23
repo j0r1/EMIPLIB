@@ -107,26 +107,6 @@ private:
 
 /** TODO
  */
-class MIPQt5OutputSignallingObject : public QObject
-{
-	Q_OBJECT
-private:
-	MIPQt5OutputSignallingObject();
-	~MIPQt5OutputSignallingObject();
-signals:
-	/** TODO */
-	void signalNewSource(quint64 sourceID);
-	/** TODO */
-	void signalRemovedSource(quint64 sourceID);
-private:
-	void callNewSource(quint64 sourceID);
-	void callRemovedSource(quint64 sourceID);
-
-	friend class MIPQt5OutputComponent;
-};
-
-/** TODO
- */
 class MIPQt5OutputMDIWidget : public QMainWindow
 {
 	Q_OBJECT
@@ -145,8 +125,9 @@ private:
 
 /** TODO
  */
-class MIPQt5OutputComponent : public MIPComponent
+class MIPQt5OutputComponent : public QObject, public MIPComponent
 {
+	Q_OBJECT
 public:
 	MIPQt5OutputComponent();
 	~MIPQt5OutputComponent();
@@ -157,10 +138,6 @@ public:
 	/** TODO */
 	bool destroy();
 
-	// Don't delete this yourself!
-	/** TODO */
-	MIPQt5OutputSignallingObject *getSignallingObject();
-
 	/** TODO */
 	MIPQt5OutputWindow *createWindow(uint64_t sourceID);
 
@@ -169,13 +146,18 @@ public:
 
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
+signals:
+	/** TODO */
+	void signalNewSource(quint64 sourceID);
+	/** TODO */
+	void signalRemovedSource(quint64 sourceID);
 private:
 	void registerWindow(MIPQt5OutputWindow *pWin);
 	void unregisterWindow(MIPQt5OutputWindow *pWin);
 
+	bool m_init;
 	std::map<uint64_t, MIPTime> m_sourceTimes;
 	std::set<MIPQt5OutputWindow *> m_windows;
-	MIPQt5OutputSignallingObject *m_pSignalObject;
 	jthread::JMutex m_mutex;
 	MIPTime m_sourceTimeout;
 

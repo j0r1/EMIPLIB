@@ -85,5 +85,5 @@ private:
 
 #endif // MIPCONFIG_SUPPORT_OPUS
 
-#endif // MIPSILKDECODER_H
+#endif // MIPOPUSDECODER_H
 

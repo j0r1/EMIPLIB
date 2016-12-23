@@ -22,6 +22,18 @@ Version 1.2.0, ?
    which gets called when a new MIPMediaMessage is obtained from
    the MIPRTPPacketDecoder class.
  * Added soundvolume.cpp example.
+ * C++11 is required now.
+ * Update of various components which use libavcodec, so that the
+   current API is used.
+ * Removed the Qt3 component and added Qt5 output
+ * Added a simple PulseAudio component (using the simple API, which
+   does introduce quite some delay)
+ * Changed the audio session and various examples, so that PortAudio
+   is used instead of OSS if possible (OSS is no longer used on Linux
+   and PortAudio can use various systems)
+ * To obtain the current time, now alwas JRTPLIB's RTPTime::CurrentTime
+   is used (was already the case for Win32). This should avoid clock
+   jumps.
 
 Version 1.1.1, November 2011
  * Fixed a bug in the CMake configuration: was unable to handle

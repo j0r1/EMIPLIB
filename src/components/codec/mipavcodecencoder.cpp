@@ -30,6 +30,10 @@
 #include "miprawvideomessage.h"
 #include "mipencodedvideomessage.h"
 
+extern "C" {
+#include <libavutil/imgutils.h>
+}
+
 #include "mipdebug.h"
 
 #define MIPAVCODECENCODER_ERRSTR_NOTINIT						"Not initialized"
@@ -151,33 +155,43 @@ bool MIPAVCodecEncoder::push(const MIPComponentChain &chain, int64_t iteration, 
 		return false;
 	}
 
-	if (avpicture_fill((AVPicture *)m_pFrame, (uint8_t *)pVideoMsg->getImageData(), AV_PIX_FMT_YUV420P, m_width, m_height) < 0)
+	for (int i = 0 ; i < AV_NUM_DATA_POINTERS ; i++)
+	{
+		m_pFrame->data[i] = nullptr;
+		m_pFrame->linesize[i] = 0;
+	}
+
+	if (av_image_fill_arrays(m_pFrame->data, m_pFrame->linesize, (uint8_t *)pVideoMsg->getImageData(),
+	                         AV_PIX_FMT_YUV420P, m_width, m_height, 1) < 0)
 	{
 		setErrorString(MIPAVCODECENCODER_ERRSTR_CANTFILLPICTURE);
 		return false;
 	}
 	
 	int status;
-	int gotOutput = 1;
+
+	if ((status = avcodec_send_frame(m_pContext, m_pFrame)) < 0)
+	{
+		setErrorString(MIPAVCODECENCODER_ERRSTR_CANTENCODE);
+		return false;
+	}
 
 	AVPacket pkt;
 
 	av_init_packet(&pkt);
 	pkt.data = nullptr;
 	pkt.size = 0;
-	
-	if ((status = avcodec_encode_video2(m_pContext, &pkt, m_pFrame, &gotOutput)) < 0)
+
+	if ((status = avcodec_receive_packet(m_pContext, &pkt)) < 0)
 	{
+		av_packet_unref(&pkt);
+		if (status == AVERROR(EAGAIN)) // not really an error, ignore and try again later
+			return true;
+
 		setErrorString(MIPAVCODECENCODER_ERRSTR_CANTENCODE);
 		return false;
 	}
 	
-	if (!gotOutput)
-	{
-		setErrorString("TODO: currently can't handle incomplete frames");
-		return false;
-	}
-
 	uint8_t *pData = new uint8_t [pkt.size];
 	MIPEncodedVideoMessage *pNewMsg = new MIPEncodedVideoMessage(MIPENCODEDVIDEOMESSAGE_TYPE_H263P, m_width, m_height, pData, pkt.size, true);
 	memcpy(pData, pkt.data, pkt.size);

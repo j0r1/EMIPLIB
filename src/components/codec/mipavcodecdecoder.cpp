@@ -170,7 +170,6 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 		pInf->setLastUpdateTime(MIPTime::getCurrentTime());
 	}
 
-	int framecomplete = 1;
 	int status;
 
 	vector<uint8_t> tmp(pEncMsg->getDataLength() + AV_INPUT_BUFFER_PADDING_SIZE);
@@ -186,71 +185,72 @@ bool MIPAVCodecDecoder::push(const MIPComponentChain &chain, int64_t iteration, 
 	avPacket.size = (int)pEncMsg->getDataLength();
 	avPacket.data = pTmp;
 
-	// TODO: avcodec_decode_video2 is deprecated, use avcodec_send_packet and
-	//       avcodec_receive_frame instead
-	if ((status = avcodec_decode_video2(pInf->getContext(), m_pFrame, &framecomplete, &avPacket)) < 0)
-	{	
+	if ((status = avcodec_send_packet(pInf->getContext(), &avPacket)) < 0)
+	{
 		// unable to decode it, ignore
 		return true; 
 	}
 
-	if (framecomplete)
+	if ((status = avcodec_receive_frame(pInf->getContext(), m_pFrame)) < 0)
 	{
-		bool skip = false;
+		// unable to decode it, ignore
+		return true;
+	}
+
+	bool skip = false;
 
 #if 0 // TODO: find something for this?
-		if (m_waitForKeyframe)
+	if (m_waitForKeyframe)
+	{
+		if (!pInf->getContext()->coded_frame->key_frame)
 		{
-			if (!pInf->getContext()->coded_frame->key_frame)
-			{
-				if (!pInf->receivedKeyframe())
-					skip = true;
-			}
-			else
-				pInf->setReceivedKeyframe(true);
+			if (!pInf->receivedKeyframe())
+				skip = true;
 		}
+		else
+			pInf->setReceivedKeyframe(true);
+	}
 #endif
 
-		if (!skip)
+	if (!skip)
+	{
+		// adjust width and height settings
+
+		width = pInf->getContext()->width;
+		height = pInf->getContext()->height;
+
+		size_t dataSize = (width*height*3)/2;
+		uint8_t *pData = new uint8_t [dataSize];
+
+		SwsContext *pSwsContext = pInf->getSwsContext();
+
+		// TODO: check if width and height changed somehow?
+		if (pSwsContext == 0)
 		{
-			// adjust width and height settings
+			pSwsContext = sws_getContext(width, height, pInf->getContext()->pix_fmt, width, height, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, 0, 0, 0);
 
-			width = pInf->getContext()->width;
-			height = pInf->getContext()->height;
-
-			size_t dataSize = (width*height*3)/2;
-			uint8_t *pData = new uint8_t [dataSize];
-
-			SwsContext *pSwsContext = pInf->getSwsContext();
-
-			// TODO: check if width and height changed somehow?
-			if (pSwsContext == 0)
-			{
-				pSwsContext = sws_getContext(width, height, pInf->getContext()->pix_fmt, width, height, AV_PIX_FMT_YUV420P, SWS_FAST_BILINEAR, 0, 0, 0);
-
-				pInf->setSwsContext(pSwsContext);
-			}
-
-			uint8_t *pDstPointers[3];
-			int dstStrides[3];
-		
-			pDstPointers[0] = pData;
-			pDstPointers[1] = pData+width*height;
-			pDstPointers[2] = pDstPointers[1]+(width*height)/4;
-			dstStrides[0] = width;
-			dstStrides[1] = width/2;
-			dstStrides[2] = width/2;
-
-			sws_scale(pSwsContext, m_pFrame->data, m_pFrame->linesize, 0, height, pDstPointers, dstStrides);
-		
-			MIPRawYUV420PVideoMessage *pNewMsg = new MIPRawYUV420PVideoMessage(width, height, pData, true);
-
-			pNewMsg->setSourceID(sourceID);
-			pNewMsg->setTime(pEncMsg->getTime());
-
-			m_messages.push_back(pNewMsg);
-			m_msgIt = m_messages.begin();
+			pInf->setSwsContext(pSwsContext);
 		}
+
+		uint8_t *pDstPointers[3];
+		int dstStrides[3];
+	
+		pDstPointers[0] = pData;
+		pDstPointers[1] = pData+width*height;
+		pDstPointers[2] = pDstPointers[1]+(width*height)/4;
+		dstStrides[0] = width;
+		dstStrides[1] = width/2;
+		dstStrides[2] = width/2;
+
+		sws_scale(pSwsContext, m_pFrame->data, m_pFrame->linesize, 0, height, pDstPointers, dstStrides);
+	
+		MIPRawYUV420PVideoMessage *pNewMsg = new MIPRawYUV420PVideoMessage(width, height, pData, true);
+
+		pNewMsg->setSourceID(sourceID);
+		pNewMsg->setTime(pEncMsg->getTime());
+
+		m_messages.push_back(pNewMsg);
+		m_msgIt = m_messages.begin();
 	}
 	
 	return true;

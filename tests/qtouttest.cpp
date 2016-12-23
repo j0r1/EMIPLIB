@@ -1,4 +1,7 @@
 #include "mipconfig.h"
+#include <iostream>
+
+using namespace std;
 
 #if defined(MIPCONFIG_SUPPORT_QT5) && defined(MIPCONFIG_SUPPORT_AVCODEC)
 
@@ -16,13 +19,10 @@
 #include <QtCore/QThread>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMdiArea>
-#include <iostream>
 #include <stdlib.h>
 #ifndef WIN32
 #include <unistd.h>
 #endif // WIN32
-
-using namespace std;
 
 void checkError(bool returnValue, const MIPComponent &component)
 {
@@ -191,6 +191,14 @@ Please select a raw video message type to test:
 
 	chain.stop();
 	return status;
+}
+
+#else
+
+int main(void)
+{
+	cerr << "Not all necessary components are available to run this example." << endl;
+	return -1;
 }
 
 #endif // MIPCONFIG_SUPPORT_QT5 && MIPCONFIG_SUPPORT_AVCODEC 

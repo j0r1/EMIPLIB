@@ -32,22 +32,23 @@
 
 #include "mipdebug.h"
 
-#define MIPWINMMOUTPUT_ERRSTR_DEVICEALREADYOPEN		"Device already opened"
-#define MIPWINMMOUTPUT_ERRSTR_DEVICENOTOPEN		"Device is not opened"
-#define MIPWINMMOUTPUT_ERRSTR_CANTOPENDEVICE		"Error opening device"
-#define MIPWINMMOUTPUT_ERRSTR_CANTSTARTBACKGROUNDTHREAD	"Can't start the background thread"
-#define MIPWINMMOUTPUT_ERRSTR_PULLNOTIMPLEMENTED		"No pull available for this component"
-#define MIPWINMMOUTPUT_ERRSTR_THREADSTOPPED		"Background thread stopped"
-#define MIPWINMMOUTPUT_ERRSTR_BADMESSAGE			"Only raw audio messages are supported"
-#define MIPWINMMOUTPUT_ERRSTR_INCOMPATIBLECHANNELS	"Incompatible number of channels"
-#define MIPWINMMOUTPUT_ERRSTR_INCOMPATIBLESAMPLINGRATE	"Incompatible sampling rate"
-#define MIPWINMMOUTPUT_ERRSTR_INCOMPATIBLEFRAMES		"Incompatible number of frames"
-#define MIPWINMMOUTPUT_ERRSTR_BUFFERFULL			"Buffer full"
-#define MIPWINMMOUTPUT_ERRSTR_CANTRESETDEVICE		"Can't reset the device"
-#define MIPWINMMOUTPUT_ERRSTR_CANTUNPREPAREHEADER	"Can't unprepare header"
-#define MIPWINMMOUTPUT_ERRSTR_CANTCLOSEDEVICE		"Can't close the device"
-#define MIPWINMMOUTPUT_ERRSTR_CANTPREPAREHEADER		"Can't prepare header"
-#define MIPWINMMOUTPUT_ERRSTR_CANTWRITEDATA			"Can't write data"
+#define MIPWINMMOUTPUT_ERRSTR_DEVICEALREADYOPEN				"Device already opened"
+#define MIPWINMMOUTPUT_ERRSTR_DEVICENOTOPEN					"Device is not opened"
+#define MIPWINMMOUTPUT_ERRSTR_CANTOPENDEVICE				"Error opening device"
+#define MIPWINMMOUTPUT_ERRSTR_CANTSTARTBACKGROUNDTHREAD		"Can't start the background thread"
+#define MIPWINMMOUTPUT_ERRSTR_PULLNOTIMPLEMENTED			"No pull available for this component"
+#define MIPWINMMOUTPUT_ERRSTR_THREADSTOPPED					"Background thread stopped"
+#define MIPWINMMOUTPUT_ERRSTR_BADMESSAGE					"Only raw audio messages are supported"
+#define MIPWINMMOUTPUT_ERRSTR_INCOMPATIBLECHANNELS			"Incompatible number of channels"
+#define MIPWINMMOUTPUT_ERRSTR_INCOMPATIBLESAMPLINGRATE		"Incompatible sampling rate"
+#define MIPWINMMOUTPUT_ERRSTR_INCOMPATIBLEFRAMES			"Incompatible number of frames"
+#define MIPWINMMOUTPUT_ERRSTR_BUFFERFULL					"Buffer full"
+#define MIPWINMMOUTPUT_ERRSTR_CANTRESETDEVICE				"Can't reset the device"
+#define MIPWINMMOUTPUT_ERRSTR_CANTUNPREPAREHEADER			"Can't unprepare header"
+#define MIPWINMMOUTPUT_ERRSTR_CANTUNPREPAREHEADER2			"Can't unprepare header (input messages arriving too fast?)"
+#define MIPWINMMOUTPUT_ERRSTR_CANTCLOSEDEVICE				"Can't close the device"
+#define MIPWINMMOUTPUT_ERRSTR_CANTPREPAREHEADER				"Can't prepare header"
+#define MIPWINMMOUTPUT_ERRSTR_CANTWRITEDATA					"Can't write data"
 
 MIPWinMMOutput::MIPWinMMOutput() : MIPComponent("MIPWinMMOutput"), m_prevCheckTime(0), m_delay(0)
 {
@@ -255,7 +256,7 @@ bool MIPWinMMOutput::push(const MIPComponentChain &chain, int64_t iteration, MIP
 		{
 			if (waveOutUnprepareHeader(m_device,&m_frameArray[m_blockPos],sizeof(WAVEHDR)) != MMSYSERR_NOERROR)
 			{
-				setErrorString(MIPWINMMOUTPUT_ERRSTR_CANTUNPREPAREHEADER);
+				setErrorString(MIPWINMMOUTPUT_ERRSTR_CANTUNPREPAREHEADER2);
 				return false;
 			}
 		}

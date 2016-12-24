@@ -199,6 +199,9 @@ bool MIPInterChainTimer::push(const MIPComponentChain &chain, int64_t iteration,
 		return false;
 	}
 
+	if (iteration == 1) // Make sure we start clean, in case the chain was started a while after initialization
+		m_sigWait.clearSignalBuffers();
+
 	if (pMsg->getMessageType() == MIPMESSAGE_TYPE_SYSTEM && pMsg->getMessageSubtype() == MIPSYSTEMMESSAGE_TYPE_WAITTIME)
 	{
 		m_sigWait.waitForSignal();

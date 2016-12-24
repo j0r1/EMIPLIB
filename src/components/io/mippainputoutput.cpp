@@ -214,18 +214,20 @@ bool MIPPAInputOutput::push(const MIPComponentChain &chain, int64_t iteration, M
 		setErrorString(MIPPAINPUTOUTPUT_ERRSTR_NOTOPENED);
 		return false;
 	}
-	
+
 	if ((m_accessMode == ReadOnly || m_accessMode == ReadWrite) && 
 	    pMsg->getMessageType() == MIPMESSAGE_TYPE_SYSTEM && 
 	    pMsg->getMessageSubtype() == MIPSYSTEMMESSAGE_TYPE_WAITTIME)
 	{
-		/*m_sigWait.clearSignalBuffers();
-		
-		if (m_pInputBuffer->getAmountBuffered() < m_blockBytes)
-		*/	m_sigWait.waitForSignal();
-		/*
-		while (m_pInputBuffer->getAmountBuffered() >= m_blockBytes) // make sure we got the most recent block
-		*/	m_pInputBuffer->read(m_pMsgBuffer, m_blockBytes);
+		if (iteration == 1) // At the start, clear everything
+		{
+			//std::cerr << "MIPPAInputOutput::push: clearing buffer and signal waiter at start of chain loop" << std::endl;
+			m_pInputBuffer->clear();
+			m_sigWait.clearSignalBuffers();
+		}
+
+		m_sigWait.waitForSignal();
+		m_pInputBuffer->read(m_pMsgBuffer, m_blockBytes);
 
 		m_gotMsg = false;
 	}
@@ -348,7 +350,16 @@ int MIPPAInputOutput::portAudioCallback(const void *pInput, void *pOutput, unsig
 	}
 
 	if (m_pInputBuffer)
+	{
+		// Try to avoid too much memory being consumed
+		if (m_pInputBuffer->getAmountBuffered() > m_blockBytes*10) // TODO: make this configurable?
+		{
+			//std::cerr << "MIPPAInputOutput::portAudioCallback: buffering too much data, clearing buffers" << std::endl;
+			m_sigWait.clearSignalBuffers();
+			m_pInputBuffer->clear();
+		}
 		m_pInputBuffer->write(pInput, m_blockBytes);
+	}
 	m_sigWait.signal();
 
 	return 0;

@@ -71,33 +71,11 @@ private:
 	}	
 };
 
-class MyRTPSession : public RTPSession
-{
-public:
-	MyRTPSession(int repeats = 4) : m_repeats(repeats)
-	{
-		SetChangeOutgoingData(true);
-	}
-private:
-	int OnChangeRTPOrRTCPData(const void *origdata, size_t origlen, bool isrtp, void **senddata, size_t *sendlen)
-	{
-		*senddata = (void*)origdata;
-		*sendlen = origlen;
-		if (isrtp)
-		{
-			for (int i = 0 ; i < m_repeats-1 ; i++)
-				RTPSession::SendRawData(origdata, origlen, true);
-		}
-	}
-	
-	int m_repeats;
-};
-
 int main(int argc, char *argv[])
 {
-	if (argc != 3)
+	if (argc != 2)
 	{
-		cerr << "Specify wav file and repeats" << endl;
+		cerr << "Specify wav file" << endl;
 		return -1;
 	}
 
@@ -107,7 +85,7 @@ int main(int argc, char *argv[])
 	MIPOpusEncoder opusEnc;
 	MIPRTPOpusEncoder opusRTPEnc;
 	MIPRTPComponent rtpComp;
-	MyRTPSession rtpSession(atoi(argv[2]));
+	RTPSession rtpSession;
 
 	checkError(sndFileInput.open(argv[1], interval), sndFileInput);
 

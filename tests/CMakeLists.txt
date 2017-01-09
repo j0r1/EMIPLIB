@@ -1,7 +1,7 @@
 apply_include_paths("${EMIPLIB_INTERNAL_INCLUDES}")
 apply_include_paths("${EMIPLIB_EXTERNAL_INCLUDES}")
 
-foreach(IDX pulseouttest portaudioouttest replayaudio qtouttest audiocodectest delayedchainstarttest streamopus)
+foreach(IDX pulseouttest portaudioouttest replayaudio qtouttest audiocodectest delayedchainstarttest streamopus streamopusrecv)
 	add_executable(${IDX} ${IDX}.cpp)
 	if (UNIX OR EMIPLIB_COMPILE_STATIC)
 		target_link_libraries(${IDX} emiplib-static ${EMIPLIB_LINK_LIBS})

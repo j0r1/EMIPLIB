@@ -1,12 +1,27 @@
 apply_include_paths("${EMIPLIB_INTERNAL_INCLUDES}")
 apply_include_paths("${EMIPLIB_EXTERNAL_INCLUDES}")
 
+macro(linkit TARGET)
+	if (UNIX OR EMIPLIB_COMPILE_STATIC)
+		target_link_libraries(${TARGET} emiplib-static ${EMIPLIB_LINK_LIBS} ${ARGN})
+	else ()
+		target_link_libraries(${TARGET} emiplib-shared ${EMIPLIB_LINK_LIBS} ${ARGN})
+	endif (UNIX OR EMIPLIB_COMPILE_STATIC)
+endmacro()
+
 foreach(IDX pulseouttest portaudioouttest replayaudio qtouttest audiocodectest delayedchainstarttest streamopus streamopusrecv)
 	add_executable(${IDX} ${IDX}.cpp)
-	if (UNIX OR EMIPLIB_COMPILE_STATIC)
-		target_link_libraries(${IDX} emiplib-static ${EMIPLIB_LINK_LIBS})
-	else ()
-		target_link_libraries(${IDX} emiplib-shared ${EMIPLIB_LINK_LIBS})
-	endif (UNIX OR EMIPLIB_COMPILE_STATIC)
+	linkit(${IDX})
 endforeach(IDX)
+
+if (EMIPLIB_SUPPORT_QT5)
+	find_package(Qt5Multimedia)
+	if (Qt5Multimedia_FOUND)
+		include_directories(${Qt5Multimedia_INCLUDE_DIRS})
+
+		add_executable(qtaudiooutput qtaudiooutput.cpp)
+		linkit(qtaudiooutput ${Qt5Multimedia_LIBRARIES})
+	endif()
+endif()
+
 

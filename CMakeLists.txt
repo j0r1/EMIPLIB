@@ -77,11 +77,12 @@ list(APPEND EMIPLIB_LINK_LIBS "${JTHREAD_LIBRARIES}")
 list(APPEND EMIPLIB_LINK_LIBS "${JRTPLIB_LIBRARIES}")
 
 # Make sure jrtplib is recent enough
-try_compile(JRTP_RESULT "${PROJECT_BINARY_DIR}/jrtplibversiontest" "${PROJECT_SOURCE_DIR}/tools/jrtplibversion" 
-    jrtplibversiontest CMAKE_FLAGS "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}" OUTPUT_VARIABLE OUTVAR)
-if (NOT JRTP_RESULT)
-	message(FATAL_ERROR "JRTPLIB was detected, but the version does not seem to be recent enough.\nCompilation log:\n${OUTVAR}\n")
-endif()
+#try_compile(JRTP_RESULT "${PROJECT_BINARY_DIR}/jrtplibversiontest" "${PROJECT_SOURCE_DIR}/tools/jrtplibversion" 
+#	jrtplibversiontest CMAKE_FLAGS 
+#	"-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DJThread_DIR:PATH=${JThread_DIR} -DJRTPLIB_DIR:PATH=${JRTPLIB_DIR} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}" OUTPUT_VARIABLE OUTVAR)
+#if (NOT JRTP_RESULT)
+#	message(FATAL_ERROR "JRTPLIB was detected, but the version does not seem to be recent enough.\nCompilation log:\n${OUTVAR}\n")
+#endif()
 
 option(EMIPLIB_COMPILE_TESTS "Compile various tests in the 'tests' subdirectory" NO)
 emiplib_support_option("Support for GPL components. This changes the license to GPL instead of LGPL."
@@ -238,12 +239,13 @@ endif (EMIPLIB_SUPPORT_AVCODEC AND LIBAVCODEC_FOUND)
 find_package(Qt5Gui)
 find_package(Qt5Widgets)
 find_package(Qt5OpenGL)
-if (Qt5Gui_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND)
+find_package(Qt5Multimedia)
+if (Qt5Gui_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND AND Qt5Multimedia_FOUND)
 	set(TMP ON)
 else ()
 	set(TMP OFF)
 endif ()
-emiplib_support_option("Support for Qt5 output component" EMIPLIB_SUPPORT_QT5 MIPCONFIG_SUPPORT_QT5 ${TMP} "// No support for Qt5 output component")
+emiplib_support_option("Support for Qt5 output components" EMIPLIB_SUPPORT_QT5 MIPCONFIG_SUPPORT_QT5 ${TMP} "// No support for Qt5 output components")
 if (EMIPLIB_SUPPORT_QT5 AND Qt5Gui_FOUND)
 	list(APPEND EMIPLIB_LINK_LIBS "${Qt5Gui_LIBRARIES}")
 	list(APPEND EMIPLIB_EXTERNAL_INCLUDES "${Qt5Gui_INCLUDE_DIRS}")
@@ -263,6 +265,12 @@ if (EMIPLIB_SUPPORT_QT5 AND Qt5OpenGL_FOUND)
 	list(APPEND EMIPLIB_EXTERNAL_INCLUDES "${Qt5OpenGL_INCLUDE_DIRS}")
 	set(EMIPLIB_REQUIRED_MODULES "${EMIPLIB_REQUIRED_MODULES}\nfind_package(Qt5OpenGL REQUIRED)")
 endif (EMIPLIB_SUPPORT_QT5 AND Qt5OpenGL_FOUND)
+
+if (EMIPLIB_SUPPORT_QT5 AND Qt5Multimedia_FOUND)
+	list(APPEND EMIPLIB_LINK_LIBS "${Qt5Multimedia_LIBRARIES}")
+	list(APPEND EMIPLIB_EXTERNAL_INCLUDES "${Qt5Multimedia_INCLUDE_DIRS}")
+	set(EMIPLIB_REQUIRED_MODULES "${EMIPLIB_REQUIRED_MODULES}\nfind_package(Qt5Multimedia REQUIRED)")
+endif (EMIPLIB_SUPPORT_QT5 AND Qt5Multimedia_FOUND)
 
 find_package(PulseAudio)
 if (PULSEAUDIO_FOUND)

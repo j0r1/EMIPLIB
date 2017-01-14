@@ -23,7 +23,7 @@
 */
 
 /**
- * \file mipjackoutput.h
+ * \file mippulseoutput.h
  */
 
 #ifndef MIPPULSEOUTPUT_H

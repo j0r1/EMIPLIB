@@ -47,7 +47,7 @@ class MIPStreamBuffer;
 /** A PortAudio input and output component.
  *  This component is a PortAudio soundcard input and output 
  *  component. The device  accepts two kinds of messages: MIPSYSTEMMESSAGE_WAITTIME 
- *  messages and 16 bit little endian raw audio messages (native endianness). The first
+ *  messages and 16 bit raw audio messages (native endianness). The first
  *  message uses the input part of the component, the second type is sent to the 
  *  output part of the component. Messages produced by this component are 16 bit
  *  native endian raw audio messages.

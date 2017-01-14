@@ -9,7 +9,8 @@ macro(linkit TARGET)
 	endif (UNIX OR EMIPLIB_COMPILE_STATIC)
 endmacro()
 
-foreach(IDX pulseouttest portaudioouttest replayaudio qtouttest audiocodectest delayedchainstarttest streamopus streamopusrecv)
+foreach(IDX pulseouttest portaudioouttest replayaudio qtouttest audiocodectest delayedchainstarttest streamopus streamopusrecv
+            streamopusrecv2)
 	add_executable(${IDX} ${IDX}.cpp)
 	linkit(${IDX})
 endforeach(IDX)

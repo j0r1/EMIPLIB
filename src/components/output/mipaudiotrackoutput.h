@@ -42,7 +42,7 @@
 namespace android
 {
 	class AudioTrack;
-}
+};
 
 /** Component which uses the AudioTrack class available on the Android
  *  platform to play back audio.

@@ -26,10 +26,15 @@
 
 #ifdef MIPCONFIG_SUPPORT_AUDIOTRACK
 
+#include <memory>
+#include <limits>
+#define UNEXPECTED_NULL nullptr
 #include "mipaudiotrackoutput.h"
 #include "miprawaudiomessage.h"
+#include <system/audio.h>
 #include <media/AudioTrack.h>
 #include <iostream>
+#include <QDebug>
 
 #include "mipdebug.h"
 
@@ -89,9 +94,11 @@ bool MIPAudioTrackOutput::open(int sampRate, int channels, MIPTime interval, MIP
 		return false;
 	}
 	
+	qDebug() << "Creating AudioTrack instance";
 	m_pTrack = new android::AudioTrack();
-	if (m_pTrack->set(android::AudioSystem::DEFAULT, sampRate, android::AudioSystem::PCM_16_BIT,
-	                  channels, 0, 0, StaticAudioTrackCallback, this, 0) != 0)
+	qDebug() << "Created AudioTrack instance";
+	if (m_pTrack->set(AUDIO_STREAM_DEFAULT, sampRate, AUDIO_FORMAT_PCM_16_BIT,
+	                  channels, 0, AUDIO_OUTPUT_FLAG_NONE, StaticAudioTrackCallback, this) != 0)
 	{
 		delete m_pTrack;
 		m_pTrack = 0;
@@ -99,8 +106,11 @@ bool MIPAudioTrackOutput::open(int sampRate, int channels, MIPTime interval, MIP
 		return false;
 	}
 	
+	qDebug() << "Called AudioTrack::set";
+
 	// TODO: check sampling rate somehow?
 
+#if 0
 	if (channels != m_pTrack->channelCount())
 	{
 		delete m_pTrack;
@@ -108,6 +118,9 @@ bool MIPAudioTrackOutput::open(int sampRate, int channels, MIPTime interval, MIP
 		setErrorString(MIPAUDIOTRACKOUTPUT_ERRSTR_CANTGETCHANNELS);
 		return false;
 	}
+#endif
+
+	qDebug() << "Channel count check out";
 
 	m_sampRate = sampRate;
 	m_channels = channels;
@@ -158,7 +171,9 @@ bool MIPAudioTrackOutput::open(int sampRate, int channels, MIPTime interval, MIP
 	m_nextPos = m_intervalLength;
 	m_distTime = m_interval;
 
+	qDebug() << "Starting AudioTrack";
 	m_pTrack->start();
+	qDebug() << "AudioTrack started";
 
 	return true;
 }
@@ -171,7 +186,8 @@ bool MIPAudioTrackOutput::close()
 		return false;
 	}
 
-	delete m_pTrack;
+	m_pTrack->stop();
+	//delete m_pTrack;
 	m_pTrack = 0;
 
 	delete [] m_pFrameArray;

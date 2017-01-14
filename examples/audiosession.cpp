@@ -3,6 +3,9 @@
  */
 
 #include <mipconfig.h>
+
+#if (defined(MIPCONFIG_SUPPORT_WINMM) || defined(MIPCONFIG_SUPPORT_OSS) || defined(MIPCONFIG_SUPPORT_PORTAUDIO) )
+
 #include <mipavcodecencoder.h>
 #include <mipaudiosession.h>
 #include <mippainputoutput.h>
@@ -100,4 +103,16 @@ int main(void)
 	
 	return 0;
 }
+
+#else
+
+#include <iostream>
+
+int main(void)
+{
+	std::cerr << "Not all necessary components are available to run this example." << std::endl;
+	return 0;
+}
+
+#endif 
 

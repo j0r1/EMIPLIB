@@ -37,6 +37,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <vector>
 
@@ -72,23 +73,20 @@ varying vec2 v_tpos;
 
 void main()
 {
-	vec4 cY = texture2D(u_tex, v_tpos);
 	float xInt = floor(u_width*v_tpos.x);
 	float xIntEven = floor(xInt/2.0)*2.0;
+	float evenFlag = xInt-xIntEven;
+	vec4 cYUYV = texture2D(u_tex, vec2(v_tpos.x, v_tpos.y));
 
-	vec4 cU = texture2D(u_tex, vec2((xIntEven+0.5)/u_width, v_tpos.y));
-	vec4 cV = texture2D(u_tex, vec2((xIntEven+1.5)/u_width, v_tpos.y));
-
-	float Y = cY.x;
-	float U = cU.y;
-	float V = cV.y;
+	float Y = cYUYV.x*(1.0-evenFlag) + cYUYV.z*evenFlag;
+	float U = cYUYV.y;
+	float V = cYUYV.a;
 
 	float r = (1.164*(Y*255.0-16.0) + 1.596*(V-0.5)*255.0)/255.0;
 	float g = (1.164*(Y*255.0-16.0) - 0.813*(V-0.5)*255.0 - 0.391*(U-0.5)*255.0)/255.0;
 	float b = (1.164*(Y*255.0-16.0) + 2.018*(U-0.5)*255.0)/255.0;
 
 	gl_FragColor = vec4(r, g, b, 1.0);
-	//gl_FragColor = vec4(cV.y, cV.y, cV.y, 1.0);
 }
 )XYZ";
 
@@ -364,11 +362,11 @@ void MIPQt5OutputWindow::checkDisplayRoutines()
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, m_tex0);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, pYData);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, w, h, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, pYData);
 
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, m_tex1);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, w/2, h, 0, GL_RED, GL_UNSIGNED_BYTE, pUVData);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, w/2, h, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, pUVData);
 		}
 		else if (pMsg->getMessageType() == MIPMESSAGE_TYPE_VIDEO_RAW && 
 				 (pMsg->getMessageSubtype() == MIPRAWVIDEOMESSAGE_TYPE_RGB32 || pMsg->getMessageSubtype() == MIPRAWVIDEOMESSAGE_TYPE_RGB24) )
@@ -394,7 +392,7 @@ void MIPQt5OutputWindow::checkDisplayRoutines()
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, m_tex0);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, w, h, 0, GL_RG, GL_UNSIGNED_BYTE, pAllData);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w/2, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pAllData);
 		
 			glUniform1f(m_widthLoc, (float)w);
 		}
@@ -439,7 +437,10 @@ bool MIPQt5OutputComponent::init(MIPTime sourceTimeout)
 	
 		if ((status = m_mutex.Init()) < 0)
 		{
-			setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_CANTINITMUTEX + to_string(status));
+			ostringstream ss;
+			
+			ss << MIPQT5OUTPUTCOMPONENT_ERRSTR_CANTINITMUTEX << status;
+			setErrorString(ss.str());
 			return false;
 		}
 	}

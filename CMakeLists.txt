@@ -96,6 +96,10 @@ emiplib_support_option("Support for Android AudioRecorder input component" EMIPL
 
 emiplib_test_feature_option(osstest MIPCONFIG_SUPPORT_OSS "// No support for OSS" EMIPLIB_SUPPORT_OSS "Support for Open Sound System input/output")
 emiplib_test_feature_option(v4ltest MIPCONFIG_SUPPORT_VIDEO4LINUX "// No support for Video4Linux" EMIPLIB_SUPPORT_VIDEO4LINUX "Support for Video4Linux input")
+emiplib_test_feature_option(openslesandroid MIPCONFIG_SUPPORT_OPENSLESANDROID "// No support for OpenSL ES on Android" EMIPLIB_SUPPORT_OPENSLESANDROID "Support for OpenSL ES on Android")
+if (EMIPLIB_SUPPORT_OPENSLESANDROID)
+	list(APPEND EMIPLIB_LINK_LIBS "-lOpenSLES")
+endif (EMIPLIB_SUPPORT_OPENSLESANDROID)
 
 emiplib_test_feature_option(winmmtest MIPCONFIG_SUPPORT_WINMM "// No support for Win32 multimedia input/output" EMIPLIB_SUPPORT_WINMM "Support for Win32 multimedia input/output")
 if (EMIPLIB_SUPPORT_WINMM)

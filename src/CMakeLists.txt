@@ -47,6 +47,7 @@ components/output/mipwavoutput.h
 components/output/mipwinmmoutput.h 
 components/output/mippulseoutput.h 
 components/output/mipqt5audiooutput.h 
+components/output/mipopenslesandroidoutput.h
 components/timer/mipinterchaintimer.h
 components/timer/mipaveragetimer.h
 components/timer/mippusheventtimer.h
@@ -155,6 +156,7 @@ components/output/mipsdlaudiooutput.cpp
 components/output/mipwinmmoutput.cpp
 components/output/mippulseoutput.cpp
 components/output/mipqt5audiooutput.cpp
+components/output/mipopenslesandroidoutput.cpp
 components/timer/mipaveragetimer.cpp
 components/timer/mippusheventtimer.cpp
 components/timer/mipinterchaintimer.cpp

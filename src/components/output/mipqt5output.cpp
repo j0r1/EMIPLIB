@@ -458,7 +458,7 @@ bool MIPQt5OutputComponent::init(MIPTime sourceTimeout)
 
 bool MIPQt5OutputComponent::destroy()
 {
-	if (m_init)
+	if (!m_init)
 	{
 		setErrorString(MIPQT5OUTPUTCOMPONENT_ERRSTR_NOTINIT);
 		return false;

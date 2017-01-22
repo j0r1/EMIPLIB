@@ -37,6 +37,7 @@
 #include "mipcomponent.h"
 #include "miptime.h"
 #include <QtGui/QOpenGLWindow>
+#include <QtWidgets/QOpenGLWidget>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLTexture>
 #include <QtWidgets/QMainWindow>
@@ -69,6 +70,63 @@ private:
 	MIPQt5OutputWindow(MIPQt5OutputComponent *pComp, uint64_t sourceID);
 public:
 	~MIPQt5OutputWindow();
+
+	/** Retrieves the source ID from which the video data is shown. */
+	uint64_t getSourceID() const														{ return m_sourceID; }
+
+	/** Retrieves the last known width of the video, or -1 if no frame was processed yet. */
+	int getVideoWidth();
+
+	/** Retrieves the last known height of the video, or -1 if no frame was processed yet. */
+	int getVideoHeight();
+private slots:
+	void slotInternalNewFrame(MIPVideoMessage *pMsg);
+signals:
+	/** This Qt signal is triggered when the width of the video changes. */
+	void signalResizeWidth(int w);
+
+	/** This Qt signal is triggered when the height of the video changes. */
+	void signalResizeHeight(int h);
+
+	/** This Qt signal is triggered when the width, height or both of the video change. */
+	void signalResize(int w, int h);
+
+	void signalInternalNewFrame(MIPVideoMessage *pMsg);
+private:
+	void initializeGL();
+	void paintGL();
+	void resizeGL(int w, int h);
+	void clearComponent();
+	void injectFrame(MIPVideoMessage *pMsg);
+	GLuint createTexture();
+	void checkDisplayRoutines();
+
+	bool m_init;
+	MIPQt5OutputComponent *m_pComponent;
+	QMutex m_mutex;
+	uint64_t m_sourceID;
+
+	MIPVideoMessage *m_pFrameToProcess;
+	int m_prevWidth, m_prevHeight;
+
+	QOpenGLShaderProgram *m_pYUV420Program;
+	QOpenGLShaderProgram *m_pRGBProgram;
+	QOpenGLShaderProgram *m_pYUYVProgram;
+	QOpenGLShaderProgram *m_pLastUsedProgram;
+	GLint m_tex0, m_tex1;
+	GLint m_widthLoc;
+
+	friend class MIPQt5OutputComponent;
+};
+
+/** TODO */
+class MIPQt5OutputWidget : public QOpenGLWidget, public QOpenGLFunctions
+{
+	Q_OBJECT
+private:
+	MIPQt5OutputWidget(MIPQt5OutputComponent *pComp, uint64_t sourceID);
+public:
+	~MIPQt5OutputWidget();
 
 	/** Retrieves the source ID from which the video data is shown. */
 	uint64_t getSourceID() const														{ return m_sourceID; }
@@ -179,6 +237,9 @@ public:
 	 *  to wrap the window in a widget. */
 	MIPQt5OutputWindow *createWindow(uint64_t sourceID);
 
+	/** TODO */
+	MIPQt5OutputWidget *createWidget(uint64_t sourceID);
+
 	/** Retrieves a list of the sources that are currently sending data, or that
 	 *  have not yet been timed out. */
 	bool getCurrentlyKnownSourceIDs(std::list<uint64_t> &sourceIDs);
@@ -194,14 +255,18 @@ signals:
 private:
 	void registerWindow(MIPQt5OutputWindow *pWin);
 	void unregisterWindow(MIPQt5OutputWindow *pWin);
+	void registerWindow(MIPQt5OutputWidget *pWin);
+	void unregisterWindow(MIPQt5OutputWidget *pWin);
 
 	bool m_init;
 	std::map<uint64_t, MIPTime> m_sourceTimes;
 	std::set<MIPQt5OutputWindow *> m_windows;
+	std::set<MIPQt5OutputWidget *> m_widgets;
 	jthread::JMutex m_mutex;
 	MIPTime m_sourceTimeout;
 
 	friend class MIPQt5OutputWindow;
+	friend class MIPQt5OutputWidget;
 };
 
 #endif // MIPCONFIG_SUPPORT_QT5

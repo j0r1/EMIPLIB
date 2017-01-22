@@ -4,7 +4,7 @@ cmake_policy(SET CMP0026 OLD)
 project(emiplib)
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 2)
-set(VERSION_DEBUG 0)
+set(VERSION_DEBUG 1)
 set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_DEBUG}")
 
 include(CheckCXXCompilerFlag)

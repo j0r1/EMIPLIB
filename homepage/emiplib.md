@@ -119,9 +119,9 @@ and [JRTPLIB](http://research.edm.uhasselt.be/jori/jrtplib/jrtplib.html)
 
 You can download the library source code here:
 
- - [emiplib-1.2.0.tar.bz2](http://research.edm.uhasselt.be/emiplib/emiplib-1.2.0.tar.bz2)
- - [emiplib-1.2.0.tar.gz](http://research.edm.uhasselt.be/emiplib/emiplib-1.2.0.tar.gz)
- - [emiplib-1.2.0.zip](http://research.edm.uhasselt.be/emiplib/emiplib-1.2.0.zip)
+ - [emiplib-1.2.1.tar.bz2](http://research.edm.uhasselt.be/emiplib/emiplib-1.2.1.tar.bz2)
+ - [emiplib-1.2.1.tar.gz](http://research.edm.uhasselt.be/emiplib/emiplib-1.2.1.tar.gz)
+ - [emiplib-1.2.1.zip](http://research.edm.uhasselt.be/emiplib/emiplib-1.2.1.zip)
 
 Documentation
 -------------

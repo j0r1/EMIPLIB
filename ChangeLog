@@ -2,6 +2,9 @@
 
                               EMIPLIB ChangeLog
 
+Version 1.2.1, January 2017
+ * Bugfix release for Qt5 output
+
 Version 1.2.0, December 2016
  * Added support for the Opus audio codec.
  * Added MIPOutputMessageQueue, MIPOutputMessageQueueSimple,

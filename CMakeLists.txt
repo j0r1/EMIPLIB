@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 2.8)
-cmake_policy(SET CMP0026 OLD)
 
 project(emiplib)
 set(VERSION_MAJOR 1)
@@ -361,23 +360,10 @@ if (EMIPLIB_COMPILE_TESTS)
 endif()
 
 if (UNIX)
-	get_target_property(EMIPLIB_LOCAL_LIBRARY_NAME emiplib-shared LOCATION)
-	get_filename_component(EMIPLIB_LIBNAME "${EMIPLIB_LOCAL_LIBRARY_NAME}" NAME)
-	set(EMIPLIB_LIBS "${LIBRARY_INSTALL_DIR}/${EMIPLIB_LIBNAME}")
+	set(EMIPLIB_LIBS "-L${LIBRARY_INSTALL_DIR}" "-lemip")
 else (UNIX)
-	if (EMIPLIB_COMPILE_STATIC)
-		get_target_property(EMIPLIB_LOCAL_LIBRARY_NAME emiplib-static RELEASE_LOCATION)
-		get_filename_component(EMIPLIB_LIBNAME_RELEASE "${EMIPLIB_LOCAL_LIBRARY_NAME}" NAME_WE)
-		get_target_property(EMIPLIB_LOCAL_LIBRARY_NAME emiplib-static DEBUG_LOCATION)
-		get_filename_component(EMIPLIB_LIBNAME_DEBUG "${EMIPLIB_LOCAL_LIBRARY_NAME}" NAME_WE)
-	else (EMIPLIB_COMPILE_STATIC)
-		get_target_property(EMIPLIB_LOCAL_LIBRARY_NAME emiplib-shared RELEASE_LOCATION)
-		get_filename_component(EMIPLIB_LIBNAME_RELEASE "${EMIPLIB_LOCAL_LIBRARY_NAME}" NAME_WE)
-		get_target_property(EMIPLIB_LOCAL_LIBRARY_NAME emiplib-shared DEBUG_LOCATION)
-		get_filename_component(EMIPLIB_LIBNAME_DEBUG "${EMIPLIB_LOCAL_LIBRARY_NAME}" NAME_WE)
-	endif (EMIPLIB_COMPILE_STATIC)
-	set(EMIPLIB_LIBS optimized "${LIBRARY_INSTALL_DIR}/${EMIPLIB_LIBNAME_RELEASE}.lib" 
-		debug "${LIBRARY_INSTALL_DIR}/${EMIPLIB_LIBNAME_DEBUG}.lib")
+	set(EMIPLIB_LIBS optimized "${LIBRARY_INSTALL_DIR}/emiplib.lib" 
+	                 debug "${LIBRARY_INSTALL_DIR}/emiplib_d.lib")
 endif (UNIX)
 
 set(EMIPLIB_INCDIRS ${EMIPLIB_EXTERNAL_INCLUDES} ${CMAKE_INSTALL_PREFIX}/include)

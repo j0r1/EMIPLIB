@@ -2,11 +2,11 @@ apply_include_paths("${EMIPLIB_INTERNAL_INCLUDES}")
 apply_include_paths("${EMIPLIB_EXTERNAL_INCLUDES}")
 
 macro(linkit TARGET)
-	if (UNIX OR EMIPLIB_COMPILE_STATIC)
+	if (NOT MSVC OR EMIPLIB_COMPILE_STATIC)
 		target_link_libraries(${TARGET} emiplib-static ${EMIPLIB_LINK_LIBS} ${ARGN})
 	else ()
 		target_link_libraries(${TARGET} emiplib-shared ${EMIPLIB_LINK_LIBS} ${ARGN})
-	endif (UNIX OR EMIPLIB_COMPILE_STATIC)
+	endif ()
 endmacro()
 
 foreach(IDX pulseouttest portaudioouttest replayaudio qtouttest audiocodectest delayedchainstarttest streamopus streamopusrecv

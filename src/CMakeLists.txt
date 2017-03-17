@@ -132,6 +132,7 @@ core/mipcomponent.cpp
 core/mipcomponentchain.cpp
 core/mipversion.cpp
 core/mipdebug.cpp
+core/miptime.cpp
 components/input/mipjackinput.cpp
 components/input/mipdirectshowcapture.cpp
 components/input/mipsndfileinput.cpp

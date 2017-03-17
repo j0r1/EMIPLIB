@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
+if (POLICY CMP0020) # automatically link to qtmain on windows
+    cmake_policy(SET CMP0020 NEW)
+endif()
 
 project(emiplib)
 set(VERSION_MAJOR 1)

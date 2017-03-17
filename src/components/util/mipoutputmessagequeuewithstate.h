@@ -28,7 +28,7 @@
 
 #ifndef MIPOUTPUTMESSAGEQUEUEWITHSTATE_H
 
-#define MIPOUTPUTMESSAGEQUEUEWIDTHSTATE_H
+#define MIPOUTPUTMESSAGEQUEUEWITHSTATE_H
 
 #include "mipconfig.h"
 #include "mipcomponent.h"

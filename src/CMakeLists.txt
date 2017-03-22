@@ -33,6 +33,7 @@ components/input/mipwavinput.h
 components/input/mipaudiofileinput.h
 components/input/mipwinmminput.h
 components/input/mipyuv420fileinput.h
+components/input/mipopenslesandroidinput.h
 components/output/mipsdlaudiooutput.h
 components/output/mipjackoutput.h
 components/output/mipesdoutput.h
@@ -143,6 +144,7 @@ components/input/mipwavinput.cpp
 components/input/mipaudiofileinput.cpp
 components/input/mipwinmminput.cpp 
 components/input/mipyuv420fileinput.cpp
+components/input/mipopenslesandroidinput.cpp
 components/output/mipjackoutput.cpp
 components/output/mipesdoutput.cpp
 components/output/mipopenaloutput.cpp

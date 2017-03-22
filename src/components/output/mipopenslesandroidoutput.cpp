@@ -264,7 +264,7 @@ void *MIPOpenSLESAndroidOutput::AudioThread::Thread()
 	if (retVal != SL_RESULT_SUCCESS)
 	{
 		m_errorString =  "Can't realize output mix object";
-		return false;
+		return 0;
 	}
 
 	SLDataLocator_AndroidSimpleBufferQueue inputQueue;

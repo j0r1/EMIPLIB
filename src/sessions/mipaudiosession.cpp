@@ -24,7 +24,8 @@
 
 #include "mipconfig.h"
 
-#if (defined(MIPCONFIG_SUPPORT_WINMM) || defined(MIPCONFIG_SUPPORT_OSS) || defined(MIPCONFIG_SUPPORT_PORTAUDIO) )
+#if (defined(MIPCONFIG_SUPPORT_OPENSLESANDROID) || defined(MIPCONFIG_SUPPORT_WINMM) || \
+	 defined(MIPCONFIG_SUPPORT_OSS) || defined(MIPCONFIG_SUPPORT_PORTAUDIO) )
 
 #include "mipaudiosession.h"
 #ifdef MIPCONFIG_SUPPORT_WINMM
@@ -72,6 +73,8 @@
 #include "miprtpopusencoder.h"
 #include "mipopusdecoder.h"
 #include "mipopusencoder.h"
+#include "mipopenslesandroidinput.h"
+#include "mipopenslesandroidoutput.h"
 #include <jrtplib3/rtpsession.h>
 #include <jrtplib3/rtpsessionparams.h>
 #include <jrtplib3/rtperrors.h>
@@ -158,6 +161,25 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	MIPComponent *pPrevComponent = 0;
 	MIPComponent *pInputComponent = 0;
 	
+#ifdef MIPCONFIG_SUPPORT_OPENSLESANDROID
+	MIPOpenSLESAndroidInput *pInput = new MIPOpenSLESAndroidInput();
+	storeComponent(pInput);
+
+	if (!pInput->open(sampRate, channels, inputInterval))
+	{
+		setErrorString(pInput->getErrorString());
+		deleteAll();
+		return false;
+	}
+
+	m_pInputChain = new InputChain(this);
+	m_pInputChain->setChainStart(pInput);
+
+	pActiveChain = m_pInputChain;
+	pPrevComponent = pInput;
+	pInputComponent = pInput;
+#else
+
 #ifdef MIPCONFIG_SUPPORT_WINMM
 	MIPWinMMInput *pInput = new MIPWinMMInput();
 	storeComponent(pInput);
@@ -254,6 +276,8 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 #endif // !MIPCONFIG_SUPPORT_PORTAUDIO
 	
 #endif // MIPCONFIG_SUPPORT_WINMM
+
+#endif // MIPCONFIG_SUPPORT_OPENSLESANDROID
 
 	if (pParams2->getInputMultiplier() > 1)
 	{
@@ -848,6 +872,20 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	addLink(pActiveChain, &pPrevComponent, pMixer, true);
 
 	uint32_t destType;
+#ifdef MIPCONFIG_SUPPORT_OPENSLESANDROID
+	destType = MIPRAWAUDIOMESSAGE_TYPE_S16;
+
+	MIPOpenSLESAndroidOutput *pOutput = new MIPOpenSLESAndroidOutput();
+	storeComponent(pOutput);
+
+	if (!pOutput->open(sampRate, channels, outputInterval))
+	{
+		setErrorString(pOutput->getErrorString());
+		deleteAll();
+		return false;
+	}
+#else
+
 #ifdef MIPCONFIG_SUPPORT_WINMM
 	destType = MIPRAWAUDIOMESSAGE_TYPE_S16LE;
 	
@@ -890,7 +928,9 @@ bool MIPAudioSession::init(const MIPAudioSessionParams *pParams, MIPRTPSynchroni
 	destType = MIPRAWAUDIOMESSAGE_TYPE_S16;
 #endif // !MIPCONFIG_SUPPORT_PORTAUDIO
 
-#endif // WIN32 || _WIN32_WCE
+#endif // MIPCONFIG_SUPPORT_WINMM
+
+#endif // MIPCONFIG_SUPPORT_OPENSLESANDROID
 	
 	MIPSampleEncoder *pSampEnc2 = new MIPSampleEncoder();
 	storeComponent(pSampEnc2);
@@ -1336,5 +1376,5 @@ void MIPAudioSession::addLink(MIPComponentChain *pChain, MIPComponent **pPrevCom
 	*pPrevComp = pComp;
 }
 
-#endif // MIPCONFIG_SUPPORT_WINMM || MIPCONFIG_SUPPORT_OSS || MIPCONFIG_SUPPORT_PORTAUDIO
+#endif // MIPCONFIG_SUPPORT_OPENSLESANDROID || MIPCONFIG_SUPPORT_WINMM || MIPCONFIG_SUPPORT_OSS || MIPCONFIG_SUPPORT_PORTAUDIO
 

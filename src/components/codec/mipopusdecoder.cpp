@@ -64,12 +64,14 @@ bool MIPOpusDecoder::init(int outputSamplingRate, int channels, bool useFloat)
 		return false;
 	}
 	
+	/*
 	if (!(outputSamplingRate == 8000 || outputSamplingRate == 12000 || outputSamplingRate == 16000 ||
 	      outputSamplingRate == 24000 || outputSamplingRate == 48000 ))
 	{
 		setErrorString(MIPOPUSDECODER_ERRSTR_BADSAMPRATE);
 		return false;
 	}
+	*/
 
 	if (channels != 1 && channels != 2)
 	{

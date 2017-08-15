@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2016  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2017  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -36,16 +36,19 @@
 
 #include "mipcomponent.h"
 #include "miptime.h"
+#include "mipsignalwaiter.h"
 #include <alsa/asoundlib.h>
 #include <jthread/jthread.h>
 #include <string>
+
+class MIPStreamBuffer;
 
 /** An Advanced Linux Sound Architecture (ALSA) soundcard output component.
  *  This component uses the Advanced Linux Sound Architecture (ALSA) system to provide
  *  soundcard output functions. The component accepts floating point raw audio messages
  *  or signed 16 bit integer encoded raw audio messages and does not generate any messages itself.
  */
-class EMIPLIB_IMPORTEXPORT MIPAlsaOutput : public MIPComponent, private jthread::JThread
+class MIPAlsaOutput : public MIPComponent, private jthread::JThread
 {
 public:
 	MIPAlsaOutput();
@@ -59,16 +62,11 @@ public:
 	 *  \param device The name of the device to open.
 	 *  \param blockTime Audio data with a length corresponding to this parameter is
 	 *                   sent to the soundcard device during each iteration.
-	 *  \param arrayTime The amount of memory allocated to internal buffers,
-	 *                   specified as a time interval. Note that this does not correspond
-	 *                   to the amount of buffering introduced by this component.
 	 *  \param floatSamples Flag indicating if floating point samples or integer samples
 	 *                      should be used.
 	 */
-	bool open(int sampRate, int channels, const std::string device = std::string("plughw:0,0"), 
-                  MIPTime blockTime = MIPTime(0.020), 
-		  MIPTime arrayTime = MIPTime(10.0),
-		  bool floatSamples = true);
+	bool open(int sampRate, int channels, MIPTime blockTime = MIPTime(0.020), bool floatSamples = true,
+			  const std::string device = std::string("plughw:0,0"));
 
 	/** Closes the soundcard device.
 	 *  This function closes the previously opened soundcard device.
@@ -81,17 +79,15 @@ private:
 	
 	snd_pcm_t *m_pDevice;
 	snd_pcm_hw_params_t *m_pHwParameters;
+	bool m_floatSamples;
 	int m_sampRate;
 	int m_channels;
-	float *m_pFrameArrayFloat;
-	uint16_t *m_pFrameArrayInt;
-	bool m_floatSamples;
-	size_t m_frameArrayLength;
-	size_t m_currentPos, m_nextPos;
-	size_t m_blockLength, m_blockFrames;
-	MIPTime m_delay;
-	MIPTime m_distTime, m_blockTime;
-	jthread::JMutex m_frameMutex, m_stopMutex;
+	int m_blockFrames;
+	int m_blockSize;
+
+	MIPStreamBuffer *m_pBuffer;
+	MIPSignalWaiter m_sigWait;
+	jthread::JMutex m_stopMutex;
 	bool m_stopLoop;
 };
 

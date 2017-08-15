@@ -2,7 +2,7 @@
     
   This file is a part of EMIPLIB, the EDM Media over IP Library.
   
-  Copyright (C) 2006-2016  Hasselt University - Expertise Centre for
+  Copyright (C) 2006-2017  Hasselt University - Expertise Centre for
                       Digital Media (EDM) (http://www.edm.uhasselt.be)
 
   This library is free software; you can redistribute it and/or
@@ -28,44 +28,46 @@
 
 #include "mipalsaoutput.h"
 #include "miprawaudiomessage.h"
+#include "mipstreambuffer.h"
 #include <iostream>
 
 #include "mipdebug.h"
 
-#define MIPALSAOUTPUT_ERRSTR_DEVICEALREADYOPEN		"Device already opened"
-#define MIPALSAOUTPUT_ERRSTR_DEVICENOTOPEN		"Device is not opened"
-#define MIPALSAOUTPUT_ERRSTR_CANTOPENDEVICE		"Error opening device"
-#define MIPALSAOUTPUT_ERRSTR_CANTGETHWPARAMS		"Error retrieving device hardware parameters"
-#define MIPALSAOUTPUT_ERRSTR_CANTSETINTERLEAVEDMODE	"Can't set device to interleaved mode"
-#define MIPALSAOUTPUT_ERRSTR_FLOATNOTSUPPORTED		"Floating point format is not supported by this device"
-#define MIPALSAOUTPUT_ERRSTR_UNSUPPORTEDSAMPLINGRATE	"The requested sampling rate is not supported"
-#define MIPALSAOUTPUT_ERRSTR_UNSUPPORTEDCHANNELS	"The requested number of channels is not supported"
-#define MIPALSAOUTPUT_ERRSTR_CANTSETHWPARAMS		"Error setting hardware parameters"
-#define MIPALSAOUTPUT_ERRSTR_BLOCKTIMETOOLARGE		"Block time too large"
-#define MIPALSAOUTPUT_ERRSTR_CANTSTARTBACKGROUNDTHREAD	"Can't start the background thread"
-#define MIPALSAOUTPUT_ERRSTR_PULLNOTIMPLEMENTED		"No pull available for this component"
-#define MIPALSAOUTPUT_ERRSTR_THREADSTOPPED		"Background thread stopped"
-#define MIPALSAOUTPUT_ERRSTR_BADMESSAGE			"Only raw audio messages are supported"
-#define MIPALSAOUTPUT_ERRSTR_INCOMPATIBLECHANNELS	"Incompatible number of channels"
-#define MIPALSAOUTPUT_ERRSTR_INCOMPATIBLESAMPLINGRATE	"Incompatible sampling rate"
-#define MIPALSAOUTPUT_ERRSTR_BUFFERFULL			"Buffer full"
+using namespace jthread;
+using namespace std;
 
-MIPAlsaOutput::MIPAlsaOutput() : MIPComponent("MIPAlsaOutput"), m_delay(0), m_distTime(0), m_blockTime(0)
+#define MIPALSAOUTPUT_ERRSTR_DEVICEALREADYOPEN			"Device already opened"
+#define MIPALSAOUTPUT_ERRSTR_DEVICENOTOPEN				"Device is not opened"
+#define MIPALSAOUTPUT_ERRSTR_CANTOPENDEVICE				"Error opening device"
+#define MIPALSAOUTPUT_ERRSTR_CANTGETHWPARAMS			"Error retrieving device hardware parameters"
+#define MIPALSAOUTPUT_ERRSTR_CANTSETINTERLEAVEDMODE		"Can't set device to interleaved mode"
+#define MIPALSAOUTPUT_ERRSTR_FLOATNOTSUPPORTED			"Floating point format is not supported by this device"
+#define MIPALSAOUTPUT_ERRSTR_S16NOTSUPPORTED			"Signed 16 bit format is not supported by this device"
+#define MIPALSAOUTPUT_ERRSTR_UNSUPPORTEDSAMPLINGRATE	"The requested sampling rate is not supported"
+#define MIPALSAOUTPUT_ERRSTR_UNSUPPORTEDCHANNELS		"The requested number of channels is not supported"
+#define MIPALSAOUTPUT_ERRSTR_CANTSETHWPARAMS			"Error setting hardware parameters"
+#define MIPALSAOUTPUT_ERRSTR_CANTSTARTBACKGROUNDTHREAD	"Can't start the background thread"
+#define MIPALSAOUTPUT_ERRSTR_PULLNOTIMPLEMENTED			"No pull available for this component"
+#define MIPALSAOUTPUT_ERRSTR_THREADSTOPPED				"Background thread stopped"
+#define MIPALSAOUTPUT_ERRSTR_BADMESSAGE					"Only raw audio messages are supported"
+#define MIPALSAOUTPUT_ERRSTR_INCOMPATIBLECHANNELS		"Incompatible number of channels"
+#define MIPALSAOUTPUT_ERRSTR_INCOMPATIBLESAMPLINGRATE	"Incompatible sampling rate"
+#define MIPALSAOUTPUT_ERRSTR_INCOMPATIBLEBLOCKSIZE		"Incompatible number of frames in message"
+#define MIPALSAOUTPUT_ERRSTR_CANTINITSIGWAIT			"Unable to initialize signal waiter"
+
+MIPAlsaOutput::MIPAlsaOutput() : MIPComponent("MIPAlsaOutput")
 {
 	int status;
 	
 	m_pDevice = 0;
 	
-	if ((status = m_frameMutex.Init()) < 0)
-	{
-		std::cerr << "Error: can't initialize ALSA output thread mutex (JMutex error code " << status << ")" << std::endl;
-		exit(-1);
-	}
 	if ((status = m_stopMutex.Init()) < 0)
 	{
 		std::cerr << "Error: can't initialize ALSA output thread mutex (JMutex error code " << status << ")" << std::endl;
 		exit(-1);
 	}
+
+	m_pBuffer = nullptr;
 }
 
 MIPAlsaOutput::~MIPAlsaOutput()
@@ -73,13 +75,22 @@ MIPAlsaOutput::~MIPAlsaOutput()
 	close();
 }
 
-bool MIPAlsaOutput::open(int sampRate, int channels, const std::string device, 
-		  MIPTime blockTime, MIPTime arrayTime, bool floatSamples)
+bool MIPAlsaOutput::open(int sampRate, int channels, MIPTime blockTime, bool floatSamples, const string device)
 {
 	if (m_pDevice != 0)
 	{
 		setErrorString(MIPALSAOUTPUT_ERRSTR_DEVICEALREADYOPEN);
 		return false;
+	}
+
+	if (!m_sigWait.isInit())
+	{
+		if (!m_sigWait.init())
+		{
+			setErrorString(MIPALSAOUTPUT_ERRSTR_CANTINITSIGWAIT);
+			return false;
+		}
+		m_sigWait.clearSignalBuffers();
 	}
 	
 	int status;
@@ -131,7 +142,7 @@ bool MIPAlsaOutput::open(int sampRate, int channels, const std::string device,
 			snd_pcm_hw_params_free(m_pHwParameters);
 			snd_pcm_close(m_pDevice);
 			m_pDevice = 0;
-			setErrorString(MIPALSAOUTPUT_ERRSTR_FLOATNOTSUPPORTED);
+			setErrorString(MIPALSAOUTPUT_ERRSTR_S16NOTSUPPORTED);
 			return false;
 		}
 	}
@@ -168,12 +179,21 @@ bool MIPAlsaOutput::open(int sampRate, int channels, const std::string device,
 		return false;
 	}
 
-	snd_pcm_uframes_t val;
-	unsigned int per;
-	int dir;
+	m_blockFrames = ((size_t)((blockTime.getValue() * ((real_t)sampRate)) + 0.5));
+	m_blockSize = m_blockFrames * ((size_t)channels);
+
+	if (floatSamples)
+		m_blockSize *= sizeof(float);
+	else 
+		m_blockSize *= sizeof(int16_t);
+
+	snd_pcm_uframes_t minVal, maxVal;
 	
-	snd_pcm_hw_params_set_buffer_size_min(m_pDevice, m_pHwParameters, &val);
-	snd_pcm_hw_params_set_periods_min(m_pDevice, m_pHwParameters, &per, &dir);
+	minVal = m_blockFrames;
+	maxVal = m_blockFrames*2;
+
+	snd_pcm_hw_params_set_buffer_size_minmax(m_pDevice, m_pHwParameters, &minVal, &maxVal);
+	//cout << "minVal = " << minVal << " maxVal = " << maxVal << endl;
 	
 	if ((status = snd_pcm_hw_params(m_pDevice, m_pHwParameters)) < 0)
 	{
@@ -184,47 +204,10 @@ bool MIPAlsaOutput::open(int sampRate, int channels, const std::string device,
 		return false;
 	}
 
-	m_frameArrayLength = ((size_t)((arrayTime.getValue() * ((real_t)sampRate)) + 0.5)) * ((size_t)channels);
-	m_blockFrames = ((size_t)((blockTime.getValue() * ((real_t)sampRate)) + 0.5));
-	m_blockLength = m_blockFrames * ((size_t)channels);
+	m_pBuffer = new MIPStreamBuffer(m_blockSize);
 
-	if (m_blockLength > m_frameArrayLength/4)
-	{
-		snd_pcm_hw_params_free(m_pHwParameters);
-		snd_pcm_close(m_pDevice);
-		m_pDevice = 0;
-		setErrorString(MIPALSAOUTPUT_ERRSTR_BLOCKTIMETOOLARGE);
-		return false;
-	}
-
-	// make sure a fixed number of blocks fit in the frame array
-	size_t numBlocks = m_frameArrayLength / m_blockLength + 1;
-	
-	m_frameArrayLength = numBlocks * m_blockLength;
-
-	if (floatSamples)
-	{
-		m_pFrameArrayFloat = new float[m_frameArrayLength];
-		for (size_t i = 0 ; i < m_frameArrayLength ; i++)
-			m_pFrameArrayFloat[i] = 0;
-		m_pFrameArrayInt = 0;
-	}
-	else
-	{
-		m_pFrameArrayInt = new uint16_t[m_frameArrayLength];
-		for (size_t i = 0 ; i < m_frameArrayLength ; i++)
-			m_pFrameArrayInt[i] = 0;
-		m_pFrameArrayFloat = 0;
-	}
-	
-	m_currentPos = 0;
-	m_nextPos = m_blockLength;
 	m_channels = channels;
 	m_sampRate = sampRate;
-	m_distTime = blockTime;
-	m_blockTime = blockTime;
-
-	//std::cerr << "m_frameArrayLength: " << m_frameArrayLength << std::endl; 
 	
 	m_stopLoop = false;
 	if ((status = JThread::Start()) < 0)
@@ -232,10 +215,8 @@ bool MIPAlsaOutput::open(int sampRate, int channels, const std::string device,
 		snd_pcm_hw_params_free(m_pHwParameters);
 		snd_pcm_close(m_pDevice);
 		m_pDevice = 0;
-		if (m_pFrameArrayFloat)
-			delete [] m_pFrameArrayFloat;
-		if (m_pFrameArrayInt)
-			delete [] m_pFrameArrayInt;
+		delete m_pBuffer;
+		m_pBuffer = nullptr;
 		setErrorString(MIPALSAOUTPUT_ERRSTR_CANTSTARTBACKGROUNDTHREAD);
 		return false;
 	}
@@ -260,19 +241,20 @@ bool MIPAlsaOutput::close()
 	while (JThread::IsRunning() && (MIPTime::getCurrentTime().getValue()-starttime.getValue()) < 5.0)
 	{
 		MIPTime::wait(MIPTime(0.010));
+		m_sigWait.signal();
 	}
 
 	if (JThread::IsRunning())
 		JThread::Kill();
 
 	snd_pcm_hw_params_free(m_pHwParameters);
+	snd_pcm_reset(m_pDevice);
 	snd_pcm_close(m_pDevice);
 	m_pDevice = 0;
 
-	if (m_pFrameArrayFloat)
-		delete [] m_pFrameArrayFloat;
-	if (m_pFrameArrayInt)
-		delete [] m_pFrameArrayInt;
+	m_sigWait.clearSignalBuffers();
+	delete m_pBuffer;
+	m_pBuffer = nullptr;
 
 	return true;
 }
@@ -312,75 +294,30 @@ bool MIPAlsaOutput::push(const MIPComponentChain &chain, int64_t iteration, MIPM
 		return false;
 	}
 	
-	size_t num = audioMessage->getNumberOfFrames() * m_channels;
-	size_t offset = 0;
+	size_t num = audioMessage->getNumberOfFrames();
+	if (num != m_blockFrames)
+	{
+		setErrorString(MIPALSAOUTPUT_ERRSTR_INCOMPATIBLEBLOCKSIZE);
+		return false;
+	}
+
+	assert(m_pBuffer);
 
 	if (m_floatSamples)
 	{
 		MIPRawFloatAudioMessage *audioMessageFloat = (MIPRawFloatAudioMessage *)pMsg;
 		const float *frames = audioMessageFloat->getFrames();
-	
-		m_frameMutex.Lock();
-		while (num > 0)
-		{
-			size_t maxAmount = m_frameArrayLength - m_nextPos;
-			size_t amount = (num > maxAmount)?maxAmount:num;
-			
-			if (m_nextPos <= m_currentPos && m_nextPos + amount > m_currentPos)
-			{
-				//std::cerr << "Strange error" << std::endl;
-				m_nextPos = m_currentPos + m_blockLength;
-			}
-			
-			if (amount != 0)
-				memcpy(m_pFrameArrayFloat + m_nextPos, frames + offset, amount*sizeof(float));
-	
-			if (amount != num)
-			{
-				m_nextPos = 0;
-				//std::cerr << "Cycling next pos" << std::endl;
-			}
-			else
-				m_nextPos += amount;
-			
-			offset += amount;
-			num -= amount;
-		}
+
+		m_pBuffer->write(frames, m_blockSize);
 	}
 	else // integer samples
 	{
 		MIPRaw16bitAudioMessage *audioMessageInt = (MIPRaw16bitAudioMessage *)pMsg;
 		const uint16_t *frames = audioMessageInt->getFrames();
 	
-		m_frameMutex.Lock();
-		while (num > 0)
-		{
-			size_t maxAmount = m_frameArrayLength - m_nextPos;
-			size_t amount = (num > maxAmount)?maxAmount:num;
-			
-			if (m_nextPos <= m_currentPos && m_nextPos + amount > m_currentPos)
-			{
-				//std::cerr << "Strange error" << std::endl;
-				m_nextPos = m_currentPos + m_blockLength;
-			}
-			
-			if (amount != 0)
-				memcpy(m_pFrameArrayInt + m_nextPos, frames + offset, amount*sizeof(uint16_t));
-	
-			if (amount != num)
-			{
-				m_nextPos = 0;
-				//std::cerr << "Cycling next pos" << std::endl;
-			}
-			else
-				m_nextPos += amount;
-			
-			offset += amount;
-			num -= amount;
-		}
+		m_pBuffer->write(frames, m_blockSize);
 	}
-	m_distTime += MIPTime(((real_t)audioMessage->getNumberOfFrames())/((real_t)m_sampRate));
-	m_frameMutex.Unlock();
+	m_sigWait.signal();
 	
 	return true;
 }
@@ -399,63 +336,68 @@ void *MIPAlsaOutput::Thread()
 
 	JThread::ThreadStarted();
 
+	// As a small buffer, empty block of 0.020 sec
+	int emptyBlockSize = (int)(0.020*m_sampRate+0.5) * m_channels;
+	if (m_floatSamples)
+		emptyBlockSize *= sizeof(float);
+	else
+		emptyBlockSize *= sizeof(int16_t);
+
+	vector<uint8_t> emptyBlock(emptyBlockSize, 0);
+	vector<uint8_t> block(m_blockSize);
+
 	bool done;
-	
 	m_stopMutex.Lock();
 	done = m_stopLoop;
 	m_stopMutex.Unlock();
 
+	bool justGotUnderrun = true; // insert a small block as a buffer
+
+	snd_pcm_sw_params_t *pSwParams;
+	snd_pcm_sw_params_malloc(&pSwParams);
+
 	while (!done)
 	{
-		if (m_floatSamples)
+		m_sigWait.waitForSignal();
+
+		if (m_pBuffer->getAmountBuffered() >= m_blockSize)
 		{
-			if (snd_pcm_writei(m_pDevice, m_pFrameArrayFloat + m_currentPos, m_blockFrames) < 0)
+			if (justGotUnderrun)
 			{
-				snd_pcm_prepare(m_pDevice);
-				//std::cerr << "Preparing device" << std::endl;
+				justGotUnderrun = false;
+				//cerr << "Trying to protect against underrun by writing empty block first" << endl;
+				for (int i = 0 ; i < 1 ; i++)
+					snd_pcm_writei(m_pDevice, &emptyBlock[0], emptyBlockSize);
+			}
+
+			int r;
+			m_pBuffer->read(&block[0], m_blockSize);
+			if ((r = snd_pcm_writei(m_pDevice, &block[0], m_blockFrames)) < 0)
+			{
+				//cerr << "Trying to recover from " << r  << endl;
+				snd_pcm_recover(m_pDevice, r, 0);
+				if (r == -EPIPE)
+					justGotUnderrun = true;
 			}
 		}
-		else
-		{
-			if (snd_pcm_writei(m_pDevice, m_pFrameArrayInt + m_currentPos, m_blockFrames) < 0)
-			{
-				snd_pcm_prepare(m_pDevice);
-				//std::cerr << "Preparing device" << std::endl;
-			}
-		}
 		
-		m_frameMutex.Lock();
-		m_currentPos += m_blockLength;
-		m_distTime -= m_blockTime;
-		if (m_currentPos + m_blockLength > m_frameArrayLength)
+		//cerr << m_pBuffer->getAmountBuffered() << endl;
+		if (m_pBuffer->getAmountBuffered() > m_blockSize*2)
 		{
-			m_currentPos = 0;
-			//std::cerr << "Cycling" << std::endl;
+			//cerr << "Clearing buffer, seems to build up audio" << endl;
+			m_pBuffer->clear();
 		}
-		
-		if (m_nextPos < m_currentPos + m_blockLength && m_nextPos >= m_currentPos)
-		{
-			m_nextPos = m_currentPos + m_blockLength;
-			if (m_nextPos >= m_frameArrayLength)
-				m_nextPos = 0;
-			m_distTime = m_blockTime;
-			//std::cerr << "Pushing next position" << std::endl;
-		}
-		
-		if (m_distTime > MIPTime(0.200))
-		{
-			m_nextPos = m_currentPos + m_blockLength;
-			if (m_nextPos >= m_frameArrayLength)
-				m_nextPos = 0;
-			m_distTime = m_blockTime;
-			//std::cerr << "Adjusting to runaway input (" << m_distTime.getString() << ")" << std::endl;
-		}
-		m_frameMutex.Unlock();
-		
+
+		//snd_pcm_sframes_t avail, delay;
+		//snd_pcm_avail_delay(m_pDevice, &avail, &delay);
+		//cerr << avail << " " << delay << " " << avail+delay << " " <<  m_blockFrames << endl;
+
 		m_stopMutex.Lock();
 		done = m_stopLoop;
 		m_stopMutex.Unlock();
 	}
+	snd_pcm_sw_params_free(pSwParams);
+
 #ifdef MIPDEBUG
 	std::cout << "MIPAlsaOutput::Thread stopped" << std::endl;
 #endif // MIPDEBUG

@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <cstdlib>
 
+using namespace std;
+
 void checkError(bool returnValue, const MIPComponent &component)
 {
 	if (returnValue == true)
@@ -52,9 +54,24 @@ private:
 	}	
 };
 
-int main(void)
+int main(int argc, char *argv[])
 {
+	if (argc != 6)
+	{
+		cerr << "Usage: " << argv[0] << " devname samprate channels floatsamples(0/1) extradelay" << endl;
+		cerr << endl;
+		cerr << " example: " << argv[0] << " plughw:0,0 48000 2 false 2.0" << endl;
+		cerr << endl;
+		return -1;
+	}
+
+	string devName(argv[1]);
+
 	std::string errStr;
+	int samplingRate = atoi(argv[2]);
+	int numChannels = atoi(argv[3]);
+	bool floatSamples = (atoi(argv[4]) == 0)?false:true;
+	double extraDelay = strtod(argv[5], nullptr);
 
 	MIPTime interval(0.020); // We'll use 20 milliseconds
 	MIPAlsaInput sndCardInput;
@@ -63,21 +80,16 @@ int main(void)
 	MyChain chain("Sound file player");
 	bool returnValue;
 
-	int samplingRate = 48000;
-	int numChannels = 2;
-
-	bool floatSamples = false;
-
-	returnValue = sndCardInput.open(samplingRate, numChannels, interval, floatSamples);
+	returnValue = sndCardInput.open(samplingRate, numChannels, interval, floatSamples, devName);
 	checkError(returnValue, sndCardInput);
 
 	returnValue = mixer.init(samplingRate, numChannels, interval, false, floatSamples);
 	checkError(returnValue, mixer);
 
-	returnValue = mixer.setExtraDelay(MIPTime(2.0));
+	returnValue = mixer.setExtraDelay(extraDelay);
 	checkError(returnValue, mixer);
 
-	returnValue = sndCardOutput.open(samplingRate, numChannels, interval, floatSamples);
+	returnValue = sndCardOutput.open(samplingRate, numChannels, interval, floatSamples, devName);
 	checkError(returnValue, sndCardOutput);
 
 	// Next, we'll create the chain

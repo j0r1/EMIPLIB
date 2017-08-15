@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include <cstdlib>
 
+using namespace std;
+
 void checkError(bool returnValue, const MIPComponent &component)
 {
 	if (returnValue == true)
@@ -54,13 +56,26 @@ private:
 	}	
 };
 
-int main(void)
+int main(int argc, char *argv[])
 {
+	if (argc != 6)
+	{
+		cerr << "Usage: " << argv[0] << " devicename filename timerinterval outputinterval floatsamples(0/1)" << endl;
+		cerr << endl;
+		cerr << "Example: " << argv[0] << " plughw:0,0 soundfile.wav 0.020 0.020 0" << endl;
+		cerr << endl;
+		return -1;
+	}
+	string devName(argv[1]);
+	string fileName(argv[2]);
+	double timerInt = strtod(argv[3], nullptr);
+	double outInt = strtod(argv[4], nullptr);
+	bool floatSamples = (atoi(argv[5]) == 0)?false:true;
+
 	std::string errStr;
 
-	//MIPTime interval(0.020); // We'll use 50 millisecond intervals
-	MIPTime outputInterval(0.020);
-	MIPTime timerInterval(0.020);
+	MIPTime outputInterval(outInt);
+	MIPTime timerInterval(timerInt);
 	MIPAverageTimer timer(timerInterval);
 	MIPWAVInput sndFileInput;
 	MIPAlsaOutput sndCardOutput;
@@ -70,7 +85,7 @@ int main(void)
 
 	// We'll open the file 'soundfile.wav'
 
-	returnValue = sndFileInput.open("soundfile.wav", outputInterval);
+	returnValue = sndFileInput.open(fileName, outputInterval);
 	checkError(returnValue, sndFileInput);
 	
 	// Get the parameters of the soundfile. We'll use these to initialize
@@ -79,7 +94,6 @@ int main(void)
 	int samplingRate = sndFileInput.getSamplingRate();
 	int numChannels = sndFileInput.getNumberOfChannels();
 
-	bool floatSamples = false;
 	if (floatSamples)
 		returnValue = sampEnc.init(MIPRAWAUDIOMESSAGE_TYPE_FLOAT);
 	else
@@ -87,7 +101,7 @@ int main(void)
 	checkError(returnValue, sampEnc);
 
 	// Initialize the soundcard output
-	returnValue = sndCardOutput.open(samplingRate, numChannels, outputInterval, floatSamples);
+	returnValue = sndCardOutput.open(samplingRate, numChannels, outputInterval, floatSamples, devName);
 	checkError(returnValue, sndCardOutput);
 
 	// Next, we'll create the chain

@@ -45,6 +45,8 @@ public:
 	~MIPMessageDumper();
 	bool push(const MIPComponentChain &chain, int64_t iteration, MIPMessage *pMsg);
 	bool pull(const MIPComponentChain &chain, int64_t iteration, MIPMessage **pMsg);
+private:
+	double m_prevTime;
 };
 
 #endif // MIPMESSAGEDUMPER_H

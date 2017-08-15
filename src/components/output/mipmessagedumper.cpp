@@ -33,6 +33,7 @@
 
 MIPMessageDumper::MIPMessageDumper() : MIPComponent("MIPMessageDumper")
 {
+	m_prevTime = 0;
 }
 
 MIPMessageDumper::~MIPMessageDumper()
@@ -44,6 +45,10 @@ bool MIPMessageDumper::push(const MIPComponentChain &chain, int64_t iteration, M
 	MIPTime t = MIPTime::getCurrentTime();
 	
 	std::cout << "Time: " << t.getString() << std::endl;
+	if (m_prevTime > 0)
+		std::cout << "DT: " << t.getValue()-m_prevTime << std::endl;
+	m_prevTime = t.getValue();
+
 	std::cout << "Chain: " << chain.getName() << std::endl;
 	std::cout << "Iteration: " << iteration << std::endl;
 	std::cout << "MIPMessage type: " << pMsg->getMessageType() << std::endl;

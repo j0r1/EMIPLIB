@@ -23,6 +23,7 @@ core/miprawaudiomessage.h
 core/miptypes_win.h
 ${PROJECT_BINARY_DIR}/src/core/mipconfig.h
 ${PROJECT_BINARY_DIR}/src/core/miptypes.h
+components/input/mipalsainput.h
 components/input/mipjackinput.h
 components/input/mipdirectshowcapture.h
 components/input/mipsndfileinput.h
@@ -135,6 +136,7 @@ core/mipcomponentchain.cpp
 core/mipversion.cpp
 core/mipdebug.cpp
 core/miptime.cpp
+components/input/mipalsainput.cpp
 components/input/mipjackinput.cpp
 components/input/mipdirectshowcapture.cpp
 components/input/mipsndfileinput.cpp

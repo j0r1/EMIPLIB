@@ -10,7 +10,7 @@ macro(linkit TARGET)
 endmacro()
 
 foreach(IDX pulseouttest portaudioouttest replayaudio qtouttest audiocodectest delayedchainstarttest streamopus streamopusrecv
-            streamopusrecv2 alsaouttest)
+            streamopusrecv2 alsaouttest alsaintest)
 	add_executable(${IDX} ${IDX}.cpp)
 	linkit(${IDX})
 endforeach(IDX)
